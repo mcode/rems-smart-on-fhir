@@ -1,17 +1,35 @@
-import './Patient.css';
+import './PatientView.css';
 import { Box, Card, CardContent, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-
-function Patient(props: any) {
+import { Patient } from 'fhir/r4';
+import Client from 'fhirclient/lib/Client';
+import { hydrate } from '../../prefetch/PrefetchHydrator';
+import example from '../../prefetch/exampleHookService.json' // TODO: Replace with request to CDS service
+import OrderSign from '../../prefetch/resources/OrderSign';
+interface PatientViewProps {
+  client: Client
+}
+function PatientView(props: PatientViewProps) {
   const client = props.client;
 
-  const [patient, setPatient] = useState(null);
+  const [patient, setPatient] = useState<Patient | null>(null);
 
   useEffect(() => {
     client.patient.read().then((patient: any) => setPatient(patient));
-  });
 
-  // console.log(patient);
+
+  }, [client.patient, client]);
+
+  useEffect(() => {
+    if(patient && patient.id && client.user.id) {
+      const hook = new OrderSign(patient.id, client.user.id, {resourceType: "Bundle", type: "batch"})
+      const cdsHook = hook.generate()
+
+      hydrate(client, example.prefetch, cdsHook).then((data) => {
+        console.log(cdsHook.prefetch) // prefetch filled
+      })
+    }
+  }, [patient, client])
 
   return (
     <div className='Patient'>
@@ -30,7 +48,7 @@ function Patient(props: any) {
                 Patient Info
               </Typography>
               <Typography variant="h5" component="div">
-                {patient['name'][0]['given'][0]} {patient['name'][0]['family']}
+                {patient.name?.[0]?.given?.[0]} {patient.name?.[0]?.family}
               </Typography>
               <Typography sx={{ mb: 1.5 }} color="text.secondary">
                 {patient['birthDate']}
@@ -39,9 +57,9 @@ function Patient(props: any) {
                 sex: {patient['gender']}
               </Typography>
               <Typography color="text.disabled" >
-                {patient['address'][0]['line']}, {patient['address'][0]['city']}
+                {patient.address?.[0].line}, {patient.address?.[0]['city']}
                 <br />
-                {patient['address'][0]['state']}, {patient['address'][0]['postalCode']}
+                {patient.address?.[0]['state']}, {patient.address?.[0]['postalCode']}
               </Typography>
               <Typography sx={{ mt: 1.5, bgcolor: 'text.disabled', color: 'white', textAlign:'center' }} >
                 id: {patient['id']}
@@ -54,4 +72,4 @@ function Patient(props: any) {
   );
 };
 
-export default Patient;
+export default PatientView;
