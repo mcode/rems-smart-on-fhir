@@ -15,7 +15,7 @@ function PatientView(props: PatientViewProps) {
   const [patient, setPatient] = useState<Patient | null>(null);
 
   useEffect(() => {
-    client.patient.read().then((patient: any) => setPatient(patient));
+    client.patient.read().then((patient: Patient) => setPatient(patient));
 
 
   }, [client.patient, client]);
@@ -51,18 +51,18 @@ function PatientView(props: PatientViewProps) {
                 {patient.name?.[0]?.given?.[0]} {patient.name?.[0]?.family}
               </Typography>
               <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {patient['birthDate']}
+                {patient.birthDate}
               </Typography>
               <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                sex: {patient['gender']}
+                sex: {patient.gender}
               </Typography>
               <Typography color="text.disabled" >
-                {patient.address?.[0].line}, {patient.address?.[0]['city']}
+                {patient.address?.[0]?.line}, {patient.address?.[0]?.city}
                 <br />
-                {patient.address?.[0]['state']}, {patient.address?.[0]['postalCode']}
+                {patient.address?.[0]?.state}, {patient.address?.[0]?.postalCode}
               </Typography>
               <Typography sx={{ mt: 1.5, bgcolor: 'text.disabled', color: 'white', textAlign:'center' }} >
-                id: {patient['id']}
+                id: {patient.id}
               </Typography>
             </CardContent>
           </Card>
