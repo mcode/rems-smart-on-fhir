@@ -1,0 +1,10 @@
+{
+    "id": "rems-order-sign",
+    "hook": "order-sign",
+    "title": "REMS Requirement Lookup",
+    "description": "REMS Requirement Lookup",
+    "prefetch": {
+        "patient": "Patient/{{context.patientId}}",
+        "practitioner": "Practitioner/{{context.userId}}"
+    }
+}

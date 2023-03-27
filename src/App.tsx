@@ -2,9 +2,13 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import Box from '@mui/material/Box';
 import { Container } from '@mui/system';
 import './App.css';
-import Patient from './views/Patient/Patient';
+import Patient from './views/Patient/PatientView';
+import Client from 'fhirclient/lib/Client';
 
-function App(props: any) {
+interface AppProps {
+  client: Client
+}
+function App(props: AppProps) {
   const client = props.client;
 
   return (

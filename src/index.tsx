@@ -5,13 +5,14 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FHIR from 'fhirclient';
+import Client from 'fhirclient/lib/Client';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
 interface App {
-  client?: React.ReactNode;
+  client?: Client;
 }
 
 const smartLaunch = () => {
