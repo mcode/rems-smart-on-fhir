@@ -15,7 +15,8 @@ import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: 
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
-import { testCards }from './cdsHooksCards/testCards';
+
+import { Card as HooksCard } from 'smart-typescript-support/types/cds-hooks';
 
 const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
 
@@ -66,7 +67,7 @@ function MedReqDropDown(props: any) {
     const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
     //Cards
-    // const [cdsCards, setCdsCards] = useState<any | null>(null);
+    const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
 
     useEffect(() => {
         client.patient.read().then((patient: any) => setPatient(patient));
@@ -93,7 +94,8 @@ function MedReqDropDown(props: any) {
             data: cdsHook
         })
             .then((response) => {
-                console.log(response.data); // cards for REMS-333
+                console.log(response.data.cards); // cards for REMS-333
+                setHooksCards(response.data.cards);
             }, (error) => {
                 console.log(error)
             });
@@ -144,7 +146,7 @@ function MedReqDropDown(props: any) {
                                     {selectedCard.display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
-                                <CdsHooksCards cards={testCards} client={client}></CdsHooksCards>
+                                <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
                             </CardContent>
                         )}
                     </Card>

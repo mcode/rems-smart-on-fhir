@@ -5,9 +5,6 @@ import Client from 'fhirclient/lib/Client';
 import './App.css';
 import Patient from './views/Patient/PatientView';
 
-// import CdsHooksCards from './views/Patient/MedReqDropDown/cdsHooksCards';
-// import { testCards } from './views/Patient/MedReqDropDown/testCards';
-
 interface AppProps {
   client: Client
 }
@@ -27,7 +24,6 @@ function App(props: AppProps) {
         </Container>
       </div>
       <Patient client={client} />
-      {/* <CdsHooksCards cards={testCards} client={client}></CdsHooksCards> */}
     </Box >
   );
 }
