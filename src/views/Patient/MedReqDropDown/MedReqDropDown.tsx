@@ -1,9 +1,10 @@
 import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
+import axios from 'axios';
 import { useState } from 'react';
 import './MedReqDropDown.css';
-// import FHIR from 'fhirclient';
 
+const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
 
 interface Option {
     label: string;
@@ -17,7 +18,7 @@ interface CardData {
     code: string;
 }
 
-// Will need to move this to another file and eventually auto populate instead of hard coding fields 
+// TODO -> (REMS-367) Will need to remove this and populate the fields/list of medications from Test-EHR 
 const menuOptions: Option[] = [
     { label: 'Isotretinoin 20 MG Oral Capsule', value: 'option1' },
     { label: 'TIRF 200 UG Oral Transmucosal Lozenge', value: 'option2' },
@@ -30,42 +31,9 @@ const cards: CardData[] = [
     { id: 'option3', title: 'Turalio', display: '200 MG Oral Capsule', code: '2183126' },
 ];
 
+function MedReqDropDown(props: any) {
+    const { cdsHook } = props;
 
-// This is needs to be moved and corrected
-/*
-const request = {
-    hook: 'order-sign',
-    fhirServer: 'http://localhost:8080/test-ehr/r4',
-    fhirAuthorization: {
-        access_token: '',
-        token_type: 'Bearer',
-        expires_in: 300,
-        scope: 'patient/Patient.read patient/Observation.read',
-        subject: 'cds-service4'
-    },
-    hookInstance: '1234',
-    patient: {
-      id: '12345',
-    },
-    context: {
-      code: ''
-    },
-    prefetch: {
-      medication: {
-        url: '/Medication',
-        valueSet: [
-          {
-            system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
-            code: ''
-          },
-        ],
-      },
-    },
-  };
-  */
-
-
-function MedReqDropDown() {
     const [selectedOption, setSelectedOption] = useState<string>('');
 
     const handleOptionSelect = (event: SelectChangeEvent<string>) => {
@@ -74,10 +42,18 @@ function MedReqDropDown() {
 
     const selectedCard = cards.find((card) => card.id === selectedOption);
 
-
-    const buttonClickAction = () => {
-        // TODO: implement this function
-        console.log('CdsHooksMedReq::buttonClickAction');
+    //CDS-Hook Request to REMS-Admin for cards
+    const buttonClickSubmitToREMS = () => {
+        axios({
+            method: 'post',
+            url: `${REMS_ADMIN_SERVER_BASE}/cds-services/rems-order-sign`, // may change based on server endpoint
+            data: cdsHook
+        })
+            .then((response) => {
+                console.log(response.data); // cards for REMS-333
+            }, (error) => {
+                console.log(error)
+            });
     };
 
     return (
@@ -125,12 +101,11 @@ function MedReqDropDown() {
                                     {selectedCard.display}
                                 </Typography>
 
-                                <Button variant='contained' onClick={buttonClickAction}>Submit To REMS-Admin</Button>
+                                <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
                             </CardContent>
                         )}
                     </Card>
                 </div>
-
             </div>
         </Box >
     );

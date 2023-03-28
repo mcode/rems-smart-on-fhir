@@ -4,30 +4,34 @@ import Client from 'fhirclient/lib/Client';
 import { useEffect, useState } from 'react';
 import example from '../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../prefetch/PrefetchHydrator';
+import { Hook } from '../../prefetch/resources/HookTypes';
 import OrderSign from '../../prefetch/resources/OrderSign';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
+import medicationRequestBundle from './MedReqDropDown/tempIpledgeMedicationRequest'; // TODO: (REMS-367) Remove
 import './PatientView.css';
+
 interface PatientViewProps {
   client: Client
 }
+
 function PatientView(props: PatientViewProps) {
   const client = props.client;
 
   const [patient, setPatient] = useState<Patient | null>(null);
 
+  const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+
   useEffect(() => {
     client.patient.read().then((patient: any) => setPatient(patient));
-
-
   }, [client.patient, client]);
 
   useEffect(() => {
     if (patient && patient.id && client.user.id) {
-      const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch' })
-      const cdsHook = hook.generate()
+      const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [medicationRequestBundle] })
+      const tempHook = hook.generate();
 
-      hydrate(client, example.prefetch, cdsHook).then((data) => {
-        console.log(cdsHook.prefetch) // prefetch filled
+      hydrate(client, example.prefetch, tempHook).then((data) => {
+        setCDSHook(tempHook);
       })
     }
   }, [patient, client])
@@ -67,9 +71,14 @@ function PatientView(props: PatientViewProps) {
               </Typography>
             </CardContent>
           </Card>
-          : <h1>Loading</h1>}
+          : <h1>Loading...</h1>}
+
+        {cdsHook ? <MedReqDropDown cdsHook={cdsHook} />
+          :
+              <p>Loading Medication Request...</p>
+        }
       </Box>
-      <MedReqDropDown />
+
     </div>
   );
 };
