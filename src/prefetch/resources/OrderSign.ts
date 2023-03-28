@@ -26,6 +26,7 @@ export default class OrderSign extends CdsHook {
             userId: this.userId,
             patientId: this.patientId,
             draftOrders: this.draftOrders
+            
         }
     }
     
