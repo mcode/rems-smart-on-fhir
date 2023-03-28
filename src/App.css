@@ -1,8 +1,11 @@
+.main {
+  background-color: #F5F5F7;
+}
+
 .App {
   text-align: center;
   background-color:#2E6153;
   padding: 20px;
-  margin-bottom:20px;
 }
 
 .App-logo {
@@ -65,5 +68,4 @@ box-sizing: unset;
   display: grid;
   grid-template-areas: ' main right';
 }
-
 
