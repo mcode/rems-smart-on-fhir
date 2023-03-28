@@ -1,8 +1,17 @@
 import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import axios from 'axios';
-import { useState } from 'react';
+import { Patient } from 'fhir/r4';
+import Client from 'fhirclient/lib/Client';
+import { useEffect, useState } from 'react';
+import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
+import { hydrate } from '../../../prefetch/PrefetchHydrator';
+import { Hook } from '../../../prefetch/resources/HookTypes';
+import OrderSign from '../../../prefetch/resources/OrderSign';
 import './MedReqDropDown.css';
+import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: (REMS-367) Remove
+import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
+import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: (REMS-367) Remove
 
 const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
 
@@ -16,6 +25,11 @@ interface CardData {
     title: string;
     display: string;
     code: string;
+    file: any;
+}
+
+interface PatientViewProps {
+    client: Client
 }
 
 // TODO -> (REMS-367) Will need to remove this and populate the fields/list of medications from Test-EHR 
@@ -26,27 +40,48 @@ const menuOptions: Option[] = [
 ];
 
 const cards: CardData[] = [
-    { id: 'option1', title: 'Isotretinoin', display: '20 MG Oral Capsule', code: '6064' },
-    { id: 'option2', title: 'TIRF', display: '200 UG Oral Transmucosal Lozenge', code: '1237051' },
-    { id: 'option3', title: 'Turalio', display: '200 MG Oral Capsule', code: '2183126' },
+    { id: 'option1', title: 'Isotretinoin', display: '20 MG Oral Capsule', code: '6064', file: iPledgeMedicationRequest },
+    { id: 'option2', title: 'TIRF', display: '200 UG Oral Transmucosal Lozenge', code: '1237051', file: tirfMedicationRequest },
+    { id: 'option3', title: 'Turalio', display: '200 MG Oral Capsule', code: '2183126', file: turalioMedicationRequest },
 ];
 
 function MedReqDropDown(props: any) {
-    const { cdsHook } = props;
+    const client = props.client;
 
+    //For dropdown UI
     const [selectedOption, setSelectedOption] = useState<string>('');
-
     const handleOptionSelect = (event: SelectChangeEvent<string>) => {
         setSelectedOption(event.target.value as string);
     };
+    let selectedCard = cards.find((card) => card.id === selectedOption);
 
-    const selectedCard = cards.find((card) => card.id === selectedOption);
+    //Prefetch 
+    const [patient, setPatient] = useState<Patient | null>(null);
+
+    const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+
+    useEffect(() => {
+        client.patient.read().then((patient: any) => setPatient(patient));
+    }, [client.patient, client]);
+
+    useEffect(() => {
+        if (patient && patient.id && client.user.id) {
+            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedCard ? selectedCard.file : iPledgeMedicationRequest] })
+            const tempHook = hook.generate();
+
+            hydrate(client, example.prefetch, tempHook).then((data) => {
+                setCDSHook(tempHook);
+            })
+        }
+    }, [patient, client, selectedCard])
 
     //CDS-Hook Request to REMS-Admin for cards
     const buttonClickSubmitToREMS = () => {
+        console.log(selectedCard ? selectedCard.title : undefined);
+
         axios({
             method: 'post',
-            url: `${REMS_ADMIN_SERVER_BASE}/cds-services/rems-order-sign`, // may change based on server endpoint
+            url: `${REMS_ADMIN_SERVER_BASE}/cds-services/rems-order-sign`,
             data: cdsHook
         })
             .then((response) => {
@@ -100,7 +135,6 @@ function MedReqDropDown(props: any) {
                                 <Typography variant='h6' sx={{ bgcolor: 'text.disabled', color: 'white', textAlign: 'center' }} color='textSecondary' gutterBottom>
                                     {selectedCard.display}
                                 </Typography>
-
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
                             </CardContent>
                         )}
