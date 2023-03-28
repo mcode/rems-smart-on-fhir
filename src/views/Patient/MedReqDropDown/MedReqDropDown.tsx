@@ -13,6 +13,10 @@ import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: 
 import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
 import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: (REMS-367) Remove
 
+// Adding in cards 
+import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
+import { testCards }from './cdsHooksCards/testCards';
+
 const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
 
 interface Option {
@@ -58,7 +62,11 @@ function MedReqDropDown(props: any) {
     //Prefetch 
     const [patient, setPatient] = useState<Patient | null>(null);
 
+    //CDSHooks
     const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+
+    //Cards
+    // const [cdsCards, setCdsCards] = useState<any | null>(null);
 
     useEffect(() => {
         client.patient.read().then((patient: any) => setPatient(patient));
@@ -136,6 +144,7 @@ function MedReqDropDown(props: any) {
                                     {selectedCard.display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
+                                <CdsHooksCards cards={testCards} client={client}></CdsHooksCards>
                             </CardContent>
                         )}
                     </Card>
