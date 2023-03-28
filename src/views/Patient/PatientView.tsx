@@ -48,7 +48,7 @@ function PatientView(props: PatientViewProps) {
               <Typography color='text.disabled' >
                 {patient.address?.[0].line}, {patient.address?.[0]['city']}
                 <br />
-                {patient.address?.[0]['state']}, {patient.address?.[0]['postalCode']}
+                {patient.address?.[0]?.state}, {patient.address?.[0]?.postalCode}
               </Typography>
               <Typography sx={{ mt: 1.5, bgcolor: 'text.disabled', color: 'white', textAlign: 'center' }} >
                 id: {patient['id']}
