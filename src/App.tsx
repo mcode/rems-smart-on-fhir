@@ -1,9 +1,9 @@
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import Box from '@mui/material/Box';
 import { Container } from '@mui/system';
+import Client from 'fhirclient/lib/Client';
 import './App.css';
 import Patient from './views/Patient/PatientView';
-import Client from 'fhirclient/lib/Client';
 
 import CdsHooksCards from './cdsHooksCards';
 import { testCards } from './testCards';
@@ -15,7 +15,7 @@ function App(props: AppProps) {
   const client = props.client;
 
   return (
-    <Box>
+    <Box className='main'>
       <div className='App'>
         <Container className='NavContainer' maxWidth='xl'>
           <div className='containerg'>
@@ -26,7 +26,7 @@ function App(props: AppProps) {
           </div>
         </Container>
       </div>
-      <Patient client={client}/>
+      <Patient client={client} />
       <CdsHooksCards cards={testCards} client={client}></CdsHooksCards>
     </Box >
   );
