@@ -5,6 +5,9 @@ import './App.css';
 import Patient from './views/Patient/PatientView';
 import Client from 'fhirclient/lib/Client';
 
+import CdsHooksCards from './cdsHooksCards';
+import { testCards } from './testCards';
+
 interface AppProps {
   client: Client
 }
@@ -24,6 +27,7 @@ function App(props: AppProps) {
         </Container>
       </div>
       <Patient client={client}/>
+      <CdsHooksCards cards={testCards} client={client}></CdsHooksCards>
     </Box >
   );
 }
