@@ -4,10 +4,10 @@ import axios from 'axios';
 import { Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { useEffect, useState } from 'react';
-import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
-import { hydrate } from '../../../prefetch/PrefetchHydrator';
-import { Hook } from '../../../prefetch/resources/HookTypes';
-import OrderSign from '../../../prefetch/resources/OrderSign';
+import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
+import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
+import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
+import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
 import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: (REMS-367) Remove
 import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
@@ -15,8 +15,6 @@ import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: 
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
-
-import { Card as HooksCard } from 'smart-typescript-support/types/cds-hooks';
 
 const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
 
