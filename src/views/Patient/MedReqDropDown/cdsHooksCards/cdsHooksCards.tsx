@@ -1,5 +1,5 @@
 import Client from 'fhirclient/lib/Client';
-import { Card as HooksCard } from 'smart-typescript-support/types/cds-hooks';
+import { Card as HooksCard } from '../../../../cds-hooks/resources/HookTypes';
 import CdsHooksCard from './cdsHooksCard';
 
 interface CdsHooksCardsProps {

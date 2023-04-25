@@ -4,10 +4,10 @@ import axios from 'axios';
 import { Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { useEffect, useState } from 'react';
-import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
-import { hydrate } from '../../../prefetch/PrefetchHydrator';
-import { Hook } from '../../../prefetch/resources/HookTypes';
-import OrderSign from '../../../prefetch/resources/OrderSign';
+import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
+import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
+import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
+import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
 import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: (REMS-367) Remove
 import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
@@ -16,9 +16,7 @@ import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
 
-import { Card as HooksCard } from 'smart-typescript-support/types/cds-hooks';
-
-const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
+const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 
 interface Option {
     label: string;
@@ -31,10 +29,6 @@ interface CardData {
     display: string;
     code: string;
     file: any;
-}
-
-interface PatientViewProps {
-    client: Client
 }
 
 // TODO -> (REMS-367) Will need to remove this and populate the fields/list of medications from Test-EHR 
@@ -50,15 +44,23 @@ const cards: CardData[] = [
     { id: 'option3', title: 'Turalio', display: '200 MG Oral Capsule', code: '2183126', file: turalioMedicationRequest },
 ];
 
+
 function MedReqDropDown(props: any) {
     const client = props.client;
+
+    function getFhirResource(token: string) {
+        console.log('getFhirResource: ' + token);
+        return props.client.request(token).then((e: any) => {
+            return e;
+        });
+    }
 
     //For dropdown UI
     const [selectedOption, setSelectedOption] = useState<string>('');
     const handleOptionSelect = (event: SelectChangeEvent<string>) => {
         setSelectedOption(event.target.value as string);
     };
-    let selectedCard = cards.find((card) => card.id === selectedOption);
+    const selectedCard = cards.find((card) => card.id === selectedOption);
 
     //Prefetch 
     const [patient, setPatient] = useState<Patient | null>(null);
@@ -75,14 +77,14 @@ function MedReqDropDown(props: any) {
 
     useEffect(() => {
         if (patient && patient.id && client.user.id) {
-            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedCard ? selectedCard.file : iPledgeMedicationRequest] })
+            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedCard ? selectedCard.file : iPledgeMedicationRequest] });
             const tempHook = hook.generate();
 
-            hydrate(client, example.prefetch, tempHook).then((data) => {
+            hydrate(getFhirResource, example.prefetch, tempHook).then((data) => {
                 setCDSHook(tempHook);
-            })
+            });
         }
-    }, [patient, client, selectedCard])
+    }, [patient, client, selectedCard]);
 
     //CDS-Hook Request to REMS-Admin for cards
     const buttonClickSubmitToREMS = () => {
@@ -97,7 +99,7 @@ function MedReqDropDown(props: any) {
                 console.log(response.data.cards); // cards for REMS-333
                 setHooksCards(response.data.cards);
             }, (error) => {
-                console.log(error)
+                console.log(error);
             });
     };
 

@@ -4,7 +4,7 @@ import { Button, Card, CardActions, CardContent, Typography } from '@mui/materia
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
 
-import { Card as HooksCard, Link } from 'smart-typescript-support/types/cds-hooks';
+import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTypes';
 
 
 // TODO: 
