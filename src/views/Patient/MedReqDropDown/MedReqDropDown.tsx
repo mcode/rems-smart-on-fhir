@@ -1,21 +1,13 @@
 import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import axios from 'axios';
-import { BundleEntry, Patient } from 'fhir/r4';
-import Client from 'fhirclient/lib/Client';
+import { BundleEntry, Patient, MedicationRequest } from 'fhir/r4';
 import { useEffect, useState } from 'react';
 import { hydrate } from '../../../prefetch/PrefetchHydrator';
 import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { Hook } from '../../../prefetch/resources/HookTypes';
 import OrderSign from '../../../prefetch/resources/OrderSign';
 import './MedReqDropDown.css';
-import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: (REMS-367) Remove
-import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
-import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: (REMS-367) Remove
-
-import { Bundle } from 'fhir/r4';
-import { MedicationRequest } from 'fhir/r4';
-
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -23,11 +15,6 @@ import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
 import { Card as HooksCard } from 'smart-typescript-support/types/cds-hooks';
 
 const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
-
-interface Option {
-    label: string;
-    value: string;
-}
 
 interface CardData {
     id: string;
@@ -37,26 +24,10 @@ interface CardData {
     file: any;
 }
 
-interface PatientViewProps {
-    client: Client
-}
-
 interface MedicationBundle {
     data: MedicationRequest[];
     reference: Patient;
 }
-
-// TODO -> (REMS-367) Will need to remove this and populate the fields/list of medications from Test-EHR 
-const menuOptions: Option[] = [
-    { label: 'Isotretinoin 20 MG Oral Capsule', value: 'option1' },
-    { label: 'TIRF 200 UG Oral Transmucosal Lozenge', value: 'option2' },
-    { label: 'Turalio 200 MG Oral Capsule', value: 'option3' },
-];
-const cards: CardData[] = [
-    { id: 'option1', title: 'Isotretinoin', display: '20 MG Oral Capsule', code: '6064', file: iPledgeMedicationRequest },
-    { id: 'option2', title: 'TIRF', display: '200 UG Oral Transmucosal Lozenge', code: '1237051', file: tirfMedicationRequest },
-    { id: 'option3', title: 'Turalio', display: '200 MG Oral Capsule', code: '2183126', file: turalioMedicationRequest },
-];
 
 function MedReqDropDown(props: any) {
     const client = props.client;
@@ -68,7 +39,6 @@ function MedReqDropDown(props: any) {
     const handleOptionSelect = (event: SelectChangeEvent<string>) => {
         setSelectedOption(event.target.value as string);
     };
-    let selectedCard = cards.find((card) => card.id === selectedOption);
 
     //Prefetch 
     const [patient, setPatient] = useState<Patient | null>(null);
@@ -79,31 +49,12 @@ function MedReqDropDown(props: any) {
     //Cards
     const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
 
-
-    
-
     useEffect(() => {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
 
-
-    
-
-    // useEffect(() => {
-    //         if (patient && patient.id && client.user.id) {
-    //             const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedCard ? selectedCard.file : iPledgeMedicationRequest] })
-    //             const tempHook = hook.generate();
-    
-    //             hydrate(client, example.prefetch, tempHook).then((data) => {
-    //                 setCDSHook(tempHook);
-    //             })
-    //         }
-    //     }, [patient, client, selectedOption])
-
     //CDS-Hook Request to REMS-Admin for cards
     const buttonClickSubmitToREMS = () => {
-        console.log(selectedCard ? selectedCard.title : undefined);
-
         axios({
             method: 'post',
             url: `${REMS_ADMIN_SERVER_BASE}/cds-services/rems-order-sign`,
@@ -117,12 +68,6 @@ function MedReqDropDown(props: any) {
             });
     };
 
-    // <---NEW--->
-    // TODO: 
-    // - Server is not returning value until its cycled a second time 
-    // - Parse data returned, update and store in state and display medication list 
-    // - Remove temp files in this directory 
-
     // MedicationRequest Prefectching Bundle
     const [medication, setMedication] = useState<MedicationBundle | null>(null);
 
@@ -135,7 +80,6 @@ function MedReqDropDown(props: any) {
             })
             .then((result: MedicationBundle) => {
                 setMedication(result);
-                // console.log(result);
             });
     };
 
@@ -147,13 +91,8 @@ function MedReqDropDown(props: any) {
         setselectedMedicationCard(medication?.data.find((medication) => medication.id === selectedOption));
     }, [selectedOption]);
 
-    // let selectedMedicationCardBundle : BundleEntry<MedicationRequest> = {resource : selectedMedicationCard};
     useEffect(() => {
-       setselectedMedicationCardBundle({resource : selectedMedicationCard});
-       console.log(selectedMedicationCard);
-    //    console.log(iPledgeMedicationRequest);
-       console.log("selectedmed");
-       console.log(selectedMedicationCardBundle);
+        setselectedMedicationCardBundle({ resource: selectedMedicationCard });
     }, [selectedOption, selectedMedicationCard]);
 
 
@@ -167,9 +106,6 @@ function MedReqDropDown(props: any) {
             })
         }
     }, [patient, client, selectedMedicationCardBundle])
-
-
-    // <---/NEW--->
 
 
     return (
@@ -207,12 +143,6 @@ function MedReqDropDown(props: any) {
 
                                         ))
                                         : <p>loading medications...</p>}
-                                    {/* 
-                                    {menuOptions.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))} */}
                                 </Select>
                             </FormControl>
                         </CardContent>
