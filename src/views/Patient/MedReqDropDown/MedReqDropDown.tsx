@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import axios from 'axios';
 import { Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
-import { useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../prefetch/PrefetchHydrator';
 import { Hook } from '../../../prefetch/resources/HookTypes';
@@ -12,6 +12,10 @@ import './MedReqDropDown.css';
 import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: (REMS-367) Remove
 import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
 import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: (REMS-367) Remove
+
+import { MedicationRequest } from 'fhir/r4';
+
+import FHIR from "fhirclient";
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -43,7 +47,6 @@ const menuOptions: Option[] = [
     { label: 'TIRF 200 UG Oral Transmucosal Lozenge', value: 'option2' },
     { label: 'Turalio 200 MG Oral Capsule', value: 'option3' },
 ];
-
 const cards: CardData[] = [
     { id: 'option1', title: 'Isotretinoin', display: '20 MG Oral Capsule', code: '6064', file: iPledgeMedicationRequest },
     { id: 'option2', title: 'TIRF', display: '200 UG Oral Transmucosal Lozenge', code: '1237051', file: tirfMedicationRequest },
@@ -101,6 +104,29 @@ function MedReqDropDown(props: any) {
             });
     };
 
+    // <---NEW--->
+    // TODO: 
+    // - Server is not returning value until its cycled a second time 
+    // - Parse data returned, update and store in state and display medication list 
+    // - Remove temp files in this directory 
+    const [medication, setMedication] = useState<MedicationRequest | null>(null);
+
+    const getMedicationRequest = () => {
+        client
+            .request(`MedicationRequest?subject=Patient/${client.patient.id}`, {
+                resolveReferences: ["subject", "performer"],
+                graph: false,
+                flat: true,
+            })
+            .then((result: MedicationRequest) => setMedication(result));
+
+            console.log("GETTING MEDICATION");
+            console.log(client.patient.id)
+            console.log(medication);
+    };
+    // <---/NEW--->
+
+
     return (
         <Box sx={{
             marginTop: 8,
@@ -121,6 +147,8 @@ function MedReqDropDown(props: any) {
                                     labelId='dropdown-label'
                                     id='dropdown'
                                     value={selectedOption}
+                                    // TODO: --> onOpen might not be the best used here since it needs to be called twice to correctly return values
+                                    onOpen={getMedicationRequest}
                                     onChange={handleOptionSelect}
                                 >
                                     <MenuItem value=''>
