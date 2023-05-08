@@ -87,16 +87,7 @@ function MedReqDropDown(props: any) {
     }, [client.patient, client]);
 
 
-    useEffect(() => {
-        if (patient && patient.id && client.user.id) {
-            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] })
-            const tempHook = hook.generate();
-
-            hydrate(client, example.prefetch, tempHook).then((data) => {
-                setCDSHook(tempHook);
-            })
-        }
-    }, [patient, client, selectedCard])
+    
 
     // useEffect(() => {
     //         if (patient && patient.id && client.user.id) {
@@ -144,7 +135,7 @@ function MedReqDropDown(props: any) {
             })
             .then((result: MedicationBundle) => {
                 setMedication(result);
-                console.log(result);
+                // console.log(result);
             });
     };
 
@@ -154,17 +145,28 @@ function MedReqDropDown(props: any) {
 
     useEffect(() => {
         setselectedMedicationCard(medication?.data.find((medication) => medication.id === selectedOption));
-    }, [medication]);
+    }, [selectedOption]);
 
     // let selectedMedicationCardBundle : BundleEntry<MedicationRequest> = {resource : selectedMedicationCard};
     useEffect(() => {
        setselectedMedicationCardBundle({resource : selectedMedicationCard});
        console.log(selectedMedicationCard);
-       console.log(iPledgeMedicationRequest);
+    //    console.log(iPledgeMedicationRequest);
        console.log("selectedmed");
        console.log(selectedMedicationCardBundle);
     }, [selectedOption, selectedMedicationCard]);
 
+
+    useEffect(() => {
+        if (patient && patient.id && client.user.id) {
+            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] })
+            const tempHook = hook.generate();
+
+            hydrate(client, example.prefetch, tempHook).then((data) => {
+                setCDSHook(tempHook);
+            })
+        }
+    }, [patient, client, selectedMedicationCardBundle])
 
 
     // <---/NEW--->
