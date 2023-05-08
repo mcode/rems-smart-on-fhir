@@ -1,11 +1,11 @@
 import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import axios from 'axios';
-import { Patient } from 'fhir/r4';
+import { BundleEntry, Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
-import { SetStateAction, useEffect, useState } from 'react';
-import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
+import { useEffect, useState } from 'react';
 import { hydrate } from '../../../prefetch/PrefetchHydrator';
+import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { Hook } from '../../../prefetch/resources/HookTypes';
 import OrderSign from '../../../prefetch/resources/OrderSign';
 import './MedReqDropDown.css';
@@ -13,9 +13,9 @@ import iPledgeMedicationRequest from './tempIpledgeMedicationRequest'; // TODO: 
 import tirfMedicationRequest from './tempTirfMedicationRequest'; // TODO: (REMS-367) Remove
 import turalioMedicationRequest from './tempTuralioMedicationRequest'; // TODO: (REMS-367) Remove
 
+import { Bundle } from 'fhir/r4';
 import { MedicationRequest } from 'fhir/r4';
 
-import FHIR from "fhirclient";
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -41,6 +41,11 @@ interface PatientViewProps {
     client: Client
 }
 
+interface MedicationBundle {
+    data: MedicationRequest[];
+    reference: Patient;
+}
+
 // TODO -> (REMS-367) Will need to remove this and populate the fields/list of medications from Test-EHR 
 const menuOptions: Option[] = [
     { label: 'Isotretinoin 20 MG Oral Capsule', value: 'option1' },
@@ -58,6 +63,8 @@ function MedReqDropDown(props: any) {
 
     //For dropdown UI
     const [selectedOption, setSelectedOption] = useState<string>('');
+
+
     const handleOptionSelect = (event: SelectChangeEvent<string>) => {
         setSelectedOption(event.target.value as string);
     };
@@ -72,13 +79,17 @@ function MedReqDropDown(props: any) {
     //Cards
     const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
 
+
+    
+
     useEffect(() => {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
 
+
     useEffect(() => {
         if (patient && patient.id && client.user.id) {
-            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedCard ? selectedCard.file : iPledgeMedicationRequest] })
+            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] })
             const tempHook = hook.generate();
 
             hydrate(client, example.prefetch, tempHook).then((data) => {
@@ -86,6 +97,17 @@ function MedReqDropDown(props: any) {
             })
         }
     }, [patient, client, selectedCard])
+
+    // useEffect(() => {
+    //         if (patient && patient.id && client.user.id) {
+    //             const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedCard ? selectedCard.file : iPledgeMedicationRequest] })
+    //             const tempHook = hook.generate();
+    
+    //             hydrate(client, example.prefetch, tempHook).then((data) => {
+    //                 setCDSHook(tempHook);
+    //             })
+    //         }
+    //     }, [patient, client, selectedOption])
 
     //CDS-Hook Request to REMS-Admin for cards
     const buttonClickSubmitToREMS = () => {
@@ -109,7 +131,9 @@ function MedReqDropDown(props: any) {
     // - Server is not returning value until its cycled a second time 
     // - Parse data returned, update and store in state and display medication list 
     // - Remove temp files in this directory 
-    const [medication, setMedication] = useState<MedicationRequest | null>(null);
+
+    // MedicationRequest Prefectching Bundle
+    const [medication, setMedication] = useState<MedicationBundle | null>(null);
 
     const getMedicationRequest = () => {
         client
@@ -118,12 +142,31 @@ function MedReqDropDown(props: any) {
                 graph: false,
                 flat: true,
             })
-            .then((result: MedicationRequest) => setMedication(result));
-
-            console.log("GETTING MEDICATION");
-            console.log(client.patient.id)
-            console.log(medication);
+            .then((result: MedicationBundle) => {
+                setMedication(result);
+                console.log(result);
+            });
     };
+
+    const [selectedMedicationCardBundle, setselectedMedicationCardBundle] = useState<BundleEntry<MedicationRequest>>({});
+
+    const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
+
+    useEffect(() => {
+        setselectedMedicationCard(medication?.data.find((medication) => medication.id === selectedOption));
+    }, [medication]);
+
+    // let selectedMedicationCardBundle : BundleEntry<MedicationRequest> = {resource : selectedMedicationCard};
+    useEffect(() => {
+       setselectedMedicationCardBundle({resource : selectedMedicationCard});
+       console.log(selectedMedicationCard);
+       console.log(iPledgeMedicationRequest);
+       console.log("selectedmed");
+       console.log(selectedMedicationCardBundle);
+    }, [selectedOption, selectedMedicationCard]);
+
+
+
     // <---/NEW--->
 
 
@@ -154,24 +197,33 @@ function MedReqDropDown(props: any) {
                                     <MenuItem value=''>
                                         <em>Select Medication</em>
                                     </MenuItem>
+                                    {medication ?
+                                        medication.data.map((medications) => (
+                                            <MenuItem key={medications.id} value={medications.id}>
+                                                {medications.medicationCodeableConcept?.coding?.[0].display}
+                                            </MenuItem>
+
+                                        ))
+                                        : <p>loading medications...</p>}
+                                    {/* 
                                     {menuOptions.map((option) => (
                                         <MenuItem key={option.value} value={option.value}>
                                             {option.label}
                                         </MenuItem>
-                                    ))}
+                                    ))} */}
                                 </Select>
                             </FormControl>
                         </CardContent>
-                        {selectedCard && (
+                        {selectedMedicationCard && (
                             <CardContent>
                                 <Typography sx={{ bgcolor: 'text.secondary', color: 'white', textAlign: 'center' }}>
-                                    Code: {selectedCard.code}
+                                    Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
                                 </Typography>
                                 <Typography sx={{ bgcolor: 'text.disabled', color: 'white', textAlign: 'center', fontSize: 24 }}>
-                                    {selectedCard.title}
+                                    {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0]}
                                 </Typography>
                                 <Typography variant='h6' sx={{ bgcolor: 'text.disabled', color: 'white', textAlign: 'center' }} color='textSecondary' gutterBottom>
-                                    {selectedCard.display}
+                                    {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
                                 <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
