@@ -3,18 +3,16 @@ import Box from '@mui/material/Box';
 import axios from 'axios';
 import { BundleEntry, Patient, MedicationRequest } from 'fhir/r4';
 import { useEffect, useState } from 'react';
-import { hydrate } from '../../../prefetch/PrefetchHydrator';
-import example from '../../../prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
-import { Hook } from '../../../prefetch/resources/HookTypes';
-import OrderSign from '../../../prefetch/resources/OrderSign';
+import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
+import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
+import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
+import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
 
-import { Card as HooksCard } from 'smart-typescript-support/types/cds-hooks';
-
-const REMS_ADMIN_SERVER_BASE = "http://localhost:8090";
+const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 
 interface CardData {
     id: string;
@@ -31,6 +29,13 @@ interface MedicationBundle {
 
 function MedReqDropDown(props: any) {
     const client = props.client;
+
+    function getFhirResource(token: string) {
+        console.log('getFhirResource: ' + token);
+        return props.client.request(token).then((e: any) => {
+            return e;
+        });
+    }
 
     //For dropdown UI
     const [selectedOption, setSelectedOption] = useState<string>('');
@@ -64,7 +69,7 @@ function MedReqDropDown(props: any) {
                 console.log(response.data.cards); // cards for REMS-333
                 setHooksCards(response.data.cards);
             }, (error) => {
-                console.log(error)
+                console.log(error);
             });
     };
 
