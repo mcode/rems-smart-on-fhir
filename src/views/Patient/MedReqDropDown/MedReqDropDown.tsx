@@ -39,8 +39,7 @@ function MedReqDropDown(props: any) {
 
     //For dropdown UI
     const [selectedOption, setSelectedOption] = useState<string>('');
-
-
+    
     const handleOptionSelect = (event: SelectChangeEvent<string>) => {
         setSelectedOption(event.target.value as string);
     };
