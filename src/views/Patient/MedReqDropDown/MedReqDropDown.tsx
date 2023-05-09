@@ -14,14 +14,6 @@ import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
 
 const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 
-interface CardData {
-    id: string;
-    title: string;
-    display: string;
-    code: string;
-    file: any;
-}
-
 interface MedicationBundle {
     data: MedicationRequest[];
     reference: Patient;
@@ -78,7 +70,7 @@ function MedReqDropDown(props: any) {
     const getMedicationRequest = () => {
         client
             .request(`MedicationRequest?subject=Patient/${client.patient.id}`, {
-                resolveReferences: ["subject", "performer"],
+                resolveReferences: ['subject', 'performer'],
                 graph: false,
                 flat: true,
             })
@@ -102,14 +94,14 @@ function MedReqDropDown(props: any) {
 
     useEffect(() => {
         if (patient && patient.id && client.user.id) {
-            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] })
+            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
             const tempHook = hook.generate();
 
-            hydrate(client, example.prefetch, tempHook).then((data) => {
+            hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
                 setCDSHook(tempHook);
-            })
+            });
         }
-    }, [patient, client, selectedMedicationCardBundle])
+    }, [patient, client, selectedMedicationCardBundle]);
 
 
     return (
