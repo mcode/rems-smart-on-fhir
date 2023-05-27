@@ -1,5 +1,8 @@
-import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography, Tooltip, IconButton } from '@mui/material';
 import Box from '@mui/material/Box';
+import Close  from '@mui/icons-material/Close';
+
+
 import axios from 'axios';
 import { BundleEntry, Patient, MedicationRequest } from 'fhir/r4';
 import { useEffect, useState } from 'react';
@@ -11,6 +14,13 @@ import './MedReqDropDown.css';
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
+
+// Adding in ETASU
+import EtasuStatus from './etasuStatus/EtasuStatus';
+
+// Adding in Pharmacy
+import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
+
 
 const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 
@@ -45,6 +55,12 @@ function MedReqDropDown(props: any) {
     //Cards
     const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
 
+    //ETASU 
+    const [showEtasu, setShowEtasu] = useState<boolean>(false);
+
+    // Pharmacy
+    const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
+
     useEffect(() => {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
@@ -62,6 +78,22 @@ function MedReqDropDown(props: any) {
             }, (error) => {
                 console.log(error);
             });
+    };
+
+    const buttonClickCheckETASU = () => {
+        if (showEtasu) {
+            setShowEtasu(false);
+        } else {
+            setShowEtasu(true);
+        }
+    };
+
+    const buttonClickCheckPharmacy = () => {
+        if (showPharmacy) {
+            setShowPharmacy(false);
+        } else {
+            setShowPharmacy(true);
+        }
     };
 
     // MedicationRequest Prefectching Bundle
@@ -105,6 +137,7 @@ function MedReqDropDown(props: any) {
 
 
     return (
+        <div>
         <Box sx={{
             marginTop: 8,
             display: 'flex',
@@ -116,7 +149,7 @@ function MedReqDropDown(props: any) {
                     <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
                         <CardContent>
                             <Typography sx={{ fontSize: 17 }} color='text.secondary' gutterBottom component='div'>
-                                New Medication Request:
+                                Select Medication Request:
                             </Typography>
                             <FormControl sx={{ minWidth: 300, mt: 1 }}>
                                 <InputLabel id='dropdown-label'>Select Medication</InputLabel>
@@ -154,13 +187,62 @@ function MedReqDropDown(props: any) {
                                     {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
-                                <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
+                                <Button variant='contained' onClick={buttonClickCheckETASU}>Check ETASU</Button>
+                                <Button variant='contained' onClick={buttonClickCheckPharmacy}>Check Pharmacy</Button>
                             </CardContent>
                         )}
+                    </Card>
+                    <Card>
+                        <CardContent>
+                            <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
+                        </CardContent>
                     </Card>
                 </div>
             </div>
         </Box >
+        { showEtasu && (
+        <Box sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+        }}>
+            <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
+                <CardContent>
+                    <Tooltip title='Close REMS ETASU'>
+                        <IconButton onClick={buttonClickCheckETASU}>
+                            <Close/>
+                        </IconButton>
+                    </Tooltip>
+                </CardContent>
+                <CardContent>
+                    <EtasuStatus patient={patient} medication={selectedMedicationCard}></EtasuStatus>
+                </CardContent>
+            </Card>
+        </Box>
+        )}
+        { showPharmacy && (
+        <Box sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+        }}>
+            <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
+                <CardContent>
+                    <Tooltip title='Close Pharmacy Status'>
+                        <IconButton onClick={buttonClickCheckPharmacy}>
+                            <Close/>
+                        </IconButton>
+                    </Tooltip>
+                </CardContent>
+                <CardContent>
+                    <PharmacyStatus patient={patient} medication={selectedMedicationCard}></PharmacyStatus>
+                </CardContent>
+            </Card>
+        </Box>
+        )}
+        </div>
     );
 }
 
