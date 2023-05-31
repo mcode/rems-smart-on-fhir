@@ -1,4 +1,5 @@
 import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography, Tooltip, IconButton } from '@mui/material';
+import { Grid } from '@mui/material'; 
 import Box from '@mui/material/Box';
 import Close  from '@mui/icons-material/Close';
 
@@ -208,16 +209,22 @@ function MedReqDropDown(props: any) {
             alignItems: 'center',
         }}>
             <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
-                <CardContent>
-                    <Tooltip title='Close REMS ETASU'>
-                        <IconButton onClick={buttonClickCheckETASU}>
-                            <Close/>
-                        </IconButton>
-                    </Tooltip>
-                </CardContent>
-                <CardContent>
-                    <EtasuStatus patient={patient} medication={selectedMedicationCard}></EtasuStatus>
-                </CardContent>
+                <Grid container columns={12}>
+                    <Grid item xs={11}>
+                        <CardContent>
+                            <EtasuStatus patient={patient} medication={selectedMedicationCard}></EtasuStatus>
+                        </CardContent>
+                    </Grid>
+                    <Grid item xs={1}>
+                        <CardContent>
+                            <Tooltip title='Close REMS ETASU'>
+                                <IconButton onClick={buttonClickCheckETASU}>
+                                    <Close/>
+                                </IconButton>
+                            </Tooltip>
+                        </CardContent>
+                    </Grid>
+                </Grid>
             </Card>
         </Box>
         )}
@@ -229,16 +236,22 @@ function MedReqDropDown(props: any) {
             alignItems: 'center',
         }}>
             <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
-                <CardContent>
-                    <Tooltip title='Close Pharmacy Status'>
-                        <IconButton onClick={buttonClickCheckPharmacy}>
-                            <Close/>
-                        </IconButton>
-                    </Tooltip>
-                </CardContent>
-                <CardContent>
-                    <PharmacyStatus patient={patient} medication={selectedMedicationCard}></PharmacyStatus>
-                </CardContent>
+                <Grid container columns={12}>
+                    <Grid item xs={11}>
+                        <CardContent>
+                            <PharmacyStatus patient={patient} medication={selectedMedicationCard}></PharmacyStatus>
+                        </CardContent>
+                    </Grid>
+                    <Grid item xs={1}>
+                        <CardContent>
+                            <Tooltip title='Close Pharmacy Status'>
+                                <IconButton onClick={buttonClickCheckPharmacy}>
+                                    <Close/>
+                                </IconButton>
+                            </Tooltip>
+                        </CardContent>
+                    </Grid>
+                </Grid>
             </Card>
         </Box>
         )}
