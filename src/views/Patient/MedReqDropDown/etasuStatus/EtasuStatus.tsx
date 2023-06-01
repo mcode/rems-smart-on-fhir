@@ -1,4 +1,4 @@
-import { Button, Tooltip, IconButton } from '@mui/material';
+import { Tooltip, IconButton, Grid } from '@mui/material';
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
@@ -41,17 +41,8 @@ interface EtasuStatusProps {
 function EtasuStatus(props: EtasuStatusProps) {
 
     const [spin, setSpin] = useState<boolean>(false);
-    const [viewEtasu, setViewEtasu] = useState<boolean>(false);
     const [remsAdminResponse, setRemsAdminResponse] = useState<RemsMetEtasuResponse | null>(null);
 
-
-    const toggleViewEtasu = () => {
-        if (viewEtasu == true) {
-            setViewEtasu(false);
-        } else {
-            setViewEtasu(true);
-        }
-    };
 
     const refreshEtasuBundle = () => {
         setSpin(true);
@@ -72,76 +63,70 @@ function EtasuStatus(props: EtasuStatusProps) {
         });
     };
 
-    //TODO: update this section
-    //const status = this.state.remsAdminResponse?.data?.status;
-    let color = '#f7f7f7';
+    const status = remsAdminResponse?.status;
+    let color = '#f7f7f7'; // off-white
     if (status === 'Approved') {
-        color = '#5cb85c';
+        color = '#5cb85c'; // green
     } else if (status === 'Pending') {
-        color = '#f0ad4e';
+        color = '#f0ad4e'; // orange
     }
 
     return (
         <div>
+            <h1>REMS Status</h1>
+            <div className='status-icon' style={{ backgroundColor: color }}></div>
+            <Grid container columns={12}>
+                <Grid item xs={10}>
+                    <div className='bundle-entry'>
+                        Case Number : {remsAdminResponse?.case_number || 'N/A'}
+                    </div>
+                    <div className='bundle-entry'>
+                        Status: {remsAdminResponse?.status}
+                    </div>
+                </Grid>
+                <Grid item xs={2}>
+                    <div className='bundle-entry'>
+                        <Tooltip title='Refresh'>
+                            <IconButton onClick={refreshEtasuBundle}>
+                                <AutorenewIcon
+                                    className={spin === true ? 'refresh' : 'renew-icon'}
+                                    onAnimationEnd={() => setSpin(false)}
+                                />
+                            </IconButton>
+                        </Tooltip>
+                    </div>
+                </Grid>
+            </Grid>
             <div>
-
-                <div className='container left-form'>
-                        <h1>REMS Status</h1>
-                        <div className='status-icon' style={{ backgroundColor: color }}></div>
-                        <div className='bundle-entry'>
-                            Case Number : {remsAdminResponse?.case_number || 'N/A'}
-                        </div>
-                        <div className='bundle-entry'>
-                            Status: {remsAdminResponse?.status}
-                        </div>
-                        <div className='bundle-entry'>
-                            <Button variant='contained' onClick={toggleViewEtasu}>View ETASU</Button>
-                            <Tooltip title='Refresh'>
-                                <IconButton onClick={refreshEtasuBundle}>
-                                    <AutorenewIcon
-                                        className={spin === true ? 'refresh' : 'renew-icon'}
-                                        onAnimationEnd={() => setSpin(false)}
-                                    />
-                                </IconButton>
-                            </Tooltip>
-                        </div>
-
-                        {viewEtasu ?
-                        <div className='bundle-view'>
-                            <br></br>
-                            <h3>ETASU</h3>
-                            <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                                { remsAdminResponse && (
-                                <List>
-                                    {remsAdminResponse?.metRequirements.map((metRequirements: MetRequirements) => 
-                                        <ListItem disablePadding key={metRequirements.metRequirementId}>
-                                            <ListItemIcon>
-                                                {metRequirements.completed ? 
-                                                    <CheckCircle color='success' /> 
-                                                    : 
-                                                    <Close color='warning' />
-                                                }
-                                            </ListItemIcon>
-                                            {metRequirements.completed ? 
-                                                <ListItemText
-                                                    primary={metRequirements.requirementName}
-                                                    />
-                                                : 
-                                                <ListItemText
-                                                    primary={metRequirements.requirementName}
-                                                    secondary={metRequirements.requirementDescription}
-                                                    />
-                                            }
-                                        </ListItem>
-                                    )}
-                                </List> 
-                                )}
-                            </Box>
-                        </div>
-                        :
-                        ''}
-                </div>
-
+                <br></br>
+                <h3>ETASU</h3>
+                <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                    { remsAdminResponse ? 
+                    <List>
+                        {remsAdminResponse?.metRequirements.map((metRequirements: MetRequirements) => 
+                            <ListItem disablePadding key={metRequirements.metRequirementId}>
+                                <ListItemIcon>
+                                    {metRequirements.completed ? 
+                                        <CheckCircle color='success' /> 
+                                        : 
+                                        <Close color='warning' />
+                                    }
+                                </ListItemIcon>
+                                {metRequirements.completed ? 
+                                    <ListItemText
+                                        primary={metRequirements.requirementName}
+                                        />
+                                    : 
+                                    <ListItemText
+                                        primary={metRequirements.requirementName}
+                                        secondary={metRequirements.requirementDescription}
+                                        />
+                                }
+                            </ListItem>
+                        )}
+                    </List> 
+                    : 'Not Available' }
+                </Box>
             </div>
         </div>
     );

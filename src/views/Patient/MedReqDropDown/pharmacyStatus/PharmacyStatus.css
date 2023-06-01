@@ -13,6 +13,15 @@
     animation-iteration-count: 2;
     animation-timing-function: ease-in-out; 
   }
+ 
+ .status-icon{
+    width: 100%;
+    height:5px;
+  }
+
+.bundle-entry{
+    margin: 5px;
+  }
 
 @keyframes spin {
     from {

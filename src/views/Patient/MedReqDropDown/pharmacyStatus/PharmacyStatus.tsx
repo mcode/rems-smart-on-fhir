@@ -1,4 +1,4 @@
-import { Tooltip, IconButton } from '@mui/material';
+import { Tooltip, IconButton, Grid } from '@mui/material';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 import { MedicationRequest, Patient } from 'fhir/r4';
@@ -77,28 +77,31 @@ function PharmacyStatus(props: PharmacyStatusProps) {
         });
     };
 
-    //TODO: update this section
-    //const status = this.state.remsAdminResponse?.data?.status;
-    let color = '#f7f7f7';
+    const status = pimsResponse?.dispenseStatus;
+    let color = '#f7f7f7'; // white
     if (status === 'Approved') {
-        color = '#5cb85c';
+        color = '#5cb85c'; // green
     } else if (status === 'Pending') {
-        color = '#f0ad4e';
+        color = '#f0ad4e'; // orange
+    } else if (status === 'Picked Up') {
+        color = '#0275d8'; // blue
     }
 
     return (
         <div>
-            <div className='container left-form'>
-                    <h1>Pharmacy Status</h1>
-                    <div className='status-icon' style={{ backgroundColor: color }}></div>
+            <h1>Pharmacy Status</h1>
+            <div className='status-icon' style={{ backgroundColor: color }}></div>
+            <Grid container columns={12}>
+                <Grid item xs={10}>
                     <div className='bundle-entry'>
                         ID : {pimsResponse?._id || 'N/A'}
                     </div>
                     <div className='bundle-entry'>
                         Status: {pimsResponse?.dispenseStatus}
                     </div>
+                </Grid>
+                <Grid item xs={2}>
                     <div className='bundle-entry'>
-                        {//remsAdminResponse?.case_number ?
                         <Tooltip title='Refresh'>
                             <IconButton onClick={refreshPharmacyBundle}>
                                 <AutorenewIcon
@@ -107,12 +110,9 @@ function PharmacyStatus(props: PharmacyStatusProps) {
                                 />
                             </IconButton>
                         </Tooltip>
-                        //: ''
-                        }
                     </div>
-
-            </div>
-
+                </Grid>
+            </Grid>
         </div>
     );
 }

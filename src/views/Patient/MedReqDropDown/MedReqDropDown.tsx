@@ -1,7 +1,5 @@
-import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography, Tooltip, IconButton } from '@mui/material';
-import { Grid } from '@mui/material'; 
+import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography, Modal } from '@mui/material';
 import Box from '@mui/material/Box';
-import Close  from '@mui/icons-material/Close';
 
 
 import axios from 'axios';
@@ -81,20 +79,20 @@ function MedReqDropDown(props: any) {
             });
     };
 
-    const buttonClickCheckETASU = () => {
-        if (showEtasu) {
-            setShowEtasu(false);
-        } else {
-            setShowEtasu(true);
-        }
+    const handleOpenCheckETASU = () => {
+        setShowEtasu(true);
     };
 
-    const buttonClickCheckPharmacy = () => {
-        if (showPharmacy) {
-            setShowPharmacy(false);
-        } else {
-            setShowPharmacy(true);
-        }
+    const handleCloseCheckETASU = () => {
+        setShowEtasu(false);
+    };
+
+    const handleOpenCheckPharmacy = () => {
+        setShowPharmacy(true);
+    };
+
+    const handleCloseCheckPharmacy = () => {
+        setShowPharmacy(false);
     };
 
     // MedicationRequest Prefectching Bundle
@@ -136,6 +134,17 @@ function MedReqDropDown(props: any) {
         }
     }, [patient, client, selectedMedicationCardBundle]);
 
+    const modal_style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        border: '1px solid #000',
+        boxShadow: 24,
+        p: 4,
+      };
 
     return (
         <div>
@@ -188,8 +197,8 @@ function MedReqDropDown(props: any) {
                                     {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
-                                <Button variant='contained' onClick={buttonClickCheckETASU}>Check ETASU</Button>
-                                <Button variant='contained' onClick={buttonClickCheckPharmacy}>Check Pharmacy</Button>
+                                <Button variant='contained' onClick={handleOpenCheckETASU}>Check ETASU</Button>
+                                <Button variant='contained' onClick={handleOpenCheckPharmacy}>Check Pharmacy</Button>
                             </CardContent>
                         )}
                     </Card>
@@ -201,60 +210,22 @@ function MedReqDropDown(props: any) {
                 </div>
             </div>
         </Box >
-        { showEtasu && (
-        <Box sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-        }}>
-            <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
-                <Grid container columns={12}>
-                    <Grid item xs={11}>
-                        <CardContent>
-                            <EtasuStatus patient={patient} medication={selectedMedicationCard}></EtasuStatus>
-                        </CardContent>
-                    </Grid>
-                    <Grid item xs={1}>
-                        <CardContent>
-                            <Tooltip title='Close REMS ETASU'>
-                                <IconButton onClick={buttonClickCheckETASU}>
-                                    <Close/>
-                                </IconButton>
-                            </Tooltip>
-                        </CardContent>
-                    </Grid>
-                </Grid>
-            </Card>
-        </Box>
-        )}
-        { showPharmacy && (
-        <Box sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-        }}>
-            <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
-                <Grid container columns={12}>
-                    <Grid item xs={11}>
-                        <CardContent>
-                            <PharmacyStatus patient={patient} medication={selectedMedicationCard}></PharmacyStatus>
-                        </CardContent>
-                    </Grid>
-                    <Grid item xs={1}>
-                        <CardContent>
-                            <Tooltip title='Close Pharmacy Status'>
-                                <IconButton onClick={buttonClickCheckPharmacy}>
-                                    <Close/>
-                                </IconButton>
-                            </Tooltip>
-                        </CardContent>
-                    </Grid>
-                </Grid>
-            </Card>
-        </Box>
-        )}
+        <Modal
+            open={showEtasu}
+            onClose={handleCloseCheckETASU}
+        >
+            <Box sx={modal_style}>
+                <EtasuStatus patient={patient} medication={selectedMedicationCard}></EtasuStatus>
+            </Box>
+        </Modal>
+        <Modal
+            open={showPharmacy}
+            onClose={handleCloseCheckPharmacy}
+        >
+            <Box sx={modal_style}>
+                <PharmacyStatus patient={patient} medication={selectedMedicationCard}></PharmacyStatus>
+            </Box>
+        </Modal>
         </div>
     );
 }
