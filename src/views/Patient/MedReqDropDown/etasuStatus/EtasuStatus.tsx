@@ -111,7 +111,7 @@ function EtasuStatus(props: EtasuStatusProps) {
                             <br></br>
                             <h3>ETASU</h3>
                             <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-
+                                { remsAdminResponse && (
                                 <List>
                                     {remsAdminResponse?.metRequirements.map((metRequirements: MetRequirements) => 
                                         <ListItem disablePadding key={metRequirements.metRequirementId}>
@@ -135,7 +135,7 @@ function EtasuStatus(props: EtasuStatusProps) {
                                         </ListItem>
                                     )}
                                 </List> 
-
+                                )}
                             </Box>
                         </div>
                         :

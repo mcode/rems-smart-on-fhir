@@ -59,11 +59,10 @@ function PharmacyStatus(props: PharmacyStatusProps) {
         const drugNames = props.medication?.medicationCodeableConcept?.coding?.at(0)?.display;
         console.log('refreshPharmacyBundle: ' + patientFirstName + ' ' + patientLastName + ' - ' + patientDOB + ' - ' + rxDate + ' - ' + drugNames);
         const ndcDrugCoding = props.medication?.medicationCodeableConcept?.coding?.find(({system}) => system === 'http://hl7.org/fhir/sid/ndc');
-        let queryString: string = 'rxDate=' + rxDate + '&drugNames=' + drugNames;
+        let queryString: string = 'rxDate=' + rxDate + '&drugNames=' + encodeURIComponent(drugNames || '');
         if (ndcDrugCoding != undefined) {
             queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
         }
-        queryString = encodeURIComponent(queryString);
         const url = `${PIMS_SERVER_BASE}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
         console.log(url);
         axios({
