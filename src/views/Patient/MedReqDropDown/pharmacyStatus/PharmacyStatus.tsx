@@ -4,7 +4,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { MedicationRequest, Patient } from 'fhir/r4';
 
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import './PharmacyStatus.css';
 import MetRequirements from '../etasuStatus/MetRequirements';
@@ -43,15 +43,22 @@ const PIMS_SERVER_BASE = 'http://localhost:5051';
 interface PharmacyStatusProps {
     patient: Patient | null
     medication: MedicationRequest | undefined
+    update: boolean
 }
 
 function PharmacyStatus(props: PharmacyStatusProps) {
 
-    const [spinPims, setSpinPims] = useState<boolean>(false);
+    const [spin, setSpin] = useState<boolean>(false);
     const [pimsResponse, setPimsResponse] = useState<DoctorOrder | null>(null);
 
+    useEffect(() => {
+        if (props.update) {
+            refreshPharmacyBundle();
+        }
+    }, [props.update]);
+
     const refreshPharmacyBundle = () => {
-        setSpinPims(true);
+        setSpin(true);
         const patientFirstName = props.patient?.name?.at(0)?.given?.at(0);
         const patientLastName = props.patient?.name?.at(0)?.family;
         const patientDOB = props.patient?.birthDate;
@@ -97,7 +104,7 @@ function PharmacyStatus(props: PharmacyStatusProps) {
                         ID : {pimsResponse?._id || 'N/A'}
                     </div>
                     <div className='bundle-entry'>
-                        Status: {pimsResponse?.dispenseStatus}
+                        Status: {pimsResponse?.dispenseStatus || 'N/A'}
                     </div>
                 </Grid>
                 <Grid item xs={2}>
@@ -105,8 +112,8 @@ function PharmacyStatus(props: PharmacyStatusProps) {
                         <Tooltip title='Refresh'>
                             <IconButton onClick={refreshPharmacyBundle}>
                                 <AutorenewIcon
-                                    className={spinPims === true ? 'refresh' : 'renew-icon'}
-                                    onAnimationEnd={() => setSpinPims(false)}
+                                    className={spin === true ? 'refresh' : 'renew-icon'}
+                                    onAnimationEnd={() => setSpin(false)}
                                 />
                             </IconButton>
                         </Tooltip>

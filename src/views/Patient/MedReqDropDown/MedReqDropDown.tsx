@@ -215,7 +215,7 @@ function MedReqDropDown(props: any) {
             onClose={handleCloseCheckETASU}
         >
             <Box sx={modal_style}>
-                <EtasuStatus patient={patient} medication={selectedMedicationCard}></EtasuStatus>
+                <EtasuStatus patient={patient} medication={selectedMedicationCard} update={showEtasu}></EtasuStatus>
             </Box>
         </Modal>
         <Modal
@@ -223,7 +223,7 @@ function MedReqDropDown(props: any) {
             onClose={handleCloseCheckPharmacy}
         >
             <Box sx={modal_style}>
-                <PharmacyStatus patient={patient} medication={selectedMedicationCard}></PharmacyStatus>
+                <PharmacyStatus patient={patient} medication={selectedMedicationCard} update={showPharmacy}></PharmacyStatus>
             </Box>
         </Modal>
         </div>

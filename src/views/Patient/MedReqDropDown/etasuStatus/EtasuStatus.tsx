@@ -13,7 +13,7 @@ import Close  from '@mui/icons-material/Close';
 import { MedicationRequest, Patient } from 'fhir/r4';
 
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import MetRequirements from './MetRequirements';
 import './EtasuStatus.css';
@@ -36,6 +36,7 @@ const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 interface EtasuStatusProps {
     patient: Patient | null
     medication: MedicationRequest | undefined
+    update: boolean
 }
 
 function EtasuStatus(props: EtasuStatusProps) {
@@ -43,6 +44,11 @@ function EtasuStatus(props: EtasuStatusProps) {
     const [spin, setSpin] = useState<boolean>(false);
     const [remsAdminResponse, setRemsAdminResponse] = useState<RemsMetEtasuResponse | null>(null);
 
+    useEffect(() => {
+        if (props.update) {
+            refreshEtasuBundle();
+        }
+    }, [props.update]);
 
     const refreshEtasuBundle = () => {
         setSpin(true);
@@ -81,7 +87,7 @@ function EtasuStatus(props: EtasuStatusProps) {
                         Case Number : {remsAdminResponse?.case_number || 'N/A'}
                     </div>
                     <div className='bundle-entry'>
-                        Status: {remsAdminResponse?.status}
+                        Status: {remsAdminResponse?.status || 'N/A'}
                     </div>
                 </Grid>
                 <Grid item xs={2}>
