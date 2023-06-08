@@ -10,6 +10,7 @@ import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
+import config from '../../../config.json';
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -21,7 +22,8 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 
 
-const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
+//TODO: move this to an environment variable / configuration file
+const REMS_ADMIN_SERVER_BASE = config.rems_server;
 
 interface MedicationBundle {
     data: MedicationRequest[];
@@ -197,8 +199,12 @@ function MedReqDropDown(props: any) {
                                     {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
-                                <Button variant='contained' onClick={handleOpenCheckETASU}>Check ETASU</Button>
-                                <Button variant='contained' onClick={handleOpenCheckPharmacy}>Check Pharmacy</Button>
+                                { config.etasu_status_enabled && (
+                                    <Button variant='contained' onClick={handleOpenCheckETASU}>Check ETASU</Button>
+                                )}
+                                { config.pharmacy_status_enabled && (
+                                    <Button variant='contained' onClick={handleOpenCheckPharmacy}>Check Pharmacy</Button>
+                                )}
                             </CardContent>
                         )}
                     </Card>

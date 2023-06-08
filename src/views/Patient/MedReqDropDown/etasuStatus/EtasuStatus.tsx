@@ -15,23 +15,14 @@ import { MedicationRequest, Patient } from 'fhir/r4';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
+import RemsMetEtasuResponse from './RemsMetEtasuResponse';
 import MetRequirements from './MetRequirements';
 import './EtasuStatus.css';
+import config from '../../../../config.json';
 
-
-export interface RemsMetEtasuResponse {
-    case_number: string,
-    drugCode: string,
-    drugName: string,
-    patientFirstname: string,
-    patientLastName: string,
-    patientDOB: string,
-    status: string,
-    metRequirements: MetRequirements[]
-}
 
 //TODO: move this to an environment variable / configuration file
-const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
+const REMS_ADMIN_SERVER_BASE = config.rems_server;
 
 interface EtasuStatusProps {
     patient: Patient | null
@@ -39,10 +30,11 @@ interface EtasuStatusProps {
     update: boolean
 }
 
-function EtasuStatus(props: EtasuStatusProps) {
+const EtasuStatus = (props: EtasuStatusProps) => {
 
     const [spin, setSpin] = useState<boolean>(false);
     const [remsAdminResponse, setRemsAdminResponse] = useState<RemsMetEtasuResponse | null>(null);
+
 
     useEffect(() => {
         if (props.update) {
@@ -57,9 +49,10 @@ function EtasuStatus(props: EtasuStatusProps) {
         const patientDOB = props.patient?.birthDate;
         const drugCode = props.medication?.medicationCodeableConcept?.coding?.at(0)?.code;
         console.log('refreshEtasuBundle: ' + patientFirstName + ' ' + patientLastName + ' - ' + patientDOB + ' - ' + drugCode);
+        const etasuUrl = `${REMS_ADMIN_SERVER_BASE}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
         axios({
             method: 'get',
-            url: `${REMS_ADMIN_SERVER_BASE}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`
+            url: etasuUrl
         })
         .then((response) => {
             console.log(response.data);
@@ -84,7 +77,7 @@ function EtasuStatus(props: EtasuStatusProps) {
             <Grid container columns={12}>
                 <Grid item xs={10}>
                     <div className='bundle-entry'>
-                        Case Number : {remsAdminResponse?.case_number || 'N/A'}
+                        Case Number: {remsAdminResponse?.case_number || 'N/A'}
                     </div>
                     <div className='bundle-entry'>
                         Status: {remsAdminResponse?.status || 'N/A'}
@@ -93,8 +86,8 @@ function EtasuStatus(props: EtasuStatusProps) {
                 <Grid item xs={2}>
                     <div className='bundle-entry'>
                         <Tooltip title='Refresh'>
-                            <IconButton onClick={refreshEtasuBundle}>
-                                <AutorenewIcon
+                            <IconButton onClick={refreshEtasuBundle} data-testid='refresh'>
+                                <AutorenewIcon data-testid='icon'
                                     className={spin === true ? 'refresh' : 'renew-icon'}
                                     onAnimationEnd={() => setSpin(false)}
                                 />
@@ -110,7 +103,7 @@ function EtasuStatus(props: EtasuStatusProps) {
                     { remsAdminResponse ? 
                     <List>
                         {remsAdminResponse?.metRequirements.map((metRequirements: MetRequirements) => 
-                            <ListItem disablePadding key={metRequirements.metRequirementId}>
+                            <ListItem disablePadding key={metRequirements.metRequirementId} data-testid='etasu-item'>
                                 <ListItemIcon>
                                     {metRequirements.completed ? 
                                         <CheckCircle color='success' /> 
@@ -119,7 +112,7 @@ function EtasuStatus(props: EtasuStatusProps) {
                                     }
                                 </ListItemIcon>
                                 {metRequirements.completed ? 
-                                    <ListItemText
+                                    <ListItemText 
                                         primary={metRequirements.requirementName}
                                         />
                                     : 
@@ -136,6 +129,6 @@ function EtasuStatus(props: EtasuStatusProps) {
             </div>
         </div>
     );
-}
+};
 
 export default EtasuStatus;

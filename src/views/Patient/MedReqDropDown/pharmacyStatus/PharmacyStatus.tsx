@@ -7,38 +7,12 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 import './PharmacyStatus.css';
-import MetRequirements from '../etasuStatus/MetRequirements';
+import DoctorOrder from './DoctorOrder';
+import config from '../../../../config.json';
 
-
-export interface DoctorOrder {
-    _id: string,
-    caseNumber: string,
-    patientName: string,
-    patientFirstName: string,
-    patientLastName: string,
-    patientDOB: string,
-    patientCity: string,
-    patientStateProvince: string,
-    patientPostalCode: string,
-    patientCountry: string,
-    doctorName: string,
-    doctorContact: string,
-    doctorID: string,
-    doctorEmail: string,
-    drugNames: string,
-    simpleDrugName: string,
-    rxDate: string,
-    drugPrice: number,
-    drugNdcCode: string,
-    quanitities: string,
-    total: number,
-    pickupDate: string,
-    dispenseStatus: string,
-    metRequirements: MetRequirements[]
-}
 
 //TODO: move this to an environment variable / configuration file
-const PIMS_SERVER_BASE = 'http://localhost:5051';
+const PIMS_SERVER_BASE = config.pharmacy_server;
 
 interface PharmacyStatusProps {
     patient: Patient | null
@@ -46,7 +20,7 @@ interface PharmacyStatusProps {
     update: boolean
 }
 
-function PharmacyStatus(props: PharmacyStatusProps) {
+const PharmacyStatus = (props: PharmacyStatusProps) => {
 
     const [spin, setSpin] = useState<boolean>(false);
     const [pimsResponse, setPimsResponse] = useState<DoctorOrder | null>(null);
@@ -70,14 +44,13 @@ function PharmacyStatus(props: PharmacyStatusProps) {
         if (ndcDrugCoding != undefined) {
             queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
         }
-        const url = `${PIMS_SERVER_BASE}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
-        console.log(url);
+        const pharmacyUrl = `${PIMS_SERVER_BASE}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
+        console.log(pharmacyUrl);
         axios({
             method: 'get',
-            url: url
+            url: pharmacyUrl
         })
         .then((response) => {
-            console.log(response.data);
             setPimsResponse(response.data);
         }, (error) => {
             console.log(error);
@@ -101,7 +74,7 @@ function PharmacyStatus(props: PharmacyStatusProps) {
             <Grid container columns={12}>
                 <Grid item xs={10}>
                     <div className='bundle-entry'>
-                        ID : {pimsResponse?._id || 'N/A'}
+                        ID: {pimsResponse?._id || 'N/A'}
                     </div>
                     <div className='bundle-entry'>
                         Status: {pimsResponse?.dispenseStatus || 'N/A'}
@@ -110,7 +83,7 @@ function PharmacyStatus(props: PharmacyStatusProps) {
                 <Grid item xs={2}>
                     <div className='bundle-entry'>
                         <Tooltip title='Refresh'>
-                            <IconButton onClick={refreshPharmacyBundle}>
+                            <IconButton onClick={refreshPharmacyBundle} data-testid='refresh'>
                                 <AutorenewIcon
                                     className={spin === true ? 'refresh' : 'renew-icon'}
                                     onAnimationEnd={() => setSpin(false)}
@@ -122,6 +95,6 @@ function PharmacyStatus(props: PharmacyStatusProps) {
             </Grid>
         </div>
     );
-}
+};
 
 export default PharmacyStatus;
