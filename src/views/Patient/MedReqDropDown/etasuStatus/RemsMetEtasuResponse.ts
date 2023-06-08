@@ -1,4 +1,4 @@
-import MetRequirements from "./MetRequirements";
+import MetRequirements from './MetRequirements';
 
 export interface RemsMetEtasuResponse {
     case_number: string,

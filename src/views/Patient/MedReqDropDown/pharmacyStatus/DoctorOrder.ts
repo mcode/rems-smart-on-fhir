@@ -1,4 +1,4 @@
-import MetRequirements from "../etasuStatus/MetRequirements";
+import MetRequirements from '../etasuStatus/MetRequirements';
 
 export interface DoctorOrder {
     _id: string,
