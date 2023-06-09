@@ -8,11 +8,10 @@ import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
+import { REMS_ADMIN_SERVER_BASE } from '../../../../config';
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
-
-const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 
 interface MedicationBundle {
     data: MedicationRequest[];
