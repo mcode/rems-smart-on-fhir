@@ -6,7 +6,8 @@ import nock from 'nock';
 import EtasuStatus from '../EtasuStatus';
 import RemsMetEtasuResponse from '../RemsMetEtasuResponse';
 import MetRequirements from '../MetRequirements';
-import config from '../../../../../config.json';
+
+const rems_admin_server_base = 'http://localhost:8090';
 
 const testPatient: Patient = {
     'resourceType': 'Patient',
@@ -113,7 +114,7 @@ describe('Test the EtasuStatus Component', () => {
     test('Loads data on start', async () => {
         let update: boolean = true;
 
-        const mockRequest = nock(config.rems_server);
+        const mockRequest = nock(rems_admin_server_base);
 
         // setup the mocks to handle the axios calls
         const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
@@ -143,7 +144,7 @@ describe('Test the EtasuStatus Component', () => {
     test('Update retrieves data', async () => {
         let update: boolean = false;
 
-        const mockRequest = nock(config.rems_server);
+        const mockRequest = nock(rems_admin_server_base);
 
         // render the module
         render(<EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
@@ -177,7 +178,7 @@ describe('Test the EtasuStatus Component', () => {
     test('Failed to load status', async () => {
         let update: boolean = false;
 
-        const mockRequest = nock(config.rems_server);
+        const mockRequest = nock(rems_admin_server_base);
 
         // render the module
         render(<EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);

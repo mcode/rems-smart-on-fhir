@@ -6,7 +6,8 @@ import nock from 'nock';
 import PharmacyStatus from '../PharmacyStatus';
 import DoctorOrder from '../DoctorOrder';
 import MetRequirements from '../../etasuStatus/MetRequirements';
-import config from '../../../../../config.json';
+
+const pharmacy_server_base = 'http://localhost:5051';
 
 const testPatient: Patient = {
     'resourceType': 'Patient',
@@ -128,7 +129,7 @@ describe('Test the PharmacyStatus Component', () => {
     test('Loads data on start', async () => {
         let update: boolean = true;
 
-        const mockRequest = nock(config.pharmacy_server);
+        const mockRequest = nock(pharmacy_server_base);
 
         // setup the mocks to handle the axios calls
         const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
@@ -165,7 +166,7 @@ describe('Test the PharmacyStatus Component', () => {
     test('Update retrieves data', async () => {
         let update: boolean = false;
 
-        const mockRequest = nock(config.pharmacy_server);
+        const mockRequest = nock(pharmacy_server_base);
 
         // render the module
         render(<PharmacyStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
@@ -205,7 +206,7 @@ describe('Test the PharmacyStatus Component', () => {
     test('Failed to load status', async () => {
         let update: boolean = true;
 
-        const mockRequest = nock(config.pharmacy_server);
+        const mockRequest = nock(pharmacy_server_base);
 
         // render the module
         render(<PharmacyStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
