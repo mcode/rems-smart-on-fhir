@@ -9,10 +9,10 @@ import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes'
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
 
+
+
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
-
-const REMS_ADMIN_SERVER_BASE = 'http://localhost:8090';
 
 interface MedicationBundle {
     data: MedicationRequest[];
@@ -49,11 +49,13 @@ function MedReqDropDown(props: any) {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
 
+
+
     //CDS-Hook Request to REMS-Admin for cards
     const buttonClickSubmitToREMS = () => {
         axios({
             method: 'post',
-            url: `${REMS_ADMIN_SERVER_BASE}/cds-services/rems-order-sign`,
+            url: `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}` +  `${process.env.REACT_APP_REMS_HOOKS_PATH}`,
             data: cdsHook
         })
             .then((response) => {
