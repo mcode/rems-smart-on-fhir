@@ -31,6 +31,9 @@ Following are a list of modifiable paths:
 | ----------- | ----------- |
 | REACT_APP_REMS_ADMIN_SERVER_BASE       | `http://localhost:8090`  |
 | REACT_APP_REMS_HOOKS_PATH   | `/cds-services/rems-order-sign`        |
+| REACT_APP_PHARMACY_SERVER_BASE       | `http://localhost:5051`  |
+| REACT_APP_ETASU_STATUS_ENABLED       | `true`  |
+| REACT_APP_PHARMACY_STATUS_ENABLED       | `true`  |
 | PORT   | `4040`|
 
  *Note that .env values can only be accessed by react app starting with `REACT_APP_`*

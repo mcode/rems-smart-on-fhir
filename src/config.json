@@ -1,6 +1,0 @@
-{
-    "rems_server": "http://localhost:8090",
-    "pharmacy_server": "http://localhost:5051",
-    "etasu_status_enabled": true,
-    "pharmacy_status_enabled": true 
-}
