@@ -8,7 +8,8 @@ import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
-import { REMS_ADMIN_SERVER_BASE, REMS_HOOKS_PATH } from '../../../../config';
+
+
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -54,7 +55,7 @@ function MedReqDropDown(props: any) {
     const buttonClickSubmitToREMS = () => {
         axios({
             method: 'post',
-            url: `${REMS_ADMIN_SERVER_BASE}` +  `${REMS_HOOKS_PATH}`,
+            url: `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}` +  `${process.env.REACT_APP_REMS_HOOKS_PATH}`,
             data: cdsHook
         })
             .then((response) => {
