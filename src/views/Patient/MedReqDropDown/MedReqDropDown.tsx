@@ -10,7 +10,6 @@ import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
-import config from '../../../config.json';
 
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -21,9 +20,6 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 
-
-//TODO: move this to an environment variable / configuration file
-const REMS_ADMIN_SERVER_BASE = config.rems_server;
 
 interface MedicationBundle {
     data: MedicationRequest[];
@@ -66,11 +62,13 @@ function MedReqDropDown(props: any) {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
 
+
+
     //CDS-Hook Request to REMS-Admin for cards
     const buttonClickSubmitToREMS = () => {
         axios({
             method: 'post',
-            url: `${REMS_ADMIN_SERVER_BASE}/cds-services/rems-order-sign`,
+            url: `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}` +  `${process.env.REACT_APP_REMS_HOOKS_PATH}`,
             data: cdsHook
         })
             .then((response) => {
@@ -148,6 +146,9 @@ function MedReqDropDown(props: any) {
         p: 4,
       };
 
+    const etasu_status_enabled: boolean = process.env.REACT_APP_ETASU_STATUS_ENABLED?.toLowerCase() === 'true' ? true : false;
+    const pharmacy_status_enabled: boolean = process.env.REACT_APP_PHARMACY_STATUS_ENABLED?.toLowerCase() === 'true' ? true : false;
+ 
     return (
         <div>
         <Box sx={{
@@ -199,10 +200,10 @@ function MedReqDropDown(props: any) {
                                     {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
-                                { config.etasu_status_enabled && (
+                                { etasu_status_enabled && (
                                     <Button variant='contained' onClick={handleOpenCheckETASU}>Check ETASU</Button>
                                 )}
-                                { config.pharmacy_status_enabled && (
+                                { pharmacy_status_enabled && (
                                     <Button variant='contained' onClick={handleOpenCheckPharmacy}>Check Pharmacy</Button>
                                 )}
                             </CardContent>

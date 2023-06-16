@@ -8,11 +8,7 @@ import { useState, useEffect } from 'react';
 
 import './PharmacyStatus.css';
 import DoctorOrder from './DoctorOrder';
-import config from '../../../../config.json';
 
-
-//TODO: move this to an environment variable / configuration file
-const PIMS_SERVER_BASE = config.pharmacy_server;
 
 interface PharmacyStatusProps {
     patient: Patient | null
@@ -44,7 +40,7 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
         if (ndcDrugCoding != undefined) {
             queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
         }
-        const pharmacyUrl = `${PIMS_SERVER_BASE}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
+        const pharmacyUrl = `${process.env.REACT_APP_PHARMACY_SERVER_BASE}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
         console.log(pharmacyUrl);
         axios({
             method: 'get',

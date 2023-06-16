@@ -18,11 +18,7 @@ import { useState, useEffect } from 'react';
 import RemsMetEtasuResponse from './RemsMetEtasuResponse';
 import MetRequirements from './MetRequirements';
 import './EtasuStatus.css';
-import config from '../../../../config.json';
 
-
-//TODO: move this to an environment variable / configuration file
-const REMS_ADMIN_SERVER_BASE = config.rems_server;
 
 interface EtasuStatusProps {
     patient: Patient | null
@@ -49,7 +45,7 @@ const EtasuStatus = (props: EtasuStatusProps) => {
         const patientDOB = props.patient?.birthDate;
         const drugCode = props.medication?.medicationCodeableConcept?.coding?.at(0)?.code;
         console.log('refreshEtasuBundle: ' + patientFirstName + ' ' + patientLastName + ' - ' + patientDOB + ' - ' + drugCode);
-        const etasuUrl = `${REMS_ADMIN_SERVER_BASE}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+        const etasuUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
         axios({
             method: 'get',
             url: etasuUrl
