@@ -125,7 +125,7 @@ function MedReqDropDown(props: any) {
 
     useEffect(() => {
         setselectedMedicationCardBundle({ resource: selectedMedicationCard });
-    }, [selectedOption, selectedMedicationCard]);
+    }, [ selectedMedicationCard]);
 
 
     useEffect(() => {
