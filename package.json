@@ -29,7 +29,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "PORT=4040 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -43,6 +43,11 @@
       "react-app",
       "react-app/jest"
     ]
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "axios": "axios/dist/node/axios.cjs"
+    }
   },
   "browserslist": {
     "production": [
@@ -59,6 +64,10 @@
   "devDependencies": {
     "@types/uuid": "^9.0.1",
     "prettier": "^2.0.2",
-    "eslint-config-prettier": "^6.10.1"
+    "eslint-config-prettier": "^6.10.1",
+    "jest": "^27.4.5",
+    "jest-extended": "^1.2.0",
+    "ts-jest": "^27.1.2",
+    "nock": "^13.2.9"
   }
 }

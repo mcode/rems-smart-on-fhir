@@ -15,6 +15,6 @@ const CdsHooksCards = (props: CdsHooksCardsProps) => {
             )}
         </div>
     );
-}
+};
 
 export default CdsHooksCards;

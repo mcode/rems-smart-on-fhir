@@ -21,6 +21,24 @@ Open [http://localhost:4040](http://localhost:4040) to view it in the browser.
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
+### How To Override Defaults
+The .env file contains the default URI paths, these can be overwritten from the start command as follows:
+ `REACT_APP_REMS_HOOKS_PATH=http://example.com PORT=6000 npm start`
+ 
+Following are a list of modifiable paths: 
+
+| URI Name      | Default |
+| ----------- | ----------- |
+| REACT_APP_REMS_ADMIN_SERVER_BASE       | `http://localhost:8090`  |
+| REACT_APP_REMS_HOOKS_PATH   | `/cds-services/rems-order-sign`        |
+| REACT_APP_PHARMACY_SERVER_BASE       | `http://localhost:5051`  |
+| REACT_APP_ETASU_STATUS_ENABLED       | `true`  |
+| REACT_APP_PHARMACY_STATUS_ENABLED       | `true`  |
+| PORT   | `4040`|
+
+ *Note that .env values can only be accessed by react app starting with `REACT_APP_`*
+
+
 ### `npm test`
 
 Launches the test runner in the interactive watch mode.\
