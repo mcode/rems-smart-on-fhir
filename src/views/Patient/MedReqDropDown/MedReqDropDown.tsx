@@ -92,7 +92,7 @@ function MedReqDropDown(props: any) {
     }, [selectedOption]);
 
     useEffect(() => {
-            buttonClickSubmitToREMS();
+        buttonClickSubmitToREMS();
     }, [cdsHook]);
 
     useEffect(() => {
