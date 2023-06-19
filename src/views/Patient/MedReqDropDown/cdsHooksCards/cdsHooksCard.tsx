@@ -16,7 +16,7 @@ import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTyp
 //  - look into using the fhir client directly instead of using axios
 
 interface CdsHooksCardProps {
-    card: HooksCard,
+    card: HooksCard
     client: Client
 }
 
@@ -27,30 +27,30 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     useEffect(() => {
         modifySmartLaunchURLs(props.card).then((updatedLinks) => {
             setLinks(updatedLinks);
-            console.log("CdsHooksCard::useEffect: updated all of the smart links for: " + props.card?.summary);
+            console.log('CdsHooksCard::useEffect: updated all of the smart links for: ' + props.card?.summary);
         });
 
-    }, [props.card])
+    }, [props.card]);
 
     function retrieveLaunchContext(client: Client, link: Link) {
 
-        var patientId = client?.patient?.id;
-        var accessToken = client?.state?.tokenResponse?.access_token;
-        var fhirBaseUrl = client?.state?.serverUrl;
+        const patientId = client?.patient?.id;
+        const accessToken = client?.state?.tokenResponse?.access_token;
+        const fhirBaseUrl = client?.state?.serverUrl;
 
         return new Promise<Link>((resolve, reject) => {
             const headers = accessToken ?
             {
-                "Accept": 'application/json',
-                "Authorization": `Bearer ${accessToken}`
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
             }
             :
             {        
-                "Accept": 'application/json'
+                'Accept': 'application/json'
             };
             const launchParameters = {
                 patient: patientId,
-                appContext: ""
+                appContext: ''
             };
         
             if (link.appContext) {
@@ -68,7 +68,7 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
                 },
             }).then((result) => {
                 if (result.data && Object.prototype.hasOwnProperty.call(result.data, 'launch_id')) {
-                    let baseUrl = link.url.split("?")[0];
+                    let baseUrl = link.url.split('?')[0];
                     if (baseUrl.indexOf('?') < 0) {
                         baseUrl += '?';
                     } else {
@@ -77,7 +77,7 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
                     baseUrl += `launch=${result.data.launch_id}`;
                     baseUrl += `&iss=${fhirBaseUrl}`;
                     link.url = baseUrl;
-                    console.log("CdsHooksCard::retrieveLaunchContext: resolved link for: " + link.label);
+                    console.log('CdsHooksCard::retrieveLaunchContext: resolved link for: ' + link.label);
                     return resolve(link);
                 }
                 console.error('FHIR server endpoint did not return a launch_id to launch the SMART app. See network calls to the Launch endpoint for more details');
@@ -90,24 +90,24 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     }
 
     const buttonClickAction = (link: Link) => {
-        console.log("CdsHooksCard::buttonClickAction(" + link.type + "): " + link.label);
-        if (link.type === "absolute") {
-            console.log("    launch: " + link.url);
-        } else if (link.type === "smart") {
-            console.log("    launch: " + link.url.split("?")[0]);
+        console.log('CdsHooksCard::buttonClickAction(' + link.type + '): ' + link.label);
+        if (link.type === 'absolute') {
+            console.log('    launch: ' + link.url);
+        } else if (link.type === 'smart') {
+            console.log('    launch: ' + link.url.split('?')[0]);
         }
         window.open(link.url, '_blank');
     };
 
     function modifySmartLaunchURLs(card: HooksCard) {
-        return new Promise<Link[]>((resolve, reject) => {
+        return new Promise<Link[]>((resolve) => {
 
-            let promises: Promise<Link>[] = [];
-            let outputLinks: Link[] = [];
+            const promises: Promise<Link>[] = [];
+            const outputLinks: Link[] = [];
             card?.links?.map((link: Link) => {
-                if (link.type === "smart") {
+                if (link.type === 'smart') {
                     promises.push(retrieveLaunchContext(props.client, link));
-                } else if (link.type === "absolute") {
+                } else if (link.type === 'absolute') {
                     outputLinks.push(link);
                 }
                 return undefined;
@@ -124,33 +124,33 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
             });
 
         });
-    };
+    }
 
     return (
         <div>
-            <Card variant="outlined">
+            <Card variant='outlined'>
                 <React.Fragment>
                     <CardContent>
-                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                        <Typography sx={{ fontSize: 14 }} color='text.secondary' gutterBottom>
                             Summary
                         </Typography>
-                        <Typography variant="h5" component="div">
+                        <Typography variant='h5' component='div'>
                             {props.card?.summary}
                         </Typography>
-                        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                        <Typography sx={{ fontSize: 14 }} color='text.secondary' gutterBottom>
                             Details
                         </Typography>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                             {props.card?.detail}
                         </Typography>
-                        <Typography sx={{ fontSize: 10 }} color="text.secondary" gutterBottom>
+                        <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
                             Source <a href={props.card?.source?.url}>{props.card?.source?.label}</a>
                         </Typography>
                     </CardContent>
                     <CardActions>
                         {
                             links.map((link:Link) => 
-                               <Button key={link?.label} size="small" onClick={() => buttonClickAction(link)}>{link?.label}</Button>
+                               <Button key={link?.label} size='small' onClick={() => buttonClickAction(link)}>{link?.label}</Button>
                             )
                         }
                     </CardActions>
@@ -158,6 +158,6 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
             </Card>
         </div>
     );
-}
+};
 
 export default CdsHooksCard;

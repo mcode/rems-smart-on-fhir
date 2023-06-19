@@ -65,6 +65,6 @@ function PatientView(props: PatientViewProps) {
 
     </div>
   );
-};
+}
 
 export default PatientView;

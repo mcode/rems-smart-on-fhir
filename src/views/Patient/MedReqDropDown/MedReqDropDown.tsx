@@ -1,5 +1,7 @@
-import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from '@mui/material';
+import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography, Modal } from '@mui/material';
 import Box from '@mui/material/Box';
+
+
 import axios from 'axios';
 import { BundleEntry, Patient, MedicationRequest } from 'fhir/r4';
 import { useEffect, useState } from 'react';
@@ -9,10 +11,15 @@ import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes'
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
 
-
-
 // Adding in cards 
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
+
+// Adding in ETASU
+import EtasuStatus from './etasuStatus/EtasuStatus';
+
+// Adding in Pharmacy
+import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
+
 
 interface MedicationBundle {
     data: MedicationRequest[];
@@ -45,6 +52,12 @@ function MedReqDropDown(props: any) {
     //Cards
     const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
 
+    //ETASU 
+    const [showEtasu, setShowEtasu] = useState<boolean>(false);
+
+    // Pharmacy
+    const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
+
     useEffect(() => {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
@@ -64,6 +77,22 @@ function MedReqDropDown(props: any) {
             }, (error) => {
                 console.log(error);
             });
+    };
+
+    const handleOpenCheckETASU = () => {
+        setShowEtasu(true);
+    };
+
+    const handleCloseCheckETASU = () => {
+        setShowEtasu(false);
+    };
+
+    const handleOpenCheckPharmacy = () => {
+        setShowPharmacy(true);
+    };
+
+    const handleCloseCheckPharmacy = () => {
+        setShowPharmacy(false);
     };
 
     // MedicationRequest Prefectching Bundle
@@ -105,8 +134,23 @@ function MedReqDropDown(props: any) {
         }
     }, [patient, client, selectedMedicationCardBundle]);
 
+    const modal_style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        border: '1px solid #000',
+        boxShadow: 24,
+        p: 4,
+      };
 
+    const etasu_status_enabled: boolean = process.env.REACT_APP_ETASU_STATUS_ENABLED?.toLowerCase() === 'true' ? true : false;
+    const pharmacy_status_enabled: boolean = process.env.REACT_APP_PHARMACY_STATUS_ENABLED?.toLowerCase() === 'true' ? true : false;
+ 
     return (
+        <div>
         <Box sx={{
             marginTop: 8,
             display: 'flex',
@@ -118,7 +162,7 @@ function MedReqDropDown(props: any) {
                     <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
                         <CardContent>
                             <Typography sx={{ fontSize: 17 }} color='text.secondary' gutterBottom component='div'>
-                                New Medication Request:
+                                Select Medication Request:
                             </Typography>
                             <FormControl sx={{ minWidth: 300, mt: 1 }}>
                                 <InputLabel id='dropdown-label'>Select Medication</InputLabel>
@@ -156,13 +200,40 @@ function MedReqDropDown(props: any) {
                                     {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
                                 <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
-                                <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
+                                { etasu_status_enabled && (
+                                    <Button variant='contained' onClick={handleOpenCheckETASU}>Check ETASU</Button>
+                                )}
+                                { pharmacy_status_enabled && (
+                                    <Button variant='contained' onClick={handleOpenCheckPharmacy}>Check Pharmacy</Button>
+                                )}
                             </CardContent>
                         )}
+                    </Card>
+                    <Card>
+                        <CardContent>
+                            <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
+                        </CardContent>
                     </Card>
                 </div>
             </div>
         </Box >
+        <Modal
+            open={showEtasu}
+            onClose={handleCloseCheckETASU}
+        >
+            <Box sx={modal_style}>
+                <EtasuStatus patient={patient} medication={selectedMedicationCard} update={showEtasu}></EtasuStatus>
+            </Box>
+        </Modal>
+        <Modal
+            open={showPharmacy}
+            onClose={handleCloseCheckPharmacy}
+        >
+            <Box sx={modal_style}>
+                <PharmacyStatus patient={patient} medication={selectedMedicationCard} update={showPharmacy}></PharmacyStatus>
+            </Box>
+        </Modal>
+        </div>
     );
 }
 
