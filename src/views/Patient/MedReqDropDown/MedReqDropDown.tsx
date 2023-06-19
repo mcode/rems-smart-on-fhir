@@ -66,7 +66,7 @@ function MedReqDropDown(props: any) {
     }, []);
 
     //CDS-Hook Request to REMS-Admin for cards
-    const buttonClickSubmitToREMS = () => {
+    const SubmitToREMS = () => {
         axios({
             method: 'post',
             url: `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}` + `${process.env.REACT_APP_REMS_HOOKS_PATH}`,
@@ -81,7 +81,7 @@ function MedReqDropDown(props: any) {
     };
 
     useEffect(() => {
-        buttonClickSubmitToREMS();
+        SubmitToREMS();
     }, [cdsHook]);
 
     const handleOpenCheckETASU = () => {
@@ -137,7 +137,7 @@ function MedReqDropDown(props: any) {
                 setCDSHook(tempHook);
             });
         }
-    }, [patient, client, selectedMedicationCardBundle]);
+    }, [ selectedMedicationCardBundle]);
 
     const modal_style = {
         position: 'absolute',
