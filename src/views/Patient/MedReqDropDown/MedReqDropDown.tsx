@@ -81,7 +81,9 @@ function MedReqDropDown(props: any) {
     };
 
     useEffect(() => {
-        SubmitToREMS();
+        if (cdsHook) {
+            SubmitToREMS();
+        }
     }, [cdsHook]);
 
     const handleOpenCheckETASU = () => {
@@ -115,21 +117,25 @@ function MedReqDropDown(props: any) {
             });
     };
 
-    const [selectedMedicationCardBundle, setselectedMedicationCardBundle] = useState<BundleEntry<MedicationRequest>>({});
+    const [selectedMedicationCardBundle, setselectedMedicationCardBundle] = useState<BundleEntry<MedicationRequest>>();
 
     const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
 
     useEffect(() => {
-        setselectedMedicationCard(medication?.data.find((medication) => medication.id === selectedOption));
+        if (selectedOption != '') {
+            setselectedMedicationCard(medication?.data.find((medication) => medication.id === selectedOption));
+        }
     }, [selectedOption]);
 
     useEffect(() => {
-        setselectedMedicationCardBundle({ resource: selectedMedicationCard });
+        if (selectedMedicationCard) {
+            setselectedMedicationCardBundle({ resource: selectedMedicationCard });
+        }
     }, [ selectedMedicationCard]);
 
 
     useEffect(() => {
-        if (patient && patient.id && client.user.id) {
+        if (patient && patient.id && client.user.id && selectedMedicationCardBundle) {
             const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
             const tempHook = hook.generate();
 
