@@ -21,7 +21,7 @@ interface MedicationBundle {
 
 function MedReqDropDown(props: any) {
     const client = props.client;
-
+    
     function getFhirResource(token: string) {
         console.log('getFhirResource: ' + token);
         return props.client.request(token).then((e: any) => {
@@ -84,8 +84,16 @@ function MedReqDropDown(props: any) {
     const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
 
     useEffect(() => {
+        getMedicationRequest();
+    },[]);
+
+    useEffect(() => {
         setselectedMedicationCard(medication?.data.find((medication) => medication.id === selectedOption));
     }, [selectedOption]);
+
+    useEffect(() => {
+            buttonClickSubmitToREMS();
+    }, [cdsHook]);
 
     useEffect(() => {
         setselectedMedicationCardBundle({ resource: selectedMedicationCard });
@@ -124,8 +132,6 @@ function MedReqDropDown(props: any) {
                                     labelId='dropdown-label'
                                     id='dropdown'
                                     value={selectedOption}
-                                    // TODO: --> onOpen might not be the best used here since it needs to be called twice to correctly return values
-                                    onOpen={getMedicationRequest}
                                     onChange={handleOptionSelect}
                                 >
                                     <MenuItem value=''>
@@ -153,7 +159,6 @@ function MedReqDropDown(props: any) {
                                 <Typography variant='h6' sx={{ bgcolor: 'text.disabled', color: 'white', textAlign: 'center' }} color='textSecondary' gutterBottom>
                                     {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
                                 </Typography>
-                                <Button variant='contained' onClick={buttonClickSubmitToREMS}>Submit To REMS-Admin</Button>
                                 <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
                             </CardContent>
                         )}
