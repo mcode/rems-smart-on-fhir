@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 import { Button, Card, CardActions, CardContent, Typography } from '@mui/material';
 
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
 
 import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTypes';
+import { SmartApp } from '../../../Questionnaire/SmartApp';
 
 
 // TODO: 
@@ -16,8 +17,9 @@ import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTyp
 //  - look into using the fhir client directly instead of using axios
 
 interface CdsHooksCardProps {
-    card: HooksCard
-    client: Client
+    card: HooksCard,
+    client: Client,
+    tabCallback: (n: ReactElement, m: string) => void
 }
 
 const CdsHooksCard = (props: CdsHooksCardProps) => {
@@ -40,23 +42,23 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
 
         return new Promise<Link>((resolve, reject) => {
             const headers = accessToken ?
-            {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${accessToken}`
-            }
-            :
-            {        
-                'Accept': 'application/json'
-            };
+                {
+                    "Accept": 'application/json',
+                    "Authorization": `Bearer ${accessToken}`
+                }
+                :
+                {
+                    "Accept": 'application/json'
+                };
             const launchParameters = {
                 patient: patientId,
                 appContext: ''
             };
-        
+
             if (link.appContext) {
                 launchParameters.appContext = link.appContext;
             }
-        
+
             // May change when the launch context creation endpoint becomes a standard endpoint for all EHR providers
             axios({
                 method: 'post',
@@ -90,13 +92,15 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     }
 
     const buttonClickAction = (link: Link) => {
-        console.log('CdsHooksCard::buttonClickAction(' + link.type + '): ' + link.label);
-        if (link.type === 'absolute') {
-            console.log('    launch: ' + link.url);
-        } else if (link.type === 'smart') {
-            console.log('    launch: ' + link.url.split('?')[0]);
+        console.log("CdsHooksCard::buttonClickAction(" + link.type + "): " + link.label);
+        if (link.type === "absolute") {
+            console.log("    launch: " + link.url);
+            window.open(link.url, '_blank');
+        } else if (link.type === "smart") {
+            console.log("    launch: " + link.url.split("?")[0]);
+            console.log(link)
+            props.tabCallback(<SmartApp smartClient={props.client} standalone={false} patientId={props.client.getPatientId() || ""}></SmartApp>, "Test")
         }
-        window.open(link.url, '_blank');
     };
 
     function modifySmartLaunchURLs(card: HooksCard) {
@@ -149,8 +153,8 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
                     </CardContent>
                     <CardActions>
                         {
-                            links.map((link:Link) => 
-                               <Button key={link?.label} size='small' onClick={() => buttonClickAction(link)}>{link?.label}</Button>
+                            links.map((link: Link) =>
+                                <Button key={link?.label} size="small" onClick={() => buttonClickAction(link)}>{link?.label}</Button>
                             )
                         }
                     </CardActions>

@@ -1,12 +1,13 @@
 import { Box, Card, CardContent, Typography } from '@mui/material';
 import { Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
 import './PatientView.css';
 
 interface PatientViewProps {
-  client: Client
+  client: Client,
+  tabCallback: (n: ReactElement, m: string) => void
 }
 
 function PatientView(props: PatientViewProps) {
@@ -57,7 +58,7 @@ function PatientView(props: PatientViewProps) {
           </Card>
           : <h1>Loading...</h1>}
 
-        {client ? <MedReqDropDown client={client} />
+        {client ? <MedReqDropDown client={client} tabCallback={props.tabCallback} />
           :
           <p>Loading Medication Request...</p>
         }

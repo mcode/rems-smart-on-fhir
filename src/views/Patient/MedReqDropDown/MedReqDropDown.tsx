@@ -2,7 +2,8 @@ import { Button, Card, CardContent, FormControl, InputLabel, MenuItem, Select, S
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import { BundleEntry, Patient, MedicationRequest } from 'fhir/r4';
-import { useEffect, useState } from 'react';
+import Client from 'fhirclient/lib/Client';
+import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
@@ -24,7 +25,11 @@ interface MedicationBundle {
     reference: Patient;
 }
 
-function MedReqDropDown(props: any) {
+interface MedReqDropDownProps {
+    tabCallback: (n: ReactElement, m: string) => void
+    client: Client
+}
+function MedReqDropDown(props: MedReqDropDownProps) {
     const client = props.client;
 
     function getFhirResource(token: string) {
@@ -237,7 +242,7 @@ function MedReqDropDown(props: any) {
                         {selectedOption ?
                             <Card>
                                 <CardContent>
-                                    <CdsHooksCards cards={hooksCards} client={client}></CdsHooksCards>
+                                    <CdsHooksCards cards={hooksCards} client={client} tabCallback={props.tabCallback}></CdsHooksCards>
                                 </CardContent>
                             </Card>
                             : <p></p>}
