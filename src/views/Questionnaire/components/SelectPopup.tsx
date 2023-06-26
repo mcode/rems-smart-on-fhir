@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { List, ListItemButton, ListItemText, DialogTitle, Dialog } from "@mui/material";
+import React, { useEffect, useState } from 'react';
+import { List, ListItemButton, ListItemText, DialogTitle, Dialog } from '@mui/material';
 
 interface SimpleDialogProps {
-  onClose: (n: string) => void
-  open: boolean
-  selectedValue: string
-  title: string
-  options: string[]
-  finalOption: string
+  onClose: (n: string) => void;
+  open: boolean;
+  selectedValue: string;
+  title: string;
+  options: string[];
+  finalOption: string;
 }
 
 function SimpleDialog(props: SimpleDialogProps) {
@@ -25,7 +25,7 @@ function SimpleDialog(props: SimpleDialogProps) {
     <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle id="simple-dialog-title">{title}</DialogTitle>
       <List>
-        {options.map((option) => (
+        {options.map(option => (
           <ListItemButton onClick={() => handleListItemClick(option)} key={option}>
             <ListItemText primary={option} />
           </ListItemButton>
@@ -40,29 +40,29 @@ function SimpleDialog(props: SimpleDialogProps) {
 }
 
 interface SelectPopupProps {
-  selectedCallback: (n: string) => void
-  open: boolean
-  title: string
-  options: string[]
-  finalOption: string
+  selectedCallback: (n: string) => void;
+  open: boolean;
+  title: string;
+  options: string[];
+  finalOption: string;
 }
 
 function SelectPopup(props: SelectPopupProps) {
-  const propOpen = props.open
-  const selectedCallback = props.selectedCallback
-  const {title, options, finalOption} = props
-  const [open, setOpen] = useState<boolean>(false)
-  const [selectedValue, setSelectedValue] = useState<string>("")
+  const propOpen = props.open;
+  const selectedCallback = props.selectedCallback;
+  const { title, options, finalOption } = props;
+  const [open, setOpen] = useState<boolean>(false);
+  const [selectedValue, setSelectedValue] = useState<string>('');
 
   useEffect(() => {
-    setOpen(propOpen)
-  }, [propOpen])
+    setOpen(propOpen);
+  }, [propOpen]);
 
   const handleClose = (value: string) => {
-    setOpen(false)
-    setSelectedValue(value)
+    setOpen(false);
+    setSelectedValue(value);
     selectedCallback(value);
-  }
+  };
   return (
     <div>
       <SimpleDialog
@@ -77,6 +77,4 @@ function SelectPopup(props: SelectPopupProps) {
   );
 }
 
-export {
-  SelectPopup
-}
+export { SelectPopup };

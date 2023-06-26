@@ -7,9 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import FHIR from 'fhirclient';
 import Client from 'fhirclient/lib/Client';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 const smartLaunch = () => {
   FHIR.oauth2

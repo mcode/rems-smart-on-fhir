@@ -38,45 +38,63 @@ function TabPanel(props: TabPanelProps) {
 function tabProps(index: number) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`
   };
 }
 interface AppProps {
-  client: Client
+  client: Client;
 }
 interface SmartTab {
-  element: ReactElement
-  name: string
+  element: ReactElement;
+  name: string;
 }
 function App(props: AppProps) {
   const client = props.client;
   const [value, setValue] = useState(0);
-  const [tabs, setTabs] = useState<SmartTab[]>([])
+  const [tabs, setTabs] = useState<SmartTab[]>([]);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
   const addTab = (element: ReactElement, tabName: string) => {
-    console.log(tabName)
-  }
-  useEffect(()=>{
-    setTabs([{element: <Patient client={client} tabCallback={addTab}/>, name: "Home"}, {element: <p>henlo</p>, name: "Patient Enrollment Form"}])
-  }, [])
-
+    console.log(tabName);
+  };
+  useEffect(() => {
+    setTabs([
+      { element: <Patient client={client} tabCallback={addTab} />, name: 'Home' },
+      { element: <p>henlo</p>, name: 'Patient Enrollment Form' }
+    ]);
+  }, []);
 
   return (
-    <Box className='main'>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', position: 'fixed', width: '100%', bgcolor: 'background.paper'}}>
-        <Tabs orientation="horizontal" variant="scrollable" value={value} onChange={handleChange} aria-label="tabs">
+    <Box className="main">
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          position: 'fixed',
+          width: '100%',
+          bgcolor: 'background.paper'
+        }}
+      >
+        <Tabs
+          orientation="horizontal"
+          variant="scrollable"
+          value={value}
+          onChange={handleChange}
+          aria-label="tabs"
+        >
           {tabs.map((tab, i) => {
-            return <Tab label={tab.name} {...tabProps(i)} key={i} />
+            return <Tab label={tab.name} {...tabProps(i)} key={i} />;
           })}
         </Tabs>
       </Box>
-      <div style={{"paddingTop": "48px"}}>
+      <div style={{ paddingTop: '48px' }}>
         {tabs.map((tab, i) => {
-          return <TabPanel value={value} index={i} key={i}>
-            {tab.element}
-          </TabPanel>
+          return (
+            <TabPanel value={value} index={i} key={i}>
+              {tab.element}
+            </TabPanel>
+          );
         })}
       </div>
       {/* <div className='App'>
@@ -89,7 +107,7 @@ function App(props: AppProps) {
           </div>
         </Container>
       </div> */}
-    </Box >
+    </Box>
   );
 }
 
