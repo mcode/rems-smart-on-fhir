@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import './index.css';
 import App from './App';
@@ -22,12 +21,7 @@ const smartLaunch = () => {
       console.log(client);
       root.render(
         <React.StrictMode>
-          <BrowserRouter>
-            <Routes>
-              <Route index element={<App client={client} />}></Route>
-              {/* <Route path="launch" element={<SmartLaunch />}></Route> */}
-            </Routes>
-          </BrowserRouter>
+          <App client={client} />
         </React.StrictMode>
       );
     });
