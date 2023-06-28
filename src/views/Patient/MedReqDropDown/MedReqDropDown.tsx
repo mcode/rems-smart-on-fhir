@@ -135,8 +135,21 @@ function MedReqDropDown(props: any) {
 
 
     useEffect(() => {
-        if (patient && patient.id && client.user.id && selectedMedicationCardBundle) {
-            const hook = new OrderSign(patient.id, client.user.id, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
+        // get the userId from the client if possible, otherwise pull it from the appContext
+        let userId = client.user.id;
+        if (!userId) {
+            const appContextString = client.state?.tokenResponse?.appContext;
+            console.log('appContext: ' + appContextString);
+            const appContext: { [key: string]: string } = {};
+            appContextString.split('&').map((e: string)=>{
+                const temp: string[] = e.split('=');
+                appContext[temp[0]] = temp[1];
+            });
+            userId = appContext?.user;
+        }
+
+        if (patient && patient.id && userId && selectedMedicationCardBundle) {
+            const hook = new OrderSign(patient.id, userId, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
             const tempHook = hook.generate();
 
             hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
