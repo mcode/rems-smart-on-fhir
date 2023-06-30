@@ -1,4 +1,4 @@
-import cql from 'cql-execution';
+import cql, { Results } from 'cql-execution';
 import cqlfhir, { PatientSource } from 'cql-exec-fhir';
 import buildPopulatedResourceBundle from './buildPopulatedResourceBundle';
 import Client from 'fhirclient/lib/Client';
@@ -37,7 +37,7 @@ function executeElm(
           console.log('Fetched resources are in this bundle:', resourceBundle);
           patientSource.loadBundles([resourceBundle]);
           const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
-          const results = {
+          const results: ExecutionOutput = {
             libraryName: executionInputs.elm.library.identifier.id,
             bundle: resourceBundle,
             elmResults: elmResults
@@ -96,7 +96,7 @@ function executeElmAgainstPatientSource(
 
   const codeService = new cql.CodeService(executionInputs.valueSetDB);
   const executor = new cql.Executor(lib, codeService, executionInputs.parameters);
-  return executor.exec(patientSource).then(results => {
+  return executor.exec(patientSource).then((results: Results) => {
     return results.patientResults[Object.keys(results.patientResults)[0]];
   });
 }
