@@ -7,33 +7,11 @@ import Patient from './views/Patient/PatientView';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, memo, useEffect, useMemo, useState } from 'react';
+import { MemoizedTabPanel } from './TabDisplay';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
 
 function tabProps(index: number) {
   return {
@@ -56,12 +34,12 @@ function App(props: AppProps) {
     setValue(newValue);
   };
   const addTab = (element: ReactElement, tabName: string) => {
-    console.log(tabName);
+    setTabs(oldTabs => [...oldTabs, { element: element, name: tabName }]);
   };
   useEffect(() => {
     setTabs([
       { element: <Patient client={client} tabCallback={addTab} />, name: 'Home' },
-      { element: <p>henlo</p>, name: 'Patient Enrollment Form' }
+      // { element: <p>henlo</p>, name: 'Patient Enrollment Form' }
     ]);
   }, []);
 
@@ -72,6 +50,7 @@ function App(props: AppProps) {
           borderBottom: 1,
           borderColor: 'divider',
           position: 'fixed',
+          zIndex: '100',
           width: '100%',
           bgcolor: 'background.paper'
         }}
@@ -91,9 +70,9 @@ function App(props: AppProps) {
       <div style={{ paddingTop: '48px' }}>
         {tabs.map((tab, i) => {
           return (
-            <TabPanel value={value} index={i} key={i}>
-              {tab.element}
-            </TabPanel>
+              <MemoizedTabPanel value={value} index={i} key={i} name={tab.name}>
+                {tab.element}
+              </MemoizedTabPanel>
           );
         })}
       </div>

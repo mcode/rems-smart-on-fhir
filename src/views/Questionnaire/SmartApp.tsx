@@ -27,11 +27,13 @@ import {
 import executeElm from './elm/executeElm';
 import PatientSelect from './components/PatientSelect/PatientSelect';
 import RemsInterface from './components/RemsInterface/RemsInterface';
+import { createRoot } from 'react-dom/client';
 
 interface SmartAppProps {
   standalone: boolean;
   patientId: string;
   smartClient: Client;
+  appContext?: AppContext
 }
 export type OrderResource = DeviceRequest | MedicationRequest | ServiceRequest | MedicationDispense;
 export type LogType = 'infoClass' | 'errorClass' | 'warningClass';
@@ -98,7 +100,7 @@ export function SmartApp(props: SmartAppProps) {
   const [errors, setErrors] = useState<LogEntry[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
-  const [appContext, setAppContext] = useState<AppContext | null>(null);
+  const [appContext, setAppContext] = useState<AppContext | undefined>(props.appContext);
   const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
   const [remsAdminResponse, setRemsAdminResponse] = useState<any | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
@@ -116,6 +118,11 @@ export function SmartApp(props: SmartAppProps) {
   const toggleOverlay = () => {
     setShowOverlay(!showOverlay);
   };
+  useEffect(() => {
+    if(!props.standalone){
+      ehrLaunch(false)
+    }
+  }, [])
   useEffect(() => {
     // TODO: this could be redone like in original DTR to have a big fancy display for errors but I don't think it's necessary or useful.
     // The previous version was persistent at the top of the page.  An alert gets the job done just fine.
@@ -139,13 +146,15 @@ export function SmartApp(props: SmartAppProps) {
       }
     });
   };
-  const ehrLaunch = (isContainedQuestionnaire: boolean, questionnaire: Questionnaire | null) => {
+  const ehrLaunch = (isContainedQuestionnaire: boolean, questionnaire?: Questionnaire | null) => {
+    console.log("ehr launching")
+    console.log(appContext)
     if (appContext) {
       const acOrder = appContext?.order;
       const acCoverage = appContext?.coverage;
       const acQuestionnaire = appContext?.questionnaire;
       const acResponse = appContext?.response;
-      if (isContainedQuestionnaire && questionnaire) {
+      if (isContainedQuestionnaire && questionnaire && acOrder && acCoverage && acQuestionnaire) {
         // TODO: This is a workaround for getting adaptive forms to work
         // in its current form, adaptive forms do not operate with the
         // package operation
@@ -421,7 +430,7 @@ export function SmartApp(props: SmartAppProps) {
 
               consoleLog('executing elm', 'infoClass');
               console.log('executing elm');
-              return executeElm(smart, FHIR_VERSION, orderResource, executionInputs, consoleLog);
+              return executeElm(smart, FHIR_VERSION, orderResourceArtifact, executionInputs, consoleLog);
             })
           );
         })
@@ -594,7 +603,8 @@ export function SmartApp(props: SmartAppProps) {
         </div>
       </div>
     );
-    ReactDOM.render(element, ref);
+    const root = createRoot(ref)
+    root.render(element);
   };
   // render
   if (

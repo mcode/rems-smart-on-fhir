@@ -5,16 +5,16 @@ body {
   }
 
   .left-form { 
-    width: 48%;
-    float: left;
+    width: 46%;
+    display: inline-block;
     margin-top: 25px;
     margin-left: 25px;
     padding: 5px;
   }
 
   .right-form { 
-    width: 48%;
-    float: right;
+    width: 46%;
+    display:inline-block;
     margin-top: 25px;
     margin-left: 25px;
     padding: 5px;

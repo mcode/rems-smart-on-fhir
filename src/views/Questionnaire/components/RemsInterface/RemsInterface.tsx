@@ -217,7 +217,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
       <div>
         {hasRemsCase ? (
           <div>
-            <div className="container left-form">
+            <div className="left-form">
               <h1>REMS Admin Status</h1>
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: color }}></div>
@@ -296,7 +296,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           </div>
         ) : (
           <div>
-            <div className="container left-form">
+            <div className="left-form">
               <h1>Prescriber Document Status</h1>
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: '#5cb85c' }}></div>

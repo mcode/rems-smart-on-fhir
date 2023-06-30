@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import axios from 'axios';
-import { BundleEntry, Patient, MedicationRequest } from 'fhir/r4';
+import { BundleEntry, Patient, MedicationRequest, Practitioner } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
@@ -29,6 +29,7 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
+import sendRx from './rxSend/rxSend';
 
 interface MedicationBundle {
   data: MedicationRequest[];
@@ -59,10 +60,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   //Prefetch
   const [patient, setPatient] = useState<Patient | null>(null);
 
-    const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<string | null>(null);
 
-    //CDSHooks
-    const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+  const [practitioner, setPractitioner] = useState<Practitioner | null>(null)
+
+  //CDSHooks
+  const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
   //Cards
   const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
@@ -73,8 +76,18 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
 
+  const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false)
   useEffect(() => {
     client.patient.read().then((patient: any) => setPatient(patient));
+    client.user.read().then((response) => {
+      try {
+        const practitioner = response as Practitioner;
+        setPractitioner(practitioner)
+      } catch(e) {
+        console.log("Failed to get practitioner")
+        console.log(e)
+      }
+    });
   }, [client.patient, client]);
 
   useEffect(() => {
@@ -138,6 +151,13 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     setShowPharmacy(false);
   };
 
+  const handleSendRx = () => {
+    const med = selectedMedicationCardBundle?.resource;
+    if(med && patient && practitioner){
+      sendRx(patient, practitioner, med)
+    }
+  }
+
   // MedicationRequest Prefectching Bundle
   const [medication, setMedication] = useState<MedicationBundle | null>(null);
 
@@ -182,6 +202,14 @@ function MedReqDropDown(props: MedReqDropDownProps) {
       });
     }
   }, [selectedMedicationCardBundle]);
+
+  useEffect(() => {
+    if(patient && practitioner && selectedMedicationCardBundle){
+      setSendRxEnabled(true)
+    } else{ 
+      setSendRxEnabled(false)
+    }
+  }, [patient, practitioner, selectedMedicationCardBundle])
 
   const modal_style = {
     position: 'absolute',
@@ -282,6 +310,11 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                   {pharmacy_status_enabled && (
                     <Button variant="contained" onClick={handleOpenCheckPharmacy}>
                       Check Pharmacy
+                    </Button>
+                  )}
+                  {sendRxEnabled && (
+                    <Button variant="contained" onClick={handleSendRx}>
+                      Send RX to PIMS
                     </Button>
                   )}
                 </CardContent>

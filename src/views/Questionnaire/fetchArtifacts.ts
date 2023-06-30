@@ -1,6 +1,7 @@
 import { checkOrderType, isRequestReference } from './questionnaireUtil';
 import Client from 'fhirclient/lib/Client';
 import { Elm, LogType } from './SmartApp';
+import {Buffer} from 'buffer';
 import {
   Bundle,
   BundleEntry,

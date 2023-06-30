@@ -14,10 +14,10 @@ interface MyObject {
 }
 
 export interface AppContext {
-  questionnaire: string;
-  response: string;
-  order: string;
-  coverage: string;
+  questionnaire?: string;
+  response?: string;
+  order?: string;
+  coverage?: string;
 }
 // to get FHIR properties of the form answer{whatever}
 export function findValueByPrefix(object: MyObject, prefix: string) {

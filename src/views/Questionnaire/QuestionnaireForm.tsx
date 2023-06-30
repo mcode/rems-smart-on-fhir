@@ -29,6 +29,8 @@ import {
   retrieveQuestions,
   searchQuestionnaire
 } from './questionnaireUtil';
+import "./QuestionnaireForm.css";
+
 import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
 import { SelectPopup } from './components/SelectPopup';
@@ -38,6 +40,7 @@ import ReactDOM from 'react-dom';
 import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
 import axios, { AxiosResponse } from 'axios';
+import { createRoot } from 'react-dom/client';
 declare global {
   interface Window {
     LForms: any;
@@ -53,7 +56,7 @@ interface QuestionnaireProps {
   request?: DeviceRequest | MedicationRequest | ServiceRequest | MedicationDispense;
   formFilled: boolean;
   adFormCompleted: boolean;
-  appContext: AppContext | null;
+  appContext?: AppContext;
   updateQuestionnaire: (n: Questionnaire) => void;
   fhirVersion: string;
   filterChecked: boolean;
@@ -150,9 +153,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   }, []);
 
   useEffect(() => {
-    if (savedResponse) {
-      loadAndMergeForms(savedResponse);
-    }
+    loadAndMergeForms(savedResponse);
     const formErrors = LForms.Util.checkValidity();
     setFormValidationErrors(formErrors == null ? [] : formErrors);
     document.addEventListener('change', event => {
@@ -198,11 +199,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       repopulateAndReload();
     }
   });
-  const loadAndMergeForms = (newResponse: QuestionnaireResponse) => {
+  const loadAndMergeForms = (newResponse: QuestionnaireResponse | null) => {
     console.log(JSON.stringify(props.qform));
     console.log(JSON.stringify(newResponse));
 
-    let lform = LForms.Util.convertFHIRQuestionnaireToLForms(props.qform, props.fhirVersion);
+    let lform = LForms.Util.convertFHIRQuestionnaireToLForms(props.qform, props.fhirVersion.toUpperCase());
 
     lform.templateOptions = {
       showFormHeader: false,
@@ -218,7 +219,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         'QuestionnaireResponse',
         newResponse,
         lform,
-        props.fhirVersion
+        props.fhirVersion.toUpperCase()
       );
     }
 
@@ -242,14 +243,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     );
     props.smartClient.request('Patient/' + patientId).then(
       result => {
-        ReactDOM.render(
-          patientInfoElement(`${result.name[0].given[0]} ${result.name[0].family}`),
-          patientInfoEl
-        );
+        const root = createRoot(patientInfoEl)
+        root.render(patientInfoElement(`${result.name[0].given[0]} ${result.name[0].family}`))
       },
       error => {
         console.log('Failed to retrieve the patient information. Error is ', error);
-        ReactDOM.render(patientInfoElement('Unknown'), patientInfoEl);
+        const root = createRoot(patientInfoEl)
+        root.render(patientInfoElement('Unknown'))
       }
     );
 
@@ -437,7 +437,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     const ext = item.extension?.find(val => {
       return (
         val.url === 'http://hl7.org/fhir/StructureDefinition/cqf-expression' ||
-        'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression'
+        val.url ==='http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression'
       );
     });
     if (ext) {
@@ -911,7 +911,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
     const currentQuestionnaireResponse = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
-      props.fhirVersion,
+      props.fhirVersion.toUpperCase(),
       '#formContainer'
     );
     //const mergedResponse = this.mergeResponseForSameLinkId(currentQuestionnaireResponse);
@@ -1136,7 +1136,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const getQuestionnaireResponse = (status: QuestionnaireResponse['status']) => {
     const qr: QuestionnaireResponseSmart = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
-      props.fhirVersion,
+      props.fhirVersion.toUpperCase(),
       '#formContainer'
     );
     //console.log(qr);
