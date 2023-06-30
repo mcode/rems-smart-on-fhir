@@ -62,7 +62,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   const [user, setUser] = useState<string | null>(null);
 
-  const [practitioner, setPractitioner] = useState<Practitioner | null>(null)
+  const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
 
   //CDSHooks
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
@@ -76,16 +76,16 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
 
-  const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false)
+  const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
   useEffect(() => {
     client.patient.read().then((patient: any) => setPatient(patient));
-    client.user.read().then((response) => {
+    client.user.read().then(response => {
       try {
         const practitioner = response as Practitioner;
-        setPractitioner(practitioner)
-      } catch(e) {
-        console.log("Failed to get practitioner")
-        console.log(e)
+        setPractitioner(practitioner);
+      } catch (e) {
+        console.log('Failed to get practitioner');
+        console.log(e);
       }
     });
   }, [client.patient, client]);
@@ -153,10 +153,10 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   const handleSendRx = () => {
     const med = selectedMedicationCardBundle?.resource;
-    if(med && patient && practitioner){
-      sendRx(patient, practitioner, med)
+    if (med && patient && practitioner) {
+      sendRx(patient, practitioner, med);
     }
-  }
+  };
 
   // MedicationRequest Prefectching Bundle
   const [medication, setMedication] = useState<MedicationBundle | null>(null);
@@ -204,12 +204,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   }, [selectedMedicationCardBundle]);
 
   useEffect(() => {
-    if(patient && practitioner && selectedMedicationCardBundle){
-      setSendRxEnabled(true)
-    } else{ 
-      setSendRxEnabled(false)
+    if (patient && practitioner && selectedMedicationCardBundle) {
+      setSendRxEnabled(true);
+    } else {
+      setSendRxEnabled(false);
     }
-  }, [patient, practitioner, selectedMedicationCardBundle])
+  }, [patient, practitioner, selectedMedicationCardBundle]);
 
   const modal_style = {
     position: 'absolute',

@@ -2,9 +2,7 @@ import {
   Bundle,
   Claim,
   CodeableConcept,
-  Coding,
   DeviceRequest,
-  FhirResource,
   Location,
   MedicationDispense,
   MedicationRequest,
@@ -14,7 +12,6 @@ import {
   Parameters,
   Questionnaire,
   QuestionnaireItem,
-  QuestionnaireItemAnswerOption,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
   ServiceRequest,
@@ -29,14 +26,13 @@ import {
   retrieveQuestions,
   searchQuestionnaire
 } from './questionnaireUtil';
-import "./QuestionnaireForm.css";
+import './QuestionnaireForm.css';
 
 import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
 import { SelectPopup } from './components/SelectPopup';
 import AlertDialog from './components/AlertDialog';
 
-import ReactDOM from 'react-dom';
 import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
 import axios, { AxiosResponse } from 'axios';
@@ -203,7 +199,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     console.log(JSON.stringify(props.qform));
     console.log(JSON.stringify(newResponse));
 
-    let lform = LForms.Util.convertFHIRQuestionnaireToLForms(props.qform, props.fhirVersion.toUpperCase());
+    let lform = LForms.Util.convertFHIRQuestionnaireToLForms(
+      props.qform,
+      props.fhirVersion.toUpperCase()
+    );
 
     lform.templateOptions = {
       showFormHeader: false,
@@ -243,13 +242,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     );
     props.smartClient.request('Patient/' + patientId).then(
       result => {
-        const root = createRoot(patientInfoEl)
-        root.render(patientInfoElement(`${result.name[0].given[0]} ${result.name[0].family}`))
+        const root = createRoot(patientInfoEl);
+        root.render(patientInfoElement(`${result.name[0].given[0]} ${result.name[0].family}`));
       },
       error => {
         console.log('Failed to retrieve the patient information. Error is ', error);
-        const root = createRoot(patientInfoEl)
-        root.render(patientInfoElement('Unknown'))
+        const root = createRoot(patientInfoEl);
+        root.render(patientInfoElement('Unknown'));
       }
     );
 
@@ -437,7 +436,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     const ext = item.extension?.find(val => {
       return (
         val.url === 'http://hl7.org/fhir/StructureDefinition/cqf-expression' ||
-        val.url ==='http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression'
+        val.url ===
+          'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression'
       );
     });
     if (ext) {
@@ -505,7 +505,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         item.extension.forEach(e => {
           // shouldn't there be a check on this extension to make sure its one that requires autofill?
           let prepopulationResult;
-          if (props.cqlPrepopulationResults) {
+          if (props.cqlPrepopulationResults && e) {
             prepopulationResult = getLibraryPrepopulationResult(
               item,
               props.cqlPrepopulationResults
@@ -542,7 +542,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 //This is to populated dynamic options (option items generated from CQL expression)
                 //R4 uses item.answerOption, STU3 uses item.option
                 let populateAnswerOptions = false;
-                const populateOptions = false;
 
                 if (item.answerOption != null && item.answerOption.length == 0) {
                   populateAnswerOptions = true;
@@ -624,24 +623,24 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
     }
 
-    let system = '';
-    let displayText = v.display;
+    // let system = '';
+    const displayText = v.display;
 
-    if (v.type && v.type === 'encounter' && v.periodStart) {
-      displayText = 'Encounter - ' + v.display + ' on ' + v.periodStart;
-    } else if (v.system) {
-      if (v.system == 'http://snomed.info/sct') {
-        system = 'SNOMED';
-      } else if (v.system.startsWith('http://hl7.org/fhir/sid/icd-10')) {
-        system = 'ICD-10';
-      } else if (v.system == 'http://www.nlm.nih.gov/research/umls/rxnorm') {
-        system = 'RxNorm';
-      }
+    // if (v.type && v.type === 'encounter' && v.periodStart) {
+    //   displayText = 'Encounter - ' + v.display + ' on ' + v.periodStart;
+    // } else if (v.system) {
+    //   if (v.system == 'http://snomed.info/sct') {
+    //     system = 'SNOMED';
+    //   } else if (v.system.startsWith('http://hl7.org/fhir/sid/icd-10')) {
+    //     system = 'ICD-10';
+    //   } else if (v.system == 'http://www.nlm.nih.gov/research/umls/rxnorm') {
+    //     system = 'RxNorm';
+    //   }
 
-      // if (system.length > 0) {
-      //   displayText = displayText + ' - ' + system + ' - ' + v.code
-      // }
-    }
+    //   if (system.length > 0) {
+    //     displayText = displayText + ' - ' + system + ' - ' + v.code
+    //   }
+    // }
 
     return {
       code: v.code,
@@ -715,6 +714,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           processSavedQuestionnaireResponses(result, showError);
         },
         result => {
+          console.log(result);
           popupClear('Error: failed to load previous in-progress forms', 'OK', true);
           popupLaunch();
         }
@@ -1183,7 +1183,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         });
       }
     }
-    console.log(props.attested);
     if (qr.item) {
       qr.item.forEach(item => {
         const aa = searchQuestionnaire(item, props.attested);
@@ -1220,6 +1219,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           if (showPopup) {
             popupClear('Partially completed form (QuestionnaireResponse) saved to EHR', 'OK', true);
             popupLaunch();
+            console.log(result);
           }
         },
         result => {
@@ -1229,6 +1229,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             true
           );
           popupLaunch();
+          console.log(result);
         }
       )
       .catch(console.error);
@@ -1418,7 +1419,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           }
         };
         let sequence = 1;
-        priorAuthBundle.entry.forEach(function (entry, index) {
+        priorAuthBundle.entry.forEach(function (entry) {
           if (entry.resource?.resourceType == 'Condition' && priorAuthClaim.diagnosis) {
             priorAuthClaim.diagnosis.push({
               sequence: sequence++,
@@ -1572,6 +1573,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           })
           .catch(e => {
             setShowRxAlert({ description: 'Encountered an error', open: true });
+            console.log(e);
           });
       } else {
         alert(

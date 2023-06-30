@@ -1,7 +1,7 @@
 import { checkOrderType, isRequestReference } from './questionnaireUtil';
 import Client from 'fhirclient/lib/Client';
 import { Elm, LogType } from './SmartApp';
-import {Buffer} from 'buffer';
+import { Buffer } from 'buffer';
 import {
   Bundle,
   BundleEntry,
@@ -175,7 +175,6 @@ function fetchArtifactsOperation(
         return;
       }
       inputItems.forEach(item => {
-        const itemExtensions = item.extension;
         if (item.extension) {
           const findEmbeddedCql = item.extension.find(
             ext =>
@@ -246,7 +245,7 @@ function fetchFromQuestionnaireResponse(response: string, smart: Client) {
         });
       }
       resolve(relaunchContext);
-    });
+    }).catch((e) => reject(e));
   });
 }
 
@@ -263,7 +262,7 @@ function searchByOrder(order: string, smart: Client) {
       if (res.entry) {
         resolve(res.entry);
       }
-    });
+    }).catch((e) => reject(e));
   });
 }
 

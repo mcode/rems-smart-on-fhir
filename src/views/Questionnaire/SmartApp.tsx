@@ -1,10 +1,8 @@
 import {
   Bundle,
-  CodeableConcept,
   Coding,
   DeviceRequest,
   Extension,
-  FhirResource,
   Library,
   MedicationDispense,
   MedicationRequest,
@@ -17,7 +15,6 @@ import { QuestionnaireForm } from './QuestionnaireForm';
 import fetchFhirVersion, { AppContext } from './questionnaireUtil';
 import cqlfhir from 'cql-exec-fhir';
 import Client from 'fhirclient/lib/Client';
-import ReactDOM from 'react-dom';
 import {
   ReturnValue,
   fetchArtifactsOperation,
@@ -33,7 +30,7 @@ interface SmartAppProps {
   standalone: boolean;
   patientId: string;
   smartClient: Client;
-  appContext?: AppContext
+  appContext?: AppContext;
 }
 export type OrderResource = DeviceRequest | MedicationRequest | ServiceRequest | MedicationDispense;
 export type LogType = 'infoClass' | 'errorClass' | 'warningClass';
@@ -90,6 +87,7 @@ export interface ExecutionInputs {
 }
 
 export function SmartApp(props: SmartAppProps) {
+  const attested: string[] = [];
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [response, setResponse] = useState<QuestionnaireResponse | null>(null);
   const [isAdaptiveFormWithoutExtension, setIsAdaptiveFormWithoutExtension] =
@@ -100,12 +98,11 @@ export function SmartApp(props: SmartAppProps) {
   const [errors, setErrors] = useState<LogEntry[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
-  const [appContext, setAppContext] = useState<AppContext | undefined>(props.appContext);
+  const appContext: AppContext | undefined = props.appContext;
   const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
   const [remsAdminResponse, setRemsAdminResponse] = useState<any | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
-  const [attested, setAttested] = useState<string[]>([]);
   const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
   const [filterChecked, setFilterChecked] = useState<boolean>(false);
   const [formFilled, setFormFilled] = useState<boolean>(false);
@@ -119,10 +116,13 @@ export function SmartApp(props: SmartAppProps) {
     setShowOverlay(!showOverlay);
   };
   useEffect(() => {
-    if(!props.standalone){
-      ehrLaunch(false)
+    if (!props.standalone) {
+      ehrLaunch(false);
     }
-  }, [])
+    if(priorAuthClaim) {
+      console.log(priorAuthClaim); // TODO: I don't think we need this, it could be removed.
+    }
+  }, []);
   useEffect(() => {
     // TODO: this could be redone like in original DTR to have a big fancy display for errors but I don't think it's necessary or useful.
     // The previous version was persistent at the top of the page.  An alert gets the job done just fine.
@@ -147,8 +147,8 @@ export function SmartApp(props: SmartAppProps) {
     });
   };
   const ehrLaunch = (isContainedQuestionnaire: boolean, questionnaire?: Questionnaire | null) => {
-    console.log("ehr launching")
-    console.log(appContext)
+    console.log('ehr launching');
+    console.log(appContext);
     if (appContext) {
       const acOrder = appContext?.order;
       const acCoverage = appContext?.coverage;
@@ -430,7 +430,13 @@ export function SmartApp(props: SmartAppProps) {
 
               consoleLog('executing elm', 'infoClass');
               console.log('executing elm');
-              return executeElm(smart, FHIR_VERSION, orderResourceArtifact, executionInputs, consoleLog);
+              return executeElm(
+                smart,
+                FHIR_VERSION,
+                orderResourceArtifact,
+                executionInputs,
+                consoleLog
+              );
             })
           );
         })
@@ -603,7 +609,7 @@ export function SmartApp(props: SmartAppProps) {
         </div>
       </div>
     );
-    const root = createRoot(ref)
+    const root = createRoot(ref);
     root.render(element);
   };
   // render

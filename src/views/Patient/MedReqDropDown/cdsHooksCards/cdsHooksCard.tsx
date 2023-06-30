@@ -104,32 +104,37 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     } else if (link.type === 'smart') {
       console.log('    launch: ' + link.url.split('?')[0]);
       console.log(link);
-      let appContext: AppContext = {};
-      if(link.appContext){
+      const appContext: AppContext = {};
+      if (link.appContext) {
         try {
           // Fix + encoded spaces back to precent encoded spaces
-          const encodedAppString = link.appContext.replace(/\+/g, "%20");
+          const encodedAppString = link.appContext.replace(/\+/g, '%20');
           const appString = decodeURIComponent(encodedAppString);
           // Could switch to this later
-          appString.split("&").map((e)=>{
-              const temp = e.split("=");
-              if(temp[0] === 'questionnaire' || temp[0] === 'order' || temp[0] === 'coverage' || temp[0] === 'response'){
-                appContext[temp[0]] = temp[1]
-              }
+          appString.split('&').map(e => {
+            const temp = e.split('=');
+            if (
+              temp[0] === 'questionnaire' ||
+              temp[0] === 'order' ||
+              temp[0] === 'coverage' ||
+              temp[0] === 'response'
+            ) {
+              appContext[temp[0]] = temp[1];
+            }
           });
         } catch (e) {
-            console.log("failed to get appContext");
-            throw e;
+          console.log('failed to get appContext');
+          throw e;
         }
       }
       props.tabCallback(
         <SmartApp
           smartClient={props.client}
           standalone={false}
-          appContext = {appContext}
+          appContext={appContext}
           patientId={props.client.getPatientId() || ''}
         ></SmartApp>,
-        'Test'
+        link.label
       );
     }
   };

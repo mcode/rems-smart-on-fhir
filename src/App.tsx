@@ -1,17 +1,11 @@
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import Box from '@mui/material/Box';
-import { Container } from '@mui/system';
 import Client from 'fhirclient/lib/Client';
 import './App.css';
 import Patient from './views/Patient/PatientView';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
-import { ReactElement, memo, useEffect, useMemo, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { MemoizedTabPanel } from './TabDisplay';
-
-
-
 
 function tabProps(index: number) {
   return {
@@ -38,7 +32,7 @@ function App(props: AppProps) {
   };
   useEffect(() => {
     setTabs([
-      { element: <Patient client={client} tabCallback={addTab} />, name: 'Home' },
+      { element: <Patient client={client} tabCallback={addTab} />, name: 'Home' }
       // { element: <p>henlo</p>, name: 'Patient Enrollment Form' }
     ]);
   }, []);
@@ -70,9 +64,9 @@ function App(props: AppProps) {
       <div style={{ paddingTop: '48px' }}>
         {tabs.map((tab, i) => {
           return (
-              <MemoizedTabPanel value={value} index={i} key={i} name={tab.name}>
-                {tab.element}
-              </MemoizedTabPanel>
+            <MemoizedTabPanel value={value} index={i} key={i} name={tab.name}>
+              {tab.element}
+            </MemoizedTabPanel>
           );
         })}
       </div>
