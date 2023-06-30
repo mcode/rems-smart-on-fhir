@@ -119,7 +119,7 @@ export function SmartApp(props: SmartAppProps) {
     if (!props.standalone) {
       ehrLaunch(false);
     }
-    if(priorAuthClaim) {
+    if (priorAuthClaim) {
       console.log(priorAuthClaim); // TODO: I don't think we need this, it could be removed.
     }
   }, []);

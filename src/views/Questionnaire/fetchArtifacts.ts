@@ -227,25 +227,28 @@ function fetchFromQuestionnaireResponse(response: string, smart: Client) {
   };
 
   return new Promise<RelaunchContext>(function (resolve, reject) {
-    smart.request(response).then(res => {
-      console.log(res);
-      relaunchContext.questionnaire = res.questionnaire;
-      relaunchContext.response = res;
-      if (res.extension) {
-        const extensions = res.extension.filter(
-          (ext: Extension) =>
-            ext.url === 'http://hl7.org/fhir/us/davinci-dtr/StructureDefinition/context'
-        );
-        extensions.forEach((ext: Extension) => {
-          if (ext.valueReference?.type === 'Coverage') {
-            relaunchContext.coverage = ext.valueReference.reference;
-          } else {
-            relaunchContext.order = ext.valueReference?.reference;
-          }
-        });
-      }
-      resolve(relaunchContext);
-    }).catch((e) => reject(e));
+    smart
+      .request(response)
+      .then(res => {
+        console.log(res);
+        relaunchContext.questionnaire = res.questionnaire;
+        relaunchContext.response = res;
+        if (res.extension) {
+          const extensions = res.extension.filter(
+            (ext: Extension) =>
+              ext.url === 'http://hl7.org/fhir/us/davinci-dtr/StructureDefinition/context'
+          );
+          extensions.forEach((ext: Extension) => {
+            if (ext.valueReference?.type === 'Coverage') {
+              relaunchContext.coverage = ext.valueReference.reference;
+            } else {
+              relaunchContext.order = ext.valueReference?.reference;
+            }
+          });
+        }
+        resolve(relaunchContext);
+      })
+      .catch(e => reject(e));
   });
 }
 
@@ -258,11 +261,14 @@ function searchByOrder(order: string, smart: Client) {
     requestId = `${orderResource.resourceType}/${orderResource.id}`;
   }
   return new Promise<BundleEntry[]>(function (resolve, reject) {
-    smart.request(`QuestionnaireResponse?context=${requestId}`).then((res: Bundle) => {
-      if (res.entry) {
-        resolve(res.entry);
-      }
-    }).catch((e) => reject(e));
+    smart
+      .request(`QuestionnaireResponse?context=${requestId}`)
+      .then((res: Bundle) => {
+        if (res.entry) {
+          resolve(res.entry);
+        }
+      })
+      .catch(e => reject(e));
   });
 }
 
