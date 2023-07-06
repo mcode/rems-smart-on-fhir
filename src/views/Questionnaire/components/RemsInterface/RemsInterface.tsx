@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ResourceEntry from './ResourceEntry';
 import './RemsInterface.css';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -6,10 +6,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { Bundle, MedicationRequest, MessageHeader, Parameters, Patient } from 'fhir/r4';
-const colorPicker = {
-  Pending: '#f0ad4e',
-  Approved: '#5cb85c'
-};
+
 interface RemsInterfaceProps {
   remsAdminResponse: RemsAdminResponse;
   specialtyRxBundle: Bundle;
@@ -29,14 +26,12 @@ interface JsonData {
   ];
 }
 export default function RemsInterface(props: RemsInterfaceProps) {
-  const [claimResponseBundle, setClaimResponseBundle] = useState<Bundle | null>(null);
   const [remsAdminResponse, setRemsAdminResponse] = useState<RemsAdminResponse | null>(null);
   const [response, setResponse] = useState<AxiosResponse | null>(null);
   const [spin, setSpin] = useState<boolean>(false);
   const [spinPis, setSpinPis] = useState<boolean>(false);
   const [viewResponse, setViewResponse] = useState<boolean>(false);
   const [viewBundle, setViewBundle] = useState<boolean>(false);
-  const [viewPisBundle, setViewPisBundle] = useState<boolean>(false);
 
   useEffect(() => {
     sendRemsMessage();
@@ -159,10 +154,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
     setViewResponse(!viewResponse);
   };
 
-  const togglePisBundle = () => {
-    setViewPisBundle(!viewPisBundle);
-  };
-
   const renderBundle = (bundle: Bundle) => {
     return bundle.entry?.map(entry => {
       const resource = entry.resource;
@@ -283,15 +274,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
                   )}
                 </div>
               </Paper>
-              {viewPisBundle ? (
-                <div className="bundle-view">
-                  <br></br>
-                  <h3>Bundle</h3>
-                  {renderBundle(props.specialtyRxBundle)}
-                </div>
-              ) : (
-                ''
-              )}
             </div>
           </div>
         ) : (

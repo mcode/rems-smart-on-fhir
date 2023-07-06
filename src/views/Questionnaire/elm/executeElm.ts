@@ -63,21 +63,21 @@ function executeElm(
 // }
 
 // Utility method to find out the difference between two arrays
-function findDifference(array1: any[], array2: any[]) {
-  const temp = [];
-  for (let i = 0; i < array1.length; i++) {
-    if (!array2.includes(array1[i])) {
-      temp.push(array1[i]);
-    }
-  }
+// function findDifference(array1: any[], array2: any[]) {
+//   const temp = [];
+//   for (let i = 0; i < array1.length; i++) {
+//     if (!array2.includes(array1[i])) {
+//       temp.push(array1[i]);
+//     }
+//   }
 
-  for (let i = 0; i < array2.length; i++) {
-    if (!array1.includes(array2[i])) {
-      temp.push(array2[i]);
-    }
-  }
-  console.log('--- NeededResources Difference: ', temp);
-}
+//   for (let i = 0; i < array2.length; i++) {
+//     if (!array1.includes(array2[i])) {
+//       temp.push(array2[i]);
+//     }
+//   }
+//   console.log('--- NeededResources Difference: ', temp);
+// }
 
 function executeElmAgainstPatientSource(
   executionInputs: ExecutionInputs,

@@ -1,10 +1,8 @@
 import {
   DeviceRequest,
-  Extension,
   FhirResource,
   MedicationRequest,
   Questionnaire,
-  QuestionnaireItem,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
   ServiceRequest

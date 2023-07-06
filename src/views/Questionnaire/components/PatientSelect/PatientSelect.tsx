@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PatientBox from './PatientBox';
 import Dialog from '@mui/material/Dialog';
 import InfoIcon from '@mui/icons-material/Info';

@@ -548,7 +548,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 }
 
                 prepopulationResult.forEach((v: any) => {
-                  if(v) {
+                  if (v) {
                     const displayCoding = getDisplayCoding(v, item);
 
                     if (populateAnswerOptions && item.answerOption) {

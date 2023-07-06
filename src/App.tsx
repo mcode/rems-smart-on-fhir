@@ -94,8 +94,12 @@ function App(props: AppProps) {
                       {' '}
                       {tab.name}
                       {tab.closeable && (
-                        <IconButton component="div" onClick={event => handleClose(event, tab)} style={{padding: '0px 5px 0px 5px'}}>
-                          <CloseIcon fontSize='small' />
+                        <IconButton
+                          component="div"
+                          onClick={event => handleClose(event, tab)}
+                          style={{ padding: '0px 5px 0px 5px' }}
+                        >
+                          <CloseIcon fontSize="small" />
                         </IconButton>
                       )}
                     </span>
