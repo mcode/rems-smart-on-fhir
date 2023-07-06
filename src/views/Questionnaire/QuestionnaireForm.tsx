@@ -188,7 +188,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         setFormValidationErrors(newErrors);
       }
     });
-  }, []);
+  }, [savedResponse]);
 
   useEffect(() => {
     if (props.reloadQuestionnaire) {
@@ -412,7 +412,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       newItemResponse.item = newItemResponseSubItems;
 
       newItemResponse.item.forEach(subItem => {
-        if (subItem.text) {
+        if (subItem.text && result) {
           const resultTextValue = result[subItem.text];
           if (resultTextValue) {
             subItem.answer = [
@@ -548,13 +548,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 }
 
                 prepopulationResult.forEach((v: any) => {
-                  const displayCoding = getDisplayCoding(v, item);
+                  if(v) {
+                    const displayCoding = getDisplayCoding(v, item);
 
-                  if (populateAnswerOptions && item.answerOption) {
-                    item.answerOption.push({ valueCoding: displayCoding });
-                  }
-                  if (response_item.answer) {
-                    response_item.answer.push({ valueCoding: displayCoding });
+                    if (populateAnswerOptions && item.answerOption) {
+                      item.answerOption.push({ valueCoding: displayCoding });
+                    }
+                    if (response_item.answer) {
+                      response_item.answer.push({ valueCoding: displayCoding });
+                    }
                   }
                 });
                 break;
@@ -624,6 +626,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
 
     // let system = '';
+
     const displayText = v.display;
 
     // if (v.type && v.type === 'encounter' && v.periodStart) {

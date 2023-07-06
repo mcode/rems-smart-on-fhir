@@ -79,15 +79,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
   useEffect(() => {
     client.patient.read().then((patient: any) => setPatient(patient));
-    client.user.read().then(response => {
-      try {
+    if (client.user.id) {
+      client.user.read().then(response => {
         const practitioner = response as Practitioner;
         setPractitioner(practitioner);
-      } catch (e) {
-        console.log('Failed to get practitioner');
-        console.log(e);
-      }
-    });
+      });
+    }
   }, [client.patient, client]);
 
   useEffect(() => {

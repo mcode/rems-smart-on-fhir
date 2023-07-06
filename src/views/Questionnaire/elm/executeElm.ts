@@ -37,12 +37,14 @@ function executeElm(
           console.log('Fetched resources are in this bundle:', resourceBundle);
           patientSource.loadBundles([resourceBundle]);
           const elmResults = executeElmAgainstPatientSource(executionInputs, patientSource);
-          const results: ExecutionOutput = {
-            libraryName: executionInputs.elm.library.identifier.id,
-            bundle: resourceBundle,
-            elmResults: elmResults
-          };
-          resolve(results);
+          elmResults.then(output => {
+            const results: ExecutionOutput = {
+              libraryName: executionInputs.elm.library.identifier.id,
+              bundle: resourceBundle,
+              elmResults: output
+            };
+            resolve(results);
+          });
         })
         .catch(function (err) {
           reject(err);
