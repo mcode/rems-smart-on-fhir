@@ -44,6 +44,8 @@ function MedReqDropDown(props: any) {
     //Prefetch 
     const [patient, setPatient] = useState<Patient | null>(null);
 
+    const [user, setUser] = useState<string | null>(null);
+
     //CDSHooks
     const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
@@ -60,6 +62,21 @@ function MedReqDropDown(props: any) {
         client.patient.read().then((patient: any) => setPatient(patient));
     }, [client.patient, client]);
 
+    useEffect(() => {
+        if (client.user.id) {
+            setUser(client.user.id);
+        } else {
+            const appContextString = client.state?.tokenResponse?.appContext;
+            console.log('appContext: ' + appContextString);
+            const appContext: { [key: string]: string } = {};
+            appContextString.split('&').map((e: string)=>{
+                const temp: string[] = e.split('=');
+                appContext[temp[0]] = temp[1];
+            });
+            setUser(appContext?.user);
+        }
+
+    }, [client]);
 
     useEffect(() => {
         getMedicationRequest();
@@ -135,21 +152,8 @@ function MedReqDropDown(props: any) {
 
 
     useEffect(() => {
-        // get the userId from the client if possible, otherwise pull it from the appContext
-        let userId = client.user.id;
-        if (!userId) {
-            const appContextString = client.state?.tokenResponse?.appContext;
-            console.log('appContext: ' + appContextString);
-            const appContext: { [key: string]: string } = {};
-            appContextString.split('&').map((e: string)=>{
-                const temp: string[] = e.split('=');
-                appContext[temp[0]] = temp[1];
-            });
-            userId = appContext?.user;
-        }
-
-        if (patient && patient.id && userId && selectedMedicationCardBundle) {
-            const hook = new OrderSign(patient.id, userId, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
+        if (patient && patient.id && user && selectedMedicationCardBundle) {
+            const hook = new OrderSign(patient.id, user, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
             const tempHook = hook.generate();
 
             hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
