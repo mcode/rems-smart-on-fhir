@@ -15,13 +15,13 @@ interface App {
 }
 
 const smartLaunch = () => {
-
   FHIR.oauth2
     .init({
-      clientId: '20560ea5-f224-4658-b667-4e6bab935c85',
-      scope: 'launch/patient openid profile'
+      clientId: 'app-login',
+      scope: 'launch openid profile user/Patient.read patient/Patient.read user/Practitioner.read'
     })
     .then(client => {
+      console.log(client);
       root.render(
         <React.StrictMode>
           <App client={client} />
