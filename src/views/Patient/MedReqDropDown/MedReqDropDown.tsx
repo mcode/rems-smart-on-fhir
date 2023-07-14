@@ -201,7 +201,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   }, [selectedMedicationCardBundle]);
 
   useEffect(() => {
-    if (patient && practitioner && selectedMedicationCardBundle) {
+    if (
+      patient &&
+      practitioner &&
+      selectedMedicationCardBundle &&
+      process.env.REACT_APP_SEND_RX_ENABLED?.toLowerCase() === 'true'
+    ) {
       setSendRxEnabled(true);
     } else {
       setSendRxEnabled(false);
