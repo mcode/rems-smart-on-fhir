@@ -80,28 +80,21 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   useEffect(() => {
     client.patient.read().then((patient: any) => setPatient(patient));
     if (client.user.id) {
+      setUser(client.user.id);
       client.user.read().then(response => {
         const practitioner = response as Practitioner;
         setPractitioner(practitioner);
       });
+    } else {
+      const appContextString = client.state?.tokenResponse?.appContext;
+      const appContext: { [key: string]: string } = {};
+      appContextString.split('&').map((e: string) => {
+        const temp: string[] = e.split('=');
+        appContext[temp[0]] = temp[1];
+      });
+      setUser(appContext?.user);
     }
   }, [client.patient, client]);
-
-  useEffect(() => {
-    if (client.user.id) {
-        setUser(client.user.id);
-    } else {
-        const appContextString = client.state?.tokenResponse?.appContext;
-        console.log('appContext: ' + appContextString);
-        const appContext: { [key: string]: string } = {};
-        appContextString.split('&').map((e: string)=>{
-            const temp: string[] = e.split('=');
-            appContext[temp[0]] = temp[1];
-        });
-        setUser(appContext?.user);
-    }
-
-  }, [client]);
 
   useEffect(() => {
     getMedicationRequest();
@@ -191,7 +184,11 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   useEffect(() => {
     if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const hook = new OrderSign(patient.id, user, { resourceType: 'Bundle', type: 'batch', entry: [selectedMedicationCardBundle] });
+      const hook = new OrderSign(patient.id, user, {
+        resourceType: 'Bundle',
+        type: 'batch',
+        entry: [selectedMedicationCardBundle]
+      });
       const tempHook = hook.generate();
 
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
