@@ -1,19 +1,136 @@
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import Box from '@mui/material/Box';
-import { Container } from '@mui/system';
 import Client from 'fhirclient/lib/Client';
 import './App.css';
 import Patient from './views/Patient/PatientView';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import CloseIcon from '@mui/icons-material/CloseOutlined';
 
+import { ReactElement, useCallback, useEffect, useState, MouseEvent } from 'react';
+import { MemoizedTabPanel } from './TabDisplay';
+import { IconButton } from '@mui/material';
+
+function tabProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`
+  };
+}
 interface AppProps {
-  client: Client
+  client: Client;
+}
+interface SmartTab {
+  element: ReactElement;
+  name: string;
+  closeable: boolean;
 }
 function App(props: AppProps) {
   const client = props.client;
+  const [value, setValue] = useState('');
+  const [tabs, setTabs] = useState<SmartTab[]>([]);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(tabs[newValue].name);
+  };
+  const addTab = (element: ReactElement, tabName: string) => {
+    setTabs(oldTabs => [...oldTabs, { element: element, name: tabName, closeable: true }]);
+    setValue(tabName);
+  };
+  useEffect(() => {
+    const homeName = 'Home';
+    setTabs([
+      {
+        element: <Patient client={client} tabCallback={addTab} />,
+        name: homeName,
+        closeable: false
+      }
+    ]);
+    setValue(homeName);
+  }, []);
+
+  const handleClose = useCallback(
+    (event: MouseEvent, tabToDelete: SmartTab) => {
+      event.stopPropagation();
+      const tabToDeleteIndex = tabs.findIndex(tab => {
+        return tab.name === tabToDelete.name;
+      });
+      if (tabToDeleteIndex > 0 && value === tabToDelete.name) {
+        setValue(tabs[tabToDeleteIndex - 1].name);
+      }
+      const newTabs = tabs.filter((tab, index) => {
+        return index !== tabToDeleteIndex;
+      });
+      setTabs(newTabs);
+    },
+    [tabs]
+  );
 
   return (
-    <Box className='main'>
-      <div className='App'>
+    <Box className="main">
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          position: 'fixed',
+          zIndex: '100',
+          width: '100%',
+          bgcolor: 'background.paper'
+        }}
+      >
+        <Tabs
+          orientation="horizontal"
+          variant="scrollable"
+          value={tabs.findIndex(tab => {
+            return tab.name === value;
+          })}
+          onChange={handleChange}
+          aria-label="tabs"
+        >
+          {tabs.map((tab, i) => {
+            return (
+              <Tab
+                label={
+                  typeof tab.name === 'string' ? (
+                    <span>
+                      {' '}
+                      {tab.name}
+                      {tab.closeable && (
+                        <IconButton
+                          component="div"
+                          onClick={event => handleClose(event, tab)}
+                          style={{ padding: '0px 5px 0px 5px' }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </span>
+                  ) : (
+                    tab.name
+                  )
+                }
+                {...tabProps(i)}
+                key={i}
+              />
+            );
+          })}
+        </Tabs>
+      </Box>
+      <div style={{ paddingTop: '48px' }}>
+        {tabs.map((tab, i) => {
+          return (
+            <MemoizedTabPanel
+              value={tabs.findIndex(tab => {
+                return tab.name === value;
+              })}
+              index={i}
+              key={i}
+              name={tab.name}
+            >
+              {tab.element}
+            </MemoizedTabPanel>
+          );
+        })}
+      </div>
+      {/* <div className='App'>
         <Container className='NavContainer' maxWidth='xl'>
           <div className='containerg'>
             <div className='logo'>
@@ -22,9 +139,8 @@ function App(props: AppProps) {
             </div>
           </div>
         </Container>
-      </div>
-      <Patient client={client} />
-    </Box >
+      </div> */}
+    </Box>
   );
 }
 

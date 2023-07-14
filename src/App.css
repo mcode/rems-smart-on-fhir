@@ -2,12 +2,6 @@
   background-color: #F5F5F7;
 }
 
-.App {
-  text-align: center;
-  background-color:#2E6153;
-  padding: 20px;
-}
-
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -50,7 +44,7 @@
 }
 
 .App h1 {
-  color:white;
+  color:black;
   line-height: 1.3;
   letter-spacing: 0.00938em;
   font-family: "Roboto","Helvetica","Arial",sans-serif;
