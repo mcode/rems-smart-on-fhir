@@ -11,8 +11,8 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 const smartLaunch = () => {
   FHIR.oauth2
     .init({
-      clientId: 'app-login',
-      scope: 'launch openid profile user/Patient.read patient/Patient.read user/Practitioner.read'
+      clientId: process.env.REACT_APP_CLIENT_ID,
+      scope: process.env.REACT_APP_CLIENT_SCOPES
     })
     .then(client => {
       console.log(client);
