@@ -10,201 +10,205 @@ import MetRequirements from '../MetRequirements';
 const rems_admin_server_base = 'http://localhost:8090';
 
 const testPatient: Patient = {
-    'resourceType': 'Patient',
-    'id': 'pat017',
-    'gender': 'male',
-    'birthDate': '1996-06-01',
-    'name': [
-      {
-        'use': 'official',
-        'family': 'Snow',
-        'given': ['Jon', 'Stark']
-      }
-    ]
-  }
+  resourceType: 'Patient',
+  id: 'pat017',
+  gender: 'male',
+  birthDate: '1996-06-01',
+  name: [
+    {
+      use: 'official',
+      family: 'Snow',
+      given: ['Jon', 'Stark']
+    }
+  ]
+};
 
 const testMedicationRequest: MedicationRequest = {
-    'resourceType': 'MedicationRequest',
-    'id': 'pat017-mr-IPledge',
-    'medicationCodeableConcept': {
-      'coding': [
-        {
-          'system': 'http://www.nlm.nih.gov/research/umls/rxnorm',
-          'code': '6064',
-          'display': 'Isotretinoin 20 MG Oral Capsule'
-        },
-        {
-          'system': 'http://hl7.org/fhir/sid/ndc',
-          'code': '0245-0571-01'
-        }
-      ]
-    },
-    'status': 'active',
-    'intent': 'order',
-    'subject': {
-      'reference': 'Patient/pat017',
-      'display': 'Jon Snow'
-    },
-    'authoredOn': '2020-07-11'
-  }
-  
+  resourceType: 'MedicationRequest',
+  id: 'pat017-mr-IPledge',
+  medicationCodeableConcept: {
+    coding: [
+      {
+        system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
+        code: '6064',
+        display: 'Isotretinoin 20 MG Oral Capsule'
+      },
+      {
+        system: 'http://hl7.org/fhir/sid/ndc',
+        code: '0245-0571-01'
+      }
+    ]
+  },
+  status: 'active',
+  intent: 'order',
+  subject: {
+    reference: 'Patient/pat017',
+    display: 'Jon Snow'
+  },
+  authoredOn: '2020-07-11'
+};
+
 const generateEtasuStatus = () => {
-    const patientEnrollmentForm: MetRequirements = {
-        completed: true,
-        metRequirementId: 'asldkf23a',
-        requirementDescription: 'Submit Patient Enrollment form to the REMS Administrator',
-        requirementName: 'Patient Enrollment Form',
-        stakeholderId: 'dlksk2222'
-    };
-    const prescriberEnrollmentForm: MetRequirements = {
-        completed: false,
-        metRequirementId: 'asldkf23b',
-        requirementDescription: 'Submit Prescriber Enrollment form to the REMS Administrator',
-        requirementName: 'Prescriber Enrollment Form',
-        stakeholderId: 'dlksk2222'
-    };
-    const pharmacistEnrollmentForm: MetRequirements = {
-        completed: true,
-        metRequirementId: 'asldkf23c',
-        requirementDescription: 'Submit Pharmacist Enrollment form to the REMS Administrator',
-        requirementName: 'Pharmacist Enrollment Form',
-        stakeholderId: 'dlksk2222'
-    };
-    const remsMetEtasuResponse: RemsMetEtasuResponse = {
-        case_number: '1234',
-        drugCode: 'abcd',
-        drugName: 'medication',
-        patientFirstname: 'Jon',
-        patientLastName: 'Snow',
-        patientDOB: '1996-06-01',
-        status: 'Pending',
-        metRequirements: [ 
-            patientEnrollmentForm,
-            prescriberEnrollmentForm,
-            pharmacistEnrollmentForm
-        ]
-    };
-    return remsMetEtasuResponse;
+  const patientEnrollmentForm: MetRequirements = {
+    completed: true,
+    metRequirementId: 'asldkf23a',
+    requirementDescription: 'Submit Patient Enrollment form to the REMS Administrator',
+    requirementName: 'Patient Enrollment Form',
+    stakeholderId: 'dlksk2222'
+  };
+  const prescriberEnrollmentForm: MetRequirements = {
+    completed: false,
+    metRequirementId: 'asldkf23b',
+    requirementDescription: 'Submit Prescriber Enrollment form to the REMS Administrator',
+    requirementName: 'Prescriber Enrollment Form',
+    stakeholderId: 'dlksk2222'
+  };
+  const pharmacistEnrollmentForm: MetRequirements = {
+    completed: true,
+    metRequirementId: 'asldkf23c',
+    requirementDescription: 'Submit Pharmacist Enrollment form to the REMS Administrator',
+    requirementName: 'Pharmacist Enrollment Form',
+    stakeholderId: 'dlksk2222'
+  };
+  const remsMetEtasuResponse: RemsMetEtasuResponse = {
+    case_number: '1234',
+    drugCode: 'abcd',
+    drugName: 'medication',
+    patientFirstname: 'Jon',
+    patientLastName: 'Snow',
+    patientDOB: '1996-06-01',
+    status: 'Pending',
+    metRequirements: [patientEnrollmentForm, prescriberEnrollmentForm, pharmacistEnrollmentForm]
+  };
+  return remsMetEtasuResponse;
 };
 
 describe('Test the EtasuStatus Component', () => {
-    function expectContains(value: string) {
-        const element = screen.getByText(value);
-        expect(element).toBeInTheDocument();
-    }
+  function expectContains(value: string) {
+    const element = screen.getByText(value);
+    expect(element).toBeInTheDocument();
+  }
 
-    test('Contains all elements', () => {
-        let update: boolean = false;
+  test('Contains all elements', () => {
+    const update = false;
 
-        // render the module
-        render(<EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
+    // render the module
+    render(
+      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
+    );
 
-        // test the status fields and headings are present
-        expectContains('REMS Status');
-        expectContains('Case Number: N/A');
-        expectContains('Status: N/A');
-        expectContains('ETASU');
-        expectContains('Not Available');
+    // test the status fields and headings are present
+    expectContains('REMS Status');
+    expectContains('Case Number: N/A');
+    expectContains('Status: N/A');
+    expectContains('ETASU');
+    expectContains('Not Available');
 
-        // check the refresh button is present
-        const refreshButton = screen.getByTestId('refresh');
-        expect(refreshButton).toBeInTheDocument();
-    });
+    // check the refresh button is present
+    const refreshButton = screen.getByTestId('refresh');
+    expect(refreshButton).toBeInTheDocument();
+  });
 
-    test('Loads data on start', async () => {
-        let update: boolean = true;
+  test('Loads data on start', async () => {
+    const update = true;
 
-        const mockRequest = nock(rems_admin_server_base);
+    const mockRequest = nock(rems_admin_server_base);
 
-        // setup the mocks to handle the axios calls
-        const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-        const patientLastName = testPatient?.name?.at(0)?.family;
-        const patientDOB = testPatient.birthDate;
-        const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
-        const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
-        const etasuStatus = generateEtasuStatus();
+    // setup the mocks to handle the axios calls
+    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
+    const patientLastName = testPatient?.name?.at(0)?.family;
+    const patientDOB = testPatient.birthDate;
+    const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
+    const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+    const etasuStatus = generateEtasuStatus();
 
-        mockRequest
-            .defaultReplyHeaders({
-                'access-control-allow-origin': '*',
-                'access-control-allow-credentials': 'true' 
-            })
-            .get(url)
-            .reply(200, etasuStatus);
+    mockRequest
+      .defaultReplyHeaders({
+        'access-control-allow-origin': '*',
+        'access-control-allow-credentials': 'true'
+      })
+      .get(url)
+      .reply(200, etasuStatus);
 
-        // render the module
-        render(<EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
-        
-        // verify that the values are updated from the call to get the ETASU
-        expect(await screen.findByText('Case Number: ' + etasuStatus.case_number)).toBeInTheDocument();
-        expect(await screen.findByText('Status: ' + etasuStatus.status)).toBeInTheDocument();
-        expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
-    });
+    // render the module
+    render(
+      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
+    );
 
-    test('Update retrieves data', async () => {
-        let update: boolean = false;
+    // verify that the values are updated from the call to get the ETASU
+    expect(await screen.findByText('Case Number: ' + etasuStatus.case_number)).toBeInTheDocument();
+    expect(await screen.findByText('Status: ' + etasuStatus.status)).toBeInTheDocument();
+    expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
+  });
 
-        const mockRequest = nock(rems_admin_server_base);
+  test('Update retrieves data', async () => {
+    const update = false;
 
-        // render the module
-        render(<EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
+    const mockRequest = nock(rems_admin_server_base);
 
-        // setup the mocks to handle the axios calls
-        const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-        const patientLastName = testPatient?.name?.at(0)?.family;
-        const patientDOB = testPatient.birthDate;
-        const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
-        const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
-        const etasuStatus = generateEtasuStatus();
+    // render the module
+    render(
+      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
+    );
 
-        mockRequest
-            .defaultReplyHeaders({
-                'access-control-allow-origin': '*',
-                'access-control-allow-credentials': 'true' 
-            })
-            .get(url)
-            .reply(200, etasuStatus);
-        
-        // click the refresh button
-        const refreshButton = screen.getByTestId('refresh');
-        fireEvent.click(refreshButton);
+    // setup the mocks to handle the axios calls
+    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
+    const patientLastName = testPatient?.name?.at(0)?.family;
+    const patientDOB = testPatient.birthDate;
+    const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
+    const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+    const etasuStatus = generateEtasuStatus();
 
-        // verify that the values are updated from the call to get the ETASU
-        expect(await screen.findByText('Case Number: ' + etasuStatus.case_number)).toBeInTheDocument();
-        expect(await screen.findByText('Status: ' + etasuStatus.status)).toBeInTheDocument();
-        expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
-    });
+    mockRequest
+      .defaultReplyHeaders({
+        'access-control-allow-origin': '*',
+        'access-control-allow-credentials': 'true'
+      })
+      .get(url)
+      .reply(200, etasuStatus);
 
-    test('Failed to load status', async () => {
-        let update: boolean = false;
+    // click the refresh button
+    const refreshButton = screen.getByTestId('refresh');
+    fireEvent.click(refreshButton);
 
-        const mockRequest = nock(rems_admin_server_base);
+    // verify that the values are updated from the call to get the ETASU
+    expect(await screen.findByText('Case Number: ' + etasuStatus.case_number)).toBeInTheDocument();
+    expect(await screen.findByText('Status: ' + etasuStatus.status)).toBeInTheDocument();
+    expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
+  });
 
-        // render the module
-        render(<EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update}/>);
+  test('Failed to load status', async () => {
+    const update = false;
 
-        // setup the mocks to handle the axios calls
-        const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-        const patientLastName = testPatient?.name?.at(0)?.family;
-        const patientDOB = testPatient.birthDate;
-        const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
-        const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+    const mockRequest = nock(rems_admin_server_base);
 
-        // return an empty response like if there is no match
-        mockRequest
-            .defaultReplyHeaders({
-                'access-control-allow-origin': '*',
-                'access-control-allow-credentials': 'true' 
-            })
-            .get(url)
-            .reply(200, '');
-        
-        // click the refresh button
-        const refreshButton = screen.getByTestId('refresh');
-        fireEvent.click(refreshButton);
+    // render the module
+    render(
+      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
+    );
 
-        expect(await screen.findByText('Case Number: N/A')).toBeInTheDocument();
-        expect(await screen.findByText('Status: N/A')).toBeInTheDocument();
-        expect(await screen.findByText('Not Available')).toBeInTheDocument();
-    });
+    // setup the mocks to handle the axios calls
+    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
+    const patientLastName = testPatient?.name?.at(0)?.family;
+    const patientDOB = testPatient.birthDate;
+    const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
+    const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+
+    // return an empty response like if there is no match
+    mockRequest
+      .defaultReplyHeaders({
+        'access-control-allow-origin': '*',
+        'access-control-allow-credentials': 'true'
+      })
+      .get(url)
+      .reply(200, '');
+
+    // click the refresh button
+    const refreshButton = screen.getByTestId('refresh');
+    fireEvent.click(refreshButton);
+
+    expect(await screen.findByText('Case Number: N/A')).toBeInTheDocument();
+    expect(await screen.findByText('Status: N/A')).toBeInTheDocument();
+    expect(await screen.findByText('Not Available')).toBeInTheDocument();
+  });
 });
