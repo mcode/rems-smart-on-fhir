@@ -9,6 +9,8 @@ import CloseIcon from '@mui/icons-material/CloseOutlined';
 import { ReactElement, useCallback, useEffect, useState, MouseEvent } from 'react';
 import { MemoizedTabPanel } from './TabDisplay';
 import { IconButton } from '@mui/material';
+import { SmartApp } from './views/Questionnaire/SmartApp';
+import { getAppContext } from './views/Questionnaire/questionnaireUtil';
 
 function tabProps(index: number) {
   return {
@@ -37,13 +39,30 @@ function App(props: AppProps) {
   };
   useEffect(() => {
     const homeName = 'Home';
-    setTabs([
-      {
-        element: <Patient client={client} tabCallback={addTab} />,
-        name: homeName,
-        closeable: false
-      }
-    ]);
+    if(client.state.tokenResponse?.appContext) {
+      const appContext = getAppContext(client.state.tokenResponse?.appContext);
+      // launched with an app context already available
+      const smartApp = <SmartApp
+      smartClient={props.client}
+      standalone={false}
+      appContext={appContext}
+      patientId={client.getPatientId() || ''} />;
+      setTabs([
+        {
+          element: smartApp,
+          name: homeName,
+          closeable: false
+        }
+      ]);
+    } else {
+      setTabs([
+        {
+          element: <Patient client={client} tabCallback={addTab} />,
+          name: homeName,
+          closeable: false
+        }
+      ]);
+    }
     setValue(homeName);
   }, []);
 
