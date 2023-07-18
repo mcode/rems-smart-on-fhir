@@ -69,6 +69,7 @@ interface QuestionnaireProps {
   setPriorAuthClaim: (n: Bundle) => void;
   setSpecialtyRxBundle: (n: Bundle) => void;
   setRemsAdminResponse: (n: any) => void;
+  setFormElement: (n: HTMLElement) => void;
 }
 
 interface GTableResult {
@@ -156,7 +157,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       if (
         props.filterChecked &&
         event.target instanceof Element &&
-        event.target?.id != 'filterCheckbox' &&
+        event.target?.id != `filterCheckbox-${props.qform.id}` &&
         event.target.id != 'attestationCheckbox'
       ) {
         const checkIfFilter = (
@@ -224,33 +225,37 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
     console.log(lform);
 
-    LForms.Util.addFormToPage(lform, 'formContainer');
-    const header = document.getElementsByClassName('lf-form-title')[0];
-    const el = document.createElement('div');
-    el.setAttribute('id', 'button-container');
-    header.appendChild(el);
-    props.renderButtons(el);
+    LForms.Util.addFormToPage(lform, `formContainer-${props.qform.id}`);
+    const specificForm = document.getElementById(`formContainer-${props.qform.id}`);
+    if (specificForm) {
+      const header = specificForm.getElementsByClassName('lf-form-title')[0];
+      const el = document.createElement('div');
+      el.setAttribute('id', `button-container-${props.qform.id}`);
+      header.appendChild(el);
+      props.renderButtons(el);
 
-    const patientInfoEl = document.createElement('div');
-    patientInfoEl.setAttribute('id', 'patientInfo-container');
-    header.appendChild(patientInfoEl);
-    const patientId = getPatient().replace('Patient/', '');
-    const patientInfoElement = (display: string) => (
-      <div className="patient-info-panel">
-        <label>Patient: {display}</label>
-      </div>
-    );
-    props.smartClient.request('Patient/' + patientId).then(
-      result => {
-        const root = createRoot(patientInfoEl);
-        root.render(patientInfoElement(`${result.name[0].given[0]} ${result.name[0].family}`));
-      },
-      error => {
-        console.log('Failed to retrieve the patient information. Error is ', error);
-        const root = createRoot(patientInfoEl);
-        root.render(patientInfoElement('Unknown'));
-      }
-    );
+      const patientInfoEl = document.createElement('div');
+      patientInfoEl.setAttribute('id', 'patientInfo-container');
+      header.appendChild(patientInfoEl);
+      const patientId = getPatient().replace('Patient/', '');
+      const patientInfoElement = (display: string) => (
+        <div className="patient-info-panel">
+          <label>Patient: {display}</label>
+        </div>
+      );
+      props.smartClient.request('Patient/' + patientId).then(
+        result => {
+          const root = createRoot(patientInfoEl);
+          root.render(patientInfoElement(`${result.name[0].given[0]} ${result.name[0].family}`));
+        },
+        error => {
+          console.log('Failed to retrieve the patient information. Error is ', error);
+          const root = createRoot(patientInfoEl);
+          root.render(patientInfoElement('Unknown'));
+        }
+      );
+      props.setFormElement(specificForm);
+    }
 
     props.filterFieldsFn(true);
   };
@@ -915,7 +920,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     const currentQuestionnaireResponse = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
       props.fhirVersion.toUpperCase(),
-      '#formContainer'
+      `#formContainer-${props.qform.id}`
     );
     //const mergedResponse = this.mergeResponseForSameLinkId(currentQuestionnaireResponse);
     retrieveQuestions(url, buildNextQuestionRequest(props.qform, currentQuestionnaireResponse))
@@ -1140,7 +1145,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     const qr: QuestionnaireResponseSmart = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
       props.fhirVersion.toUpperCase(),
-      '#formContainer'
+      `#formContainer-${props.qform.id}`
     );
     //console.log(qr);
     qr.status = status;
@@ -1600,7 +1605,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const showPopup = !isAdaptive || isAdaptiveFormWithoutItem();
   return (
     <div>
-      <div id="formContainer"></div>
+      <div id={`formContainer-${props.qform.id}`}></div>
       {!isAdaptive && props.formFilled ? (
         <div className="form-message-panel">
           <p>
