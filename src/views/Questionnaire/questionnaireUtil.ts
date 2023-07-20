@@ -18,6 +18,25 @@ export interface AppContext {
   coverage?: string;
 }
 // to get FHIR properties of the form answer{whatever}
+export function getAppContext(appContextString: string) {
+  const appContext: AppContext = {};
+  // Fix + encoded spaces back to precent encoded spaces
+  const encodedAppString = appContextString.replace(/\+/g, '%20');
+  const appString = decodeURIComponent(encodedAppString);
+  // Could switch to this later
+  appString.split('&').map(e => {
+    const temp = e.split('=');
+    if (
+      temp[0] === 'questionnaire' ||
+      temp[0] === 'order' ||
+      temp[0] === 'coverage' ||
+      temp[0] === 'response'
+    ) {
+      appContext[temp[0]] = temp[1];
+    }
+  });
+  return appContext;
+}
 export function findValueByPrefix(object: MyObject, prefix: string) {
   for (const property in object) {
     if (object.hasOwnProperty(property) && property.toString().startsWith(prefix)) {

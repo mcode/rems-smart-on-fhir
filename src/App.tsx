@@ -9,6 +9,8 @@ import CloseIcon from '@mui/icons-material/CloseOutlined';
 import { ReactElement, useCallback, useEffect, useState, MouseEvent } from 'react';
 import { MemoizedTabPanel } from './TabDisplay';
 import { IconButton } from '@mui/material';
+import { SmartApp } from './views/Questionnaire/SmartApp';
+import { AppContext, getAppContext } from './views/Questionnaire/questionnaireUtil';
 
 function tabProps(index: number) {
   return {
@@ -28,6 +30,7 @@ function App(props: AppProps) {
   const client = props.client;
   const [value, setValue] = useState('');
   const [tabs, setTabs] = useState<SmartTab[]>([]);
+  const [staticContent, setStaticContent] = useState<ReactElement>();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(tabs[newValue].name);
   };
@@ -37,13 +40,30 @@ function App(props: AppProps) {
   };
   useEffect(() => {
     const homeName = 'Home';
-    setTabs([
-      {
-        element: <Patient client={client} tabCallback={addTab} />,
-        name: homeName,
-        closeable: false
-      }
-    ]);
+    let appContext: AppContext | null = null;
+    if (client.state.tokenResponse?.appContext) {
+      appContext = getAppContext(client.state.tokenResponse?.appContext);
+      // launched with an app context already available
+    }
+    if (appContext && (appContext.questionnaire || appContext.response)) {
+      const smartApp = (
+        <SmartApp
+          smartClient={props.client}
+          standalone={false}
+          appContext={appContext}
+          patientId={client.getPatientId() || ''}
+        />
+      );
+      setStaticContent(smartApp);
+    } else {
+      setTabs([
+        {
+          element: <Patient client={client} tabCallback={addTab} />,
+          name: homeName,
+          closeable: false
+        }
+      ]);
+    }
     setValue(homeName);
   }, []);
 
@@ -66,70 +86,76 @@ function App(props: AppProps) {
 
   return (
     <Box className="main">
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          position: 'fixed',
-          zIndex: '100',
-          width: '100%',
-          bgcolor: 'background.paper'
-        }}
-      >
-        <Tabs
-          orientation="horizontal"
-          variant="scrollable"
-          value={tabs.findIndex(tab => {
-            return tab.name === value;
-          })}
-          onChange={handleChange}
-          aria-label="tabs"
-        >
-          {tabs.map((tab, i) => {
-            return (
-              <Tab
-                label={
-                  typeof tab.name === 'string' ? (
-                    <span>
-                      {' '}
-                      {tab.name}
-                      {tab.closeable && (
-                        <IconButton
-                          component="div"
-                          onClick={event => handleClose(event, tab)}
-                          style={{ padding: '0px 5px 0px 5px' }}
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </span>
-                  ) : (
-                    tab.name
-                  )
-                }
-                {...tabProps(i)}
-                key={i}
-              />
-            );
-          })}
-        </Tabs>
-      </Box>
-      <div style={{ paddingTop: '48px' }}>
-        {tabs.map((tab, i) => {
-          return (
-            <MemoizedTabPanel
+      {staticContent ? (
+        staticContent
+      ) : (
+        <div>
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              position: 'fixed',
+              zIndex: '100',
+              width: '100%',
+              bgcolor: 'background.paper'
+            }}
+          >
+            <Tabs
+              orientation="horizontal"
+              variant="scrollable"
               value={tabs.findIndex(tab => {
                 return tab.name === value;
               })}
-              index={i}
-              key={i}
-              name={tab.name}
+              onChange={handleChange}
+              aria-label="tabs"
             >
-              {tab.element}
-            </MemoizedTabPanel>
-          );
-        })}
-      </div>
+              {tabs.map((tab, i) => {
+                return (
+                  <Tab
+                    label={
+                      typeof tab.name === 'string' ? (
+                        <span>
+                          {' '}
+                          {tab.name}
+                          {tab.closeable && (
+                            <IconButton
+                              component="div"
+                              onClick={event => handleClose(event, tab)}
+                              style={{ padding: '0px 5px 0px 5px' }}
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </span>
+                      ) : (
+                        tab.name
+                      )
+                    }
+                    {...tabProps(i)}
+                    key={i}
+                  />
+                );
+              })}
+            </Tabs>
+          </Box>
+          <div style={{ paddingTop: '48px' }}>
+            {tabs.map((tab, i) => {
+              return (
+                <MemoizedTabPanel
+                  value={tabs.findIndex(tab => {
+                    return tab.name === value;
+                  })}
+                  index={i}
+                  key={i}
+                  name={tab.name}
+                >
+                  {tab.element}
+                </MemoizedTabPanel>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* <div className='App'>
         <Container className='NavContainer' maxWidth='xl'>
           <div className='containerg'>

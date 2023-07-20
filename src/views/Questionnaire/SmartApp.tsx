@@ -109,7 +109,7 @@ export function SmartApp(props: SmartAppProps) {
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
   const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
-
+  const [formElement, setFormElement] = useState<HTMLElement>();
   const smart = props.smartClient;
   let FHIR_VERSION = 'r4';
   const toggleOverlay = () => {
@@ -204,135 +204,139 @@ export function SmartApp(props: SmartAppProps) {
     }
   };
   const filter = (defaultFilter: boolean) => {
-    const items = Array.from(document.getElementsByClassName('ng-not-empty'));
-    const sections = Array.from(document.getElementsByClassName('section'));
-    const empty = Array.from(document.getElementsByClassName('ng-empty'));
+    if (formElement) {
+      const items = Array.from(formElement.getElementsByClassName('ng-not-empty'));
+      const sections = Array.from(formElement.getElementsByClassName('section'));
+      const empty = Array.from(formElement.getElementsByClassName('ng-empty'));
 
-    let checked: boolean, filterCheckbox: HTMLInputElement;
-    if (!defaultFilter) {
-      filterCheckbox = document.getElementById('filterCheckbox') as HTMLInputElement;
-      checked = filterCheckbox ? filterCheckbox.checked : false;
-    } else {
-      checked = true;
-    }
+      let checked: boolean, filterCheckbox: HTMLInputElement;
+      if (!defaultFilter) {
+        filterCheckbox = document.getElementById(
+          questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'
+        ) as HTMLInputElement;
+        checked = filterCheckbox ? filterCheckbox.checked : false;
+      } else {
+        checked = true;
+      }
 
-    items.map(element => {
-      // filter all not-empty items
-      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-        // check if the item is one of the gtable, if yes, need to make sure all the
-        const inputRowElement = element.closest('.lf-table-item') as HTMLElement;
-        if (inputRowElement) {
-          if (inputRowElement.classList.contains('lf-layout-horizontal')) {
-            // check if all questions in the row are answered before filtering
-            const totalQs = inputRowElement.querySelectorAll('td').length;
-            const filledQs = inputRowElement.querySelectorAll(
-              '.ng-not-empty:not([disabled]):not(.tooltipContent)'
-            ).length;
-            if (totalQs === filledQs) {
-              inputRowElement.hidden = checked;
-            }
-          } else if (inputRowElement.parentElement?.querySelector('ul')) {
-            // case for multi-answer questions
-            // TODO: what's the filter case for these?  Filter if they have any answers?
-            if (inputRowElement.parentElement.querySelector('ul')?.querySelector('li')) {
-              // has elements in its list
-              inputRowElement.hidden = checked;
-            }
-          } else {
-            //check if all the children input have been filled
-            const childrenInputs = Array.from(inputRowElement.getElementsByTagName('INPUT'));
-            let allFilled = true;
-            for (const untypedInput of childrenInputs) {
-              const input = untypedInput as HTMLInputElement;
-              if (input && !input.value) {
-                allFilled = false;
-                break;
+      items.map(element => {
+        // filter all not-empty items
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          // check if the item is one of the gtable, if yes, need to make sure all the
+          const inputRowElement = element.closest('.lf-table-item') as HTMLElement;
+          if (inputRowElement) {
+            if (inputRowElement.classList.contains('lf-layout-horizontal')) {
+              // check if all questions in the row are answered before filtering
+              const totalQs = inputRowElement.querySelectorAll('td').length;
+              const filledQs = inputRowElement.querySelectorAll(
+                '.ng-not-empty:not([disabled]):not(.tooltipContent)'
+              ).length;
+              if (totalQs === filledQs) {
+                inputRowElement.hidden = checked;
+              }
+            } else if (inputRowElement.parentElement?.querySelector('ul')) {
+              // case for multi-answer questions
+              // TODO: what's the filter case for these?  Filter if they have any answers?
+              if (inputRowElement.parentElement.querySelector('ul')?.querySelector('li')) {
+                // has elements in its list
+                inputRowElement.hidden = checked;
+              }
+            } else {
+              //check if all the children input have been filled
+              const childrenInputs = Array.from(inputRowElement.getElementsByTagName('INPUT'));
+              let allFilled = true;
+              for (const untypedInput of childrenInputs) {
+                const input = untypedInput as HTMLInputElement;
+                if (input && !input.value) {
+                  allFilled = false;
+                  break;
+                }
+              }
+              if (allFilled) {
+                inputRowElement.hidden = checked;
               }
             }
-            if (allFilled) {
-              inputRowElement.hidden = checked;
-            }
           }
         }
-      }
-    });
+      });
 
-    sections.map(element => {
-      if (!element.querySelector('.ng-empty')) {
-        const nonEmpty = Array.from(element.querySelectorAll('.ng-not-empty'));
-        let actuallyNotEmpty = true;
-        // check multi-choice questions to make sure
-        // they actually have an answer before we
-        // filter out the entire section
-        nonEmpty.forEach(e => {
-          const ul = e.parentElement?.querySelector('ul');
-          if (ul && !ul.querySelector('li')) {
-            // the multi-choice question doesn't have an answer
-            // it's actually empty
-            actuallyNotEmpty = false;
-          }
-        });
-        // filter out sections without any empty items
-        if (
-          actuallyNotEmpty &&
-          element.parentElement &&
-          !element.parentElement.querySelector('.ng-empty')
-        ) {
-          element.parentElement.hidden = checked;
-        }
-      } else {
-        // deals with case where the only empty question
-        // is a disabled question and a tooltip.
-        // though the disabled question is hidden, the empty
-        // section remains because of it.
-        if (
-          element.querySelector('.ng-empty:not([disabled]):not(.tooltipContent)') === null &&
-          element.parentElement
-        ) {
-          element.parentElement.hidden = checked;
-        } else {
-          // check for multi-choice questions
-          // get all empty questions
-          const emptyq = element.querySelectorAll('.ng-empty');
-          let doFilter = true;
-          emptyq.forEach(e => {
+      sections.map(element => {
+        if (!element.querySelector('.ng-empty')) {
+          const nonEmpty = Array.from(element.querySelectorAll('.ng-not-empty'));
+          let actuallyNotEmpty = true;
+          // check multi-choice questions to make sure
+          // they actually have an answer before we
+          // filter out the entire section
+          nonEmpty.forEach(e => {
             const ul = e.parentElement?.querySelector('ul');
             if (ul && !ul.querySelector('li')) {
               // the multi-choice question doesn't have an answer
-              doFilter = false;
-            } else if (!ul) {
-              // this question is empty and isn't multi-choice
-              doFilter = false;
+              // it's actually empty
+              actuallyNotEmpty = false;
             }
           });
-          if (doFilter && element.parentElement) {
+          // filter out sections without any empty items
+          if (
+            actuallyNotEmpty &&
+            element.parentElement &&
+            !element.parentElement.querySelector('.ng-empty')
+          ) {
             element.parentElement.hidden = checked;
           }
+        } else {
+          // deals with case where the only empty question
+          // is a disabled question and a tooltip.
+          // though the disabled question is hidden, the empty
+          // section remains because of it.
+          if (
+            element.querySelector('.ng-empty:not([disabled]):not(.tooltipContent)') === null &&
+            element.parentElement
+          ) {
+            element.parentElement.hidden = checked;
+          } else {
+            // check for multi-choice questions
+            // get all empty questions
+            const emptyq = element.querySelectorAll('.ng-empty');
+            let doFilter = true;
+            emptyq.forEach(e => {
+              const ul = e.parentElement?.querySelector('ul');
+              if (ul && !ul.querySelector('li')) {
+                // the multi-choice question doesn't have an answer
+                doFilter = false;
+              } else if (!ul) {
+                // this question is empty and isn't multi-choice
+                doFilter = false;
+              }
+            });
+            if (doFilter && element.parentElement) {
+              element.parentElement.hidden = checked;
+            }
+          }
         }
-      }
-    });
+      });
 
-    empty.map(untypedElement => {
-      const element = untypedElement as HTMLInputElement;
-      if (element.type === 'checkbox') {
-        // we make an exception for checkboxes we've touched
-        // a checked checkbox that we've unchecked can be filtered out, despite
-        // having the "empty" class.
-        const d = Array.from(element.classList);
-        if (d.includes('ng-touched')) {
+      empty.map(untypedElement => {
+        const element = untypedElement as HTMLInputElement;
+        if (element.type === 'checkbox') {
+          // we make an exception for checkboxes we've touched
+          // a checked checkbox that we've unchecked can be filtered out, despite
+          // having the "empty" class.
+          const d = Array.from(element.classList);
+          if (d.includes('ng-touched')) {
+            const closestElement = element.closest('.lf-table-item') as HTMLElement;
+            closestElement.hidden = checked;
+          }
+        }
+        // we don't want to show disabled items in the filtered view
+        if (element.disabled) {
           const closestElement = element.closest('.lf-table-item') as HTMLElement;
           closestElement.hidden = checked;
         }
-      }
-      // we don't want to show disabled items in the filtered view
-      if (element.disabled) {
-        const closestElement = element.closest('.lf-table-item') as HTMLElement;
-        closestElement.hidden = checked;
-      }
-    });
+      });
 
-    setFilterChecked(checked);
-    setFormFilled(document.querySelector('input.ng-empty:not([disabled])') == null);
+      setFilterChecked(checked);
+      setFormFilled(document.querySelector('input.ng-empty:not([disabled])') == null);
+    }
   };
   const fetchResourcesAndExecuteCql = (
     order: string,
@@ -560,7 +564,9 @@ export function SmartApp(props: SmartAppProps) {
     setReloadQuestionnaire(true);
   };
   const onFilterCheckboxRefChange = () => {
-    const filterCheckbox = document.getElementById('filterCheckbox') as HTMLInputElement;
+    const filterCheckbox = document.getElementById(
+      questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'
+    ) as HTMLInputElement;
     if (filterCheckbox != null) {
       filterCheckbox.checked = filterChecked;
     }
@@ -602,7 +608,7 @@ export function SmartApp(props: SmartAppProps) {
               onChange={() => {
                 filter(false);
               }}
-              id="filterCheckbox"
+              id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
               ref={onFilterCheckboxRefChange}
             ></input>
           </div>
@@ -662,6 +668,7 @@ export function SmartApp(props: SmartAppProps) {
               updateAdFormCompleted={completed => setAdFormCompleted(completed)}
               adFormResponseFromServer={adFormResponseFromServer}
               updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
+              setFormElement={setFormElement}
             />
           )}
         </div>
