@@ -1,6 +1,8 @@
 import Client from 'fhirclient/lib/Client';
 import { LogType, OrderResource } from '../SmartApp';
 import { Bundle, FhirResource } from 'fhir/r4';
+import * as env from 'env-var';
+
 interface Queries {
   [key: string]: string;
 }
@@ -126,10 +128,7 @@ function doSearch(
   }
 
   // If this is for Epic, there are some specific modifications needed for the queries to work properly
-  if (
-    process.env.REACT_APP_EPIC_SUPPORTED_QUERIES &&
-    process.env.REACT_APP_EPIC_SUPPORTED_QUERIES.toLowerCase() === 'true'
-  ) {
+  if (env.get('REACT_APP_EPIC_SUPPORTED_QUERIES').asBool()) {
     switch (type) {
       case 'Observation':
         // Epic requires you to specify a category or code search parameter, so search on all categories

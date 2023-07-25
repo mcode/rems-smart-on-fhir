@@ -20,6 +20,7 @@ import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
 import OrderSign from '../../../cds-hooks/resources/OrderSign';
 import './MedReqDropDown.css';
+import * as env from 'env-var';
 
 // Adding in cards
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -105,8 +106,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     axios({
       method: 'post',
       url:
-        `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}` +
-        `${process.env.REACT_APP_REMS_HOOKS_PATH}`,
+        `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
+        `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}`,
       data: cdsHook
     }).then(
       response => {
@@ -202,7 +203,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
       patient &&
       practitioner &&
       selectedMedicationCardBundle &&
-      process.env.REACT_APP_SEND_RX_ENABLED?.toLowerCase() === 'true'
+      env.get('REACT_APP_SEND_RX_ENABLED').asBool() === true
     ) {
       setSendRxEnabled(true);
     } else {
@@ -222,10 +223,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     p: 4
   };
 
-  const etasu_status_enabled: boolean =
-    process.env.REACT_APP_ETASU_STATUS_ENABLED?.toLowerCase() === 'true' ? true : false;
-  const pharmacy_status_enabled: boolean =
-    process.env.REACT_APP_PHARMACY_STATUS_ENABLED?.toLowerCase() === 'true' ? true : false;
+  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool() ? true : false;
+  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool() ? true : false;
 
   return (
     <div>
