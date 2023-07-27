@@ -1,12 +1,13 @@
 import buildNewRxRequest from './buildScript.2017071';
 import { Practitioner, Patient, MedicationRequest } from 'fhir/r4';
+import * as env from 'env-var';
 
 export default function sendRx(
   patient: Patient,
   practitioner: Practitioner,
   request: MedicationRequest
 ) {
-  const pimsUrl = process.env.REACT_APP_PHARMACY_SERVER_BASE;
+  const pimsUrl = env.get('REACT_APP_PHARMACY_SERVER_BASE').asString();
 
   // build the NewRx Message
   const newRx = buildNewRxRequest(patient, practitioner, request);

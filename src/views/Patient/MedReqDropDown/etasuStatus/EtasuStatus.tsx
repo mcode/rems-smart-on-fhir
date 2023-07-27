@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 
 import RemsMetEtasuResponse from './RemsMetEtasuResponse';
 import MetRequirements from './MetRequirements';
+import * as env from 'env-var';
 import './EtasuStatus.css';
 
 interface EtasuStatusProps {
@@ -51,7 +52,7 @@ const EtasuStatus = (props: EtasuStatusProps) => {
         ' - ' +
         drugCode
     );
-    const etasuUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+    const etasuUrl = `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
     axios({
       method: 'get',
       url: etasuUrl
