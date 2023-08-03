@@ -7,6 +7,7 @@ import Client from 'fhirclient/lib/Client';
 import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 // TODO:
 //  - create a css file for better style
@@ -165,11 +166,18 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
             </Typography>
           </CardContent>
           <CardActions>
-            {links.map((link: Link) => (
-              <Button key={link?.label} size="small" onClick={() => buttonClickAction(link)}>
-                {link?.label}
-              </Button>
-            ))}
+            {links.map((link: Link) => {
+              if (link.type === 'smart') {
+                return (<Button key={link?.label} style={{textDecoration: 'underline'}} size="small" onClick={() => buttonClickAction(link)}>
+                  {link?.label}
+                </Button>);
+              }
+              return (
+                <Button key={link?.label} endIcon={<PictureAsPdfIcon />} size="small" onClick={() => buttonClickAction(link)}>
+                  {link?.label}
+                </Button>
+              );
+            })}
           </CardActions>
         </React.Fragment>
       </Card>
