@@ -233,7 +233,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: 'center',
+          maxWidth: '800px'
         }}
       >
         <div className="MedReqDropDown">

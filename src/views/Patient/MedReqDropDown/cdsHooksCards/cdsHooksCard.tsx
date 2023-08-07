@@ -7,6 +7,7 @@ import Client from 'fhirclient/lib/Client';
 import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 // TODO:
 //  - create a css file for better style
@@ -144,32 +145,45 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
       });
     });
   }
-
+  const cardSectionHeaderStyle = { marginBottom: '2px', color: 'black' };
+  const decisionCard = { padding: '15px', margin: '10px', backgroundColor: '#fff', border: '1px solid rgba(0, 0, 0, 0.12)',
+  borderRadius: '4px'};
+  const cardSource = { fontSize: '.85rem', fontStyle: 'italic', margin: '0 0 5px'};
+  const sourceLink = { marginRight: '8px', color: '#4183c4', textDecoration: 'none' };
   return (
     <div>
-      <Card variant="outlined">
+      <Card variant="outlined" style={decisionCard}>
         <React.Fragment>
           <CardContent>
-            <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+            <Typography  style={cardSectionHeaderStyle} gutterBottom>
               Summary
             </Typography>
             <Typography variant="h5" component="div">
-              {props.card?.summary}
+              <p>{props.card?.summary}</p>
             </Typography>
-            <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+            <br/>
+            <Typography  style={cardSectionHeaderStyle} gutterBottom>
               Details
             </Typography>
-            <Typography variant="body2">{props.card?.detail}</Typography>
-            <Typography sx={{ fontSize: 10 }} color="text.secondary" gutterBottom>
-              Source <a href={props.card?.source?.url}>{props.card?.source?.label}</a>
+            <Typography>{props.card?.detail}</Typography>
+            <br/>
+            <Typography style={cardSource} gutterBottom>
+              Source <a href={props.card?.source?.url} style={sourceLink}>{props.card?.source?.label}</a>
             </Typography>
           </CardContent>
-          <CardActions>
-            {links.map((link: Link) => (
-              <Button key={link?.label} size="small" onClick={() => buttonClickAction(link)}>
-                {link?.label}
-              </Button>
-            ))}
+          <CardActions sx={{display: 'inline !important'}}>
+            {links.map((link: Link) => {
+              if (link.type === 'smart') {
+                return (<Button key={link?.label} variant="outlined" onClick={() => buttonClickAction(link)}>
+                  {link?.label}
+                </Button>);
+              }
+              return (
+                <Button key={link?.label} endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
+                  {link?.label}
+                </Button>
+              );
+            })}
           </CardActions>
         </React.Fragment>
       </Card>
