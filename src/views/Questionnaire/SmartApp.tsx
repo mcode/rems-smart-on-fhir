@@ -104,7 +104,7 @@ export function SmartApp(props: SmartAppProps) {
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
   const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
-  const [filterChecked, setFilterChecked] = useState<boolean>(false);
+  const [filterChecked, setFilterChecked] = useState<boolean>(true);
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
