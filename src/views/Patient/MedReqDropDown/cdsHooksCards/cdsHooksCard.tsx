@@ -19,12 +19,12 @@ import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireU
 interface CdsHooksCardProps {
   card: HooksCard;
   client: Client;
-  tabCallback: (n: ReactElement, m: string) => void;
+  tabCallback: (n: ReactElement, m: string, l?:number) => void;
 }
 
 const CdsHooksCard = (props: CdsHooksCardProps) => {
   const [links, setLinks] = useState<Link[]>([]);
-
+  let tabIndex = 0;
   useEffect(() => {
     modifySmartLaunchURLs(props.card).then(updatedLinks => {
       setLinks(updatedLinks);
@@ -114,9 +114,12 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
           standalone={false}
           appContext={appContext}
           patientId={props.client.getPatientId() || ''}
+          tabIndex={tabIndex}
         ></SmartApp>,
-        link.label
+        link.label,
+        tabIndex
       );
+      tabIndex = tabIndex + 1;
     }
   };
 
