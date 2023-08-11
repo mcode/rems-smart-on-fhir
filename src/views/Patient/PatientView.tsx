@@ -26,7 +26,8 @@ function PatientView(props: PatientViewProps) {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: 'center',
+          position: 'fixed'
         }}
       >
         {/* Demo of data from fhir server */}
@@ -61,7 +62,19 @@ function PatientView(props: PatientViewProps) {
         ) : (
           <h1>Loading...</h1>
         )}
-
+      </Box>
+      <Box
+        sx={{
+          marginTop: 8,
+          marginRight: 30,
+          marginLeft: 70,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: 800
+        }}
+      >
+        {/* Demo of data from fhir server */}
         {client ? (
           <MedReqDropDown client={client} tabCallback={props.tabCallback} />
         ) : (
