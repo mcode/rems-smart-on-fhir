@@ -383,22 +383,22 @@ export function SmartApp(props: SmartAppProps) {
           return Promise.all(
             artifacts.mainLibraryElms.map(mainLibraryElm => {
               let parameterObj: ParameterObject = {};
-              if (orderResource) {
-                if (orderResource.resourceType === 'DeviceRequest') {
+              if (orderResourceArtifact) {
+                if (orderResourceArtifact.resourceType === 'DeviceRequest') {
                   parameterObj = {
-                    device_request: fhirWrapper.wrap(orderResource)
+                    device_request: fhirWrapper.wrap(orderResourceArtifact)
                   };
-                } else if (orderResource.resourceType === 'ServiceRequest') {
+                } else if (orderResourceArtifact.resourceType === 'ServiceRequest') {
                   parameterObj = {
-                    service_request: fhirWrapper.wrap(orderResource)
+                    service_request: fhirWrapper.wrap(orderResourceArtifact)
                   };
-                } else if (orderResource.resourceType === 'MedicationRequest') {
+                } else if (orderResourceArtifact.resourceType === 'MedicationRequest') {
                   parameterObj = {
-                    medication_request: fhirWrapper.wrap(orderResource)
+                    medication_request: fhirWrapper.wrap(orderResourceArtifact)
                   };
-                } else if (orderResource.resourceType === 'MedicationDispense') {
+                } else if (orderResourceArtifact.resourceType === 'MedicationDispense') {
                   parameterObj = {
-                    medication_dispense: fhirWrapper.wrap(orderResource)
+                    medication_dispense: fhirWrapper.wrap(orderResourceArtifact)
                   };
                 }
               }
