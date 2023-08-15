@@ -24,7 +24,8 @@ interface AppProps {
 interface SmartTab {
   element: ReactElement;
   name: string;
-  id: string
+  groupName?: string;
+  id: string;
   closeable: boolean;
 }
 function App(props: AppProps) {
@@ -35,11 +36,15 @@ function App(props: AppProps) {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(tabs[newValue].id);
   };
-  const addTab = (element: ReactElement, tabName: string, tabIndex = 0) => {
+  const addTab = (element: ReactElement, tabName: string, groupName: string, tabIndex = 0) => {
     const tabId = `${tabName}-${tabIndex}`;
-    setTabs(oldTabs => [...oldTabs, { element: element, name: tabName, id: tabId, closeable: true }]);
+    setTabs(oldTabs => [
+      ...oldTabs,
+      { element: element, name: tabName, id: tabId, closeable: true, groupName: groupName }
+    ]);
     setValue(tabId);
   };
+
   useEffect(() => {
     const homeName = 'Home';
     let appContext: AppContext | null = null;
@@ -116,11 +121,11 @@ function App(props: AppProps) {
               {tabs.map((tab, i) => {
                 return (
                   <Tab
+                    style={{ maxWidth: '500px' }}
                     label={
                       typeof tab.name === 'string' ? (
                         <span>
-                          {' '}
-                          {tab.name}
+                          {tab.groupName ? <span> {tab.groupName} </span> : null} {tab.name}
                           {tab.closeable && (
                             <IconButton
                               component="div"

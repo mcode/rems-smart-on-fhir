@@ -6,7 +6,10 @@ import { ReactElement } from 'react';
 interface CdsHooksCardsProps {
   cards: HooksCard[];
   client: Client;
-  tabCallback: (n: ReactElement, m: string) => void;
+  name: string;
+  tabIndex: number;
+  setTabIndex: (n: number) => void;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
 }
 
 const CdsHooksCards = (props: CdsHooksCardsProps) => {
@@ -16,8 +19,11 @@ const CdsHooksCards = (props: CdsHooksCardsProps) => {
         <CdsHooksCard
           key={card?.summary}
           card={card}
+          name={props.name}
           client={props.client}
           tabCallback={props.tabCallback}
+          tabIndex={props.tabIndex}
+          setTabIndex={props.setTabIndex}
         ></CdsHooksCard>
       ))}
     </div>
