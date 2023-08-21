@@ -38,7 +38,7 @@ interface MedicationBundle {
 }
 
 interface MedReqDropDownProps {
-  tabCallback: (n: ReactElement, m: string) => void;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
   client: Client;
 }
 function MedReqDropDown(props: MedReqDropDownProps) {
@@ -168,7 +168,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     useState<BundleEntry<MedicationRequest>>();
 
   const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
-
+  const [medicationName, setMedicationName] = useState<string>('');
+  const [tabIndex, setTabIndex] = useState<number>(1);
   useEffect(() => {
     if (selectedOption != '') {
       setselectedMedicationCard(
@@ -179,6 +180,11 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   useEffect(() => {
     if (selectedMedicationCard) {
+      const medName =
+        selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+      if (medName) {
+        setMedicationName(medName);
+      }
       setselectedMedicationCardBundle({ resource: selectedMedicationCard });
     }
   }, [selectedMedicationCard]);
@@ -287,11 +293,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                       fontSize: 24
                     }}
                   >
-                    {
-                      selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(
-                        ' '
-                      )[0]
-                    }
+                    {medicationName}
                   </Typography>
                   <Typography
                     variant="h6"
@@ -325,6 +327,9 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                   <CdsHooksCards
                     cards={hooksCards}
                     client={client}
+                    name={medicationName}
+                    tabIndex={tabIndex}
+                    setTabIndex={setTabIndex}
                     tabCallback={props.tabCallback}
                   ></CdsHooksCards>
                 </CardContent>

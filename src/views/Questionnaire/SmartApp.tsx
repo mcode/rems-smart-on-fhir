@@ -31,6 +31,7 @@ interface SmartAppProps {
   patientId: string;
   smartClient: Client;
   appContext?: AppContext;
+  tabIndex: number;
 }
 export type OrderResource = DeviceRequest | MedicationRequest | ServiceRequest | MedicationDispense;
 export type LogType = 'infoClass' | 'errorClass' | 'warningClass';
@@ -669,6 +670,7 @@ export function SmartApp(props: SmartAppProps) {
               adFormResponseFromServer={adFormResponseFromServer}
               updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
               setFormElement={setFormElement}
+              tabIndex={props.tabIndex}
             />
           )}
         </div>

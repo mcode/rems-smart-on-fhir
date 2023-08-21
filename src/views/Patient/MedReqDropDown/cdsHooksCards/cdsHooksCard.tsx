@@ -20,12 +20,14 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 interface CdsHooksCardProps {
   card: HooksCard;
   client: Client;
-  tabCallback: (n: ReactElement, m: string) => void;
+  name: string;
+  tabIndex: number;
+  setTabIndex: (n: number) => void;
+  tabCallback: (n: ReactElement, m: string, o: string, l?: number) => void;
 }
 
 const CdsHooksCard = (props: CdsHooksCardProps) => {
   const [links, setLinks] = useState<Link[]>([]);
-
   useEffect(() => {
     modifySmartLaunchURLs(props.card).then(updatedLinks => {
       setLinks(updatedLinks);
@@ -115,9 +117,13 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
           standalone={false}
           appContext={appContext}
           patientId={props.client.getPatientId() || ''}
+          tabIndex={props.tabIndex}
         ></SmartApp>,
-        link.label
+        link.label,
+        props.name,
+        props.tabIndex
       );
+      props.setTabIndex(props.tabIndex + 1);
     }
   };
 
