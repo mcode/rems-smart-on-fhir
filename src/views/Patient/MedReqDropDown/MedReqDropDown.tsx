@@ -192,11 +192,16 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   useEffect(() => {
     if (patient && patient.id && user && selectedMedicationCardBundle) {
       const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
-      const hook = new OrderSelect(patient.id, user, {
-        resourceType: 'Bundle',
-        type: 'batch',
-        entry: [selectedMedicationCardBundle],
-      }, [resourceId]);
+      const hook = new OrderSelect(
+        patient.id,
+        user,
+        {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [selectedMedicationCardBundle]
+        },
+        [resourceId]
+      );
       const tempHook = hook.generate();
 
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
@@ -230,8 +235,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     p: 4
   };
 
-  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool() ? true : false;
-  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool() ? true : false;
+  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool()
+    ? true
+    : false;
+  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool()
+    ? true
+    : false;
 
   return (
     <div>
