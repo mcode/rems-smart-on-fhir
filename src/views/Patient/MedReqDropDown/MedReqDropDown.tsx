@@ -18,7 +18,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
-import OrderSign from '../../../cds-hooks/resources/OrderSign';
+import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 
@@ -191,11 +191,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   useEffect(() => {
     if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const hook = new OrderSign(patient.id, user, {
+      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+      const hook = new OrderSelect(patient.id, user, {
         resourceType: 'Bundle',
         type: 'batch',
-        entry: [selectedMedicationCardBundle]
-      });
+        entry: [selectedMedicationCardBundle],
+      }, [resourceId]);
       const tempHook = hook.generate();
 
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
