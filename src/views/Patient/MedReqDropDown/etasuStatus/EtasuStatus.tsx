@@ -52,7 +52,9 @@ const EtasuStatus = (props: EtasuStatusProps) => {
         ' - ' +
         drugCode
     );
-    const etasuUrl = `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+    const etasuUrl = `${env
+      .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
+      .asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
     axios({
       method: 'get',
       url: etasuUrl
