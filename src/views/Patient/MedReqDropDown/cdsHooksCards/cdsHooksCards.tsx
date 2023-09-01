@@ -2,6 +2,7 @@ import Client from 'fhirclient/lib/Client';
 import { Card as HooksCard } from '../../../../cds-hooks/resources/HookTypes';
 import CdsHooksCard from './cdsHooksCard';
 import { ReactElement } from 'react';
+import { Grid } from '@mui/material';
 
 interface CdsHooksCardsProps {
   cards: HooksCard[];
@@ -14,7 +15,7 @@ interface CdsHooksCardsProps {
 
 const CdsHooksCards = (props: CdsHooksCardsProps) => {
   return (
-    <div>
+    <Grid item container spacing={2}>
       {props.cards.map((card: HooksCard) => (
         <CdsHooksCard
           key={card?.summary}
@@ -24,9 +25,9 @@ const CdsHooksCards = (props: CdsHooksCardsProps) => {
           tabCallback={props.tabCallback}
           tabIndex={props.tabIndex}
           setTabIndex={props.setTabIndex}
-        ></CdsHooksCard>
+        />
       ))}
-    </div>
+    </Grid>
   );
 };
 

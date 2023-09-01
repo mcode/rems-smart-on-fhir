@@ -1,4 +1,15 @@
-import { Box, Card, CardContent, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Typography
+} from '@mui/material';
 import { Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
@@ -19,69 +30,68 @@ function PatientView(props: PatientViewProps) {
     client.patient.read().then((patient: any) => setPatient(patient));
   }, [client.patient, client]);
 
+  const rows: { header: string; data: string }[] = [
+    { header: 'ID', data: patient?.['id'] || '' },
+    {
+      header: 'Full Name',
+      data: `${patient?.name?.[0]?.given?.[0]} ${patient?.name?.[0]?.family}`
+    },
+    { header: 'Gender', data: patient?.['gender'] || '' },
+    { header: 'Date of Birth', data: patient?.['birthDate'] || '' },
+    {
+      header: 'Address',
+      data: `${(patient?.address?.[0].line, patient?.address?.[0]['city'])}\n${
+        patient?.address?.[0]?.state
+      }, ${patient?.address?.[0]?.postalCode}`
+    }
+  ];
+
   return (
-    <div className="Patient">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          position: 'fixed'
-        }}
-      >
-        {/* Demo of data from fhir server */}
-        <p>Launched with patient context:</p>
-        {patient ? (
-          <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
-            <CardContent>
-              <Typography sx={{ fontSize: 17 }} color="text.secondary" gutterBottom>
-                Patient Info
-              </Typography>
-              <Typography variant="h5" component="div">
-                {patient.name?.[0]?.given?.[0]} {patient.name?.[0]?.family}
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {patient['birthDate']}
-              </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                sex: {patient['gender']}
-              </Typography>
-              <Typography color="text.disabled">
-                {patient.address?.[0].line}, {patient.address?.[0]['city']}
-                <br />
-                {patient.address?.[0]?.state}, {patient.address?.[0]?.postalCode}
-              </Typography>
-              <Typography
-                sx={{ mt: 1.5, bgcolor: 'text.disabled', color: 'white', textAlign: 'center' }}
-              >
-                id: {patient['id']}
-              </Typography>
-            </CardContent>
-          </Card>
-        ) : (
-          <h1>Loading...</h1>
-        )}
-      </Box>
-      <Box
-        sx={{
-          marginTop: 8,
-          marginRight: 30,
-          marginLeft: 70,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: 800
-        }}
-      >
-        {/* Demo of data from fhir server */}
+    <Box flexGrow={1}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Typography variant="h4" component="h1" textAlign="center">
+            Launched with patient context:
+          </Typography>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          {patient ? (
+            <Card sx={{ bgcolor: 'white' }}>
+              <CardContent>
+                <Typography component="h2" variant="h5" gutterBottom>
+                  Patient Info
+                </Typography>
+                <TableContainer>
+                  <Table>
+                    <TableBody>
+                      {rows.map(({ header, data }) => (
+                        <TableRow key={header}>
+                          <TableCell component="th" scope="row" variant="head">
+                            {header}
+                          </TableCell>
+                          <TableCell variant="body">{data}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          ) : (
+            <Typography component="h2" variant="h5">
+              Loading patient info...
+            </Typography>
+          )}
+        </Grid>
         {client ? (
           <MedReqDropDown client={client} tabCallback={props.tabCallback} />
         ) : (
-          <p>Loading Medication Request...</p>
+          <Grid item xs={12} md={6}>
+            <p>Loading medication request...</p>
+          </Grid>
         )}
-      </Box>
-    </div>
+      </Grid>
+    </Box>
   );
 }
 

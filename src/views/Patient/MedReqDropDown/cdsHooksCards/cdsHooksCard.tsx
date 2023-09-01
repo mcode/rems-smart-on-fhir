@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactElement } from 'react';
-import { Button, Card, CardActions, CardContent, Typography } from '@mui/material';
+import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/material';
 
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
@@ -151,10 +151,7 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
       });
     });
   }
-  const cardSectionHeaderStyle = { marginBottom: '2px', color: 'black' };
   const decisionCard = {
-    padding: '15px',
-    margin: '10px',
     backgroundColor: '#fff',
     border: '1px solid rgba(0, 0, 0, 0.12)',
     borderRadius: '4px'
@@ -162,56 +159,44 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
   const cardSource = { fontSize: '.85rem', fontStyle: 'italic', margin: '0 0 5px' };
   const sourceLink = { marginRight: '8px', color: '#4183c4', textDecoration: 'none' };
   return (
-    <div>
+    <Grid item>
       <Card variant="outlined" style={decisionCard}>
-        <React.Fragment>
-          <CardContent>
-            <Typography style={cardSectionHeaderStyle} gutterBottom>
-              Summary
-            </Typography>
-            <Typography variant="h5" component="div">
-              <p>{props.card?.summary}</p>
-            </Typography>
-            <br />
-            <Typography style={cardSectionHeaderStyle} gutterBottom>
-              Details
-            </Typography>
-            <Typography>{props.card?.detail}</Typography>
-            <br />
-            <Typography style={cardSource} gutterBottom>
-              Source{' '}
-              <a href={props.card?.source?.url} style={sourceLink}>
-                {props.card?.source?.label}
-              </a>
-            </Typography>
-          </CardContent>
-          <CardActions sx={{ display: 'inline !important' }}>
+        <CardContent>
+          <Typography variant="h5" component="div">
+            {props.card?.summary}
+          </Typography>
+          <Typography>{props.card?.detail}</Typography>
+          <Typography style={cardSource} gutterBottom>
+            {'Source '}
+            <a href={props.card?.source?.url} style={sourceLink}>
+              {props.card?.source?.label}
+            </a>
+          </Typography>
+        </CardContent>
+        <CardActions>
+          <Grid container>
             {links.map((link: Link) => {
               if (link.type === 'smart') {
                 return (
-                  <Button
-                    key={link?.label}
-                    variant="outlined"
-                    onClick={() => buttonClickAction(link)}
-                  >
-                    {link?.label}
-                  </Button>
+                  <Grid item key={link?.label}>
+                    <Button variant="outlined" onClick={() => buttonClickAction(link)}>
+                      {link?.label}
+                    </Button>
+                  </Grid>
                 );
               }
               return (
-                <Button
-                  key={link?.label}
-                  endIcon={<PictureAsPdfIcon />}
-                  onClick={() => buttonClickAction(link)}
-                >
-                  {link?.label}
-                </Button>
+                <Grid item key={link?.label}>
+                  <Button endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
+                    {link?.label}
+                  </Button>
+                </Grid>
               );
             })}
-          </CardActions>
-        </React.Fragment>
+          </Grid>
+        </CardActions>
       </Card>
-    </div>
+    </Grid>
   );
 };
 
