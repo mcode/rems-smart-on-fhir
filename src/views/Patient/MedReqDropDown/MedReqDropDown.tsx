@@ -245,7 +245,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   const label = 'Select Medication Request';
   return (
-    <Grid item xs={12} md={6}>
+    <>
       <Card sx={{ bgcolor: 'white' }}>
         <CardContent>
           <Grid item container spacing={2}>
@@ -350,7 +350,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
           />
         </Box>
       </Modal>
-    </Grid>
+    </>
   );
 }
 

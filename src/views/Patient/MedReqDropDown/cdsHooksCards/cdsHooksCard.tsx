@@ -174,7 +174,7 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
           </Typography>
         </CardContent>
         <CardActions>
-          <Grid container>
+          <Grid container spacing={1}>
             {links.map((link: Link) => {
               if (link.type === 'smart') {
                 return (

@@ -49,17 +49,12 @@ function PatientView(props: PatientViewProps) {
   return (
     <Box flexGrow={1}>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Typography variant="h4" component="h1" textAlign="center">
-            Launched with patient context:
-          </Typography>
-        </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           {patient ? (
             <Card sx={{ bgcolor: 'white' }}>
               <CardContent>
-                <Typography component="h2" variant="h5" gutterBottom>
-                  Patient Info
+                <Typography component="h1" variant="h5">
+                  Patient information loaded from patient context
                 </Typography>
                 <TableContainer>
                   <Table>
@@ -78,18 +73,18 @@ function PatientView(props: PatientViewProps) {
               </CardContent>
             </Card>
           ) : (
-            <Typography component="h2" variant="h5">
+            <Typography component="h1" variant="h5">
               Loading patient info...
             </Typography>
           )}
         </Grid>
-        {client ? (
-          <MedReqDropDown client={client} tabCallback={props.tabCallback} />
-        ) : (
-          <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={8}>
+          {client ? (
+            <MedReqDropDown client={client} tabCallback={props.tabCallback} />
+          ) : (
             <p>Loading medication request...</p>
-          </Grid>
-        )}
+          )}
+        </Grid>
       </Grid>
     </Box>
   );
