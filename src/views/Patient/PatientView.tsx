@@ -7,7 +7,7 @@ import './PatientView.css';
 
 interface PatientViewProps {
   client: Client;
-  tabCallback: (n: ReactElement, m: string) => void;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
 }
 
 function PatientView(props: PatientViewProps) {

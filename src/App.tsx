@@ -24,6 +24,8 @@ interface AppProps {
 interface SmartTab {
   element: ReactElement;
   name: string;
+  groupName?: string;
+  id: string;
   closeable: boolean;
 }
 function App(props: AppProps) {
@@ -32,12 +34,17 @@ function App(props: AppProps) {
   const [tabs, setTabs] = useState<SmartTab[]>([]);
   const [staticContent, setStaticContent] = useState<ReactElement>();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(tabs[newValue].name);
+    setValue(tabs[newValue].id);
   };
-  const addTab = (element: ReactElement, tabName: string) => {
-    setTabs(oldTabs => [...oldTabs, { element: element, name: tabName, closeable: true }]);
-    setValue(tabName);
+  const addTab = (element: ReactElement, tabName: string, groupName: string, tabIndex = 0) => {
+    const tabId = `${tabName}-${tabIndex}`;
+    setTabs(oldTabs => [
+      ...oldTabs,
+      { element: element, name: tabName, id: tabId, closeable: true, groupName: groupName }
+    ]);
+    setValue(tabId);
   };
+
   useEffect(() => {
     const homeName = 'Home';
     let appContext: AppContext | null = null;
@@ -52,6 +59,7 @@ function App(props: AppProps) {
           standalone={false}
           appContext={appContext}
           patientId={client.getPatientId() || ''}
+          tabIndex={0}
         />
       );
       setStaticContent(smartApp);
@@ -60,6 +68,7 @@ function App(props: AppProps) {
         {
           element: <Patient client={client} tabCallback={addTab} />,
           name: homeName,
+          id: homeName,
           closeable: false
         }
       ]);
@@ -71,10 +80,10 @@ function App(props: AppProps) {
     (event: MouseEvent, tabToDelete: SmartTab) => {
       event.stopPropagation();
       const tabToDeleteIndex = tabs.findIndex(tab => {
-        return tab.name === tabToDelete.name;
+        return tab.id === tabToDelete.id;
       });
-      if (tabToDeleteIndex > 0 && value === tabToDelete.name) {
-        setValue(tabs[tabToDeleteIndex - 1].name);
+      if (tabToDeleteIndex > 0 && value === tabToDelete.id) {
+        setValue(tabs[tabToDeleteIndex - 1].id);
       }
       const newTabs = tabs.filter((tab, index) => {
         return index !== tabToDeleteIndex;
@@ -104,7 +113,7 @@ function App(props: AppProps) {
               orientation="horizontal"
               variant="scrollable"
               value={tabs.findIndex(tab => {
-                return tab.name === value;
+                return tab.id === value;
               })}
               onChange={handleChange}
               aria-label="tabs"
@@ -112,11 +121,11 @@ function App(props: AppProps) {
               {tabs.map((tab, i) => {
                 return (
                   <Tab
+                    style={{ maxWidth: '500px' }}
                     label={
                       typeof tab.name === 'string' ? (
                         <span>
-                          {' '}
-                          {tab.name}
+                          {tab.groupName ? <span> {tab.groupName} </span> : null} {tab.name}
                           {tab.closeable && (
                             <IconButton
                               component="div"
@@ -143,7 +152,7 @@ function App(props: AppProps) {
               return (
                 <MemoizedTabPanel
                   value={tabs.findIndex(tab => {
-                    return tab.name === value;
+                    return tab.id === value;
                   })}
                   index={i}
                   key={i}

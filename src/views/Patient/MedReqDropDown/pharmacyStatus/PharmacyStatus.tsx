@@ -53,7 +53,9 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
     if (ndcDrugCoding != undefined) {
       queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
     }
-    const pharmacyUrl = `${env.get('REACT_APP_PHARMACY_SERVER_BASE').asString()}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
+    const pharmacyUrl = `${env
+      .get('REACT_APP_PHARMACY_SERVER_BASE')
+      .asString()}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
     console.log(pharmacyUrl);
     axios({
       method: 'get',

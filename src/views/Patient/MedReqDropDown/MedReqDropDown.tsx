@@ -18,7 +18,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
-import OrderSign from '../../../cds-hooks/resources/OrderSign';
+import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 
@@ -38,7 +38,7 @@ interface MedicationBundle {
 }
 
 interface MedReqDropDownProps {
-  tabCallback: (n: ReactElement, m: string) => void;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
   client: Client;
 }
 function MedReqDropDown(props: MedReqDropDownProps) {
@@ -168,7 +168,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     useState<BundleEntry<MedicationRequest>>();
 
   const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
-
+  const [medicationName, setMedicationName] = useState<string>('');
+  const [tabIndex, setTabIndex] = useState<number>(1);
   useEffect(() => {
     if (selectedOption != '') {
       setselectedMedicationCard(
@@ -179,17 +180,28 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   useEffect(() => {
     if (selectedMedicationCard) {
+      const medName =
+        selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+      if (medName) {
+        setMedicationName(medName);
+      }
       setselectedMedicationCardBundle({ resource: selectedMedicationCard });
     }
   }, [selectedMedicationCard]);
 
   useEffect(() => {
     if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const hook = new OrderSign(patient.id, user, {
-        resourceType: 'Bundle',
-        type: 'batch',
-        entry: [selectedMedicationCardBundle]
-      });
+      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+      const hook = new OrderSelect(
+        patient.id,
+        user,
+        {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [selectedMedicationCardBundle]
+        },
+        [resourceId]
+      );
       const tempHook = hook.generate();
 
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
@@ -223,8 +235,12 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     p: 4
   };
 
-  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool() ? true : false;
-  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool() ? true : false;
+  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool()
+    ? true
+    : false;
+  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool()
+    ? true
+    : false;
 
   return (
     <div>
@@ -233,7 +249,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: 'center',
+          maxWidth: '800px'
         }}
       >
         <div className="MedReqDropDown">
@@ -286,11 +303,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                       fontSize: 24
                     }}
                   >
-                    {
-                      selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(
-                        ' '
-                      )[0]
-                    }
+                    {medicationName}
                   </Typography>
                   <Typography
                     variant="h6"
@@ -324,6 +337,9 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                   <CdsHooksCards
                     cards={hooksCards}
                     client={client}
+                    name={medicationName}
+                    tabIndex={tabIndex}
+                    setTabIndex={setTabIndex}
                     tabCallback={props.tabCallback}
                   ></CdsHooksCards>
                 </CardContent>
