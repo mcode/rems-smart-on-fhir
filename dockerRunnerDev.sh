@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Handle closing application on signal interrupt (ctrl + c)
-trap 'kill $CONTINUOUS_INSTALL_PID $SERVER_PID; gradle --stop; exit' INT
+trap 'kill $CONTINUOUS_INSTALL_PID $SERVER_PID; exit' INT
 
 mkdir logs 
 # Reset log file content for new application boot
