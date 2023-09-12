@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -18,7 +19,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
-import OrderSign from '../../../cds-hooks/resources/OrderSign';
+import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 
@@ -38,7 +39,7 @@ interface MedicationBundle {
 }
 
 interface MedReqDropDownProps {
-  tabCallback: (n: ReactElement, m: string) => void;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
   client: Client;
 }
 function MedReqDropDown(props: MedReqDropDownProps) {
@@ -168,7 +169,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     useState<BundleEntry<MedicationRequest>>();
 
   const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
-
+  const [medicationName, setMedicationName] = useState<string>('');
+  const [tabIndex, setTabIndex] = useState<number>(1);
   useEffect(() => {
     if (selectedOption != '') {
       setselectedMedicationCard(
@@ -179,17 +181,28 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   useEffect(() => {
     if (selectedMedicationCard) {
+      const medName =
+        selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+      if (medName) {
+        setMedicationName(medName);
+      }
       setselectedMedicationCardBundle({ resource: selectedMedicationCard });
     }
   }, [selectedMedicationCard]);
 
   useEffect(() => {
     if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const hook = new OrderSign(patient.id, user, {
-        resourceType: 'Bundle',
-        type: 'batch',
-        entry: [selectedMedicationCardBundle]
-      });
+      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+      const hook = new OrderSelect(
+        patient.id,
+        user,
+        {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [selectedMedicationCardBundle]
+        },
+        [resourceId]
+      );
       const tempHook = hook.generate();
 
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
@@ -223,42 +236,30 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     p: 4
   };
 
-  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool() ? true : false;
-  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool() ? true : false;
+  const etasu_status_enabled: boolean = env.get('REACT_APP_ETASU_STATUS_ENABLED').asBool()
+    ? true
+    : false;
+  const pharmacy_status_enabled: boolean = env.get('REACT_APP_PHARMACY_STATUS_ENABLED').asBool()
+    ? true
+    : false;
 
+  const label = 'Select Medication Request';
   return (
-    <div>
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}
-      >
-        <div className="MedReqDropDown">
-          <div>
-            <Card sx={{ minWidth: 500, maxWidth: 5000, bgcolor: 'white', p: 5 }}>
-              <CardContent>
-                <Typography
-                  sx={{ fontSize: 17 }}
-                  color="text.secondary"
-                  gutterBottom
-                  component="div"
-                >
-                  Select Medication Request:
-                </Typography>
-                <FormControl sx={{ minWidth: 300, mt: 1 }}>
-                  <InputLabel id="dropdown-label">Select Medication</InputLabel>
+    <>
+      <Card sx={{ bgcolor: 'white' }}>
+        <CardContent>
+          <Grid item container spacing={2}>
+            <Grid item container alignItems="left" direction="column" spacing={2}>
+              <Grid item>
+                <FormControl fullWidth>
+                  <InputLabel id="dropdown-label">{label}</InputLabel>
                   <Select
                     labelId="dropdown-label"
                     id="dropdown"
+                    label={label}
                     value={selectedOption}
                     onChange={handleOptionSelect}
                   >
-                    <MenuItem value="">
-                      <em>Select Medication</em>
-                    </MenuItem>
                     {medication ? (
                       medication.data.map(medications => (
                         <MenuItem key={medications.id} value={medications.id}>
@@ -266,81 +267,78 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                         </MenuItem>
                       ))
                     ) : (
-                      <p>loading medications...</p>
+                      <MenuItem>Loading medications...</MenuItem>
                     )}
                   </Select>
                 </FormControl>
-              </CardContent>
+              </Grid>
+
               {selectedMedicationCard && (
-                <CardContent>
-                  <Typography
-                    sx={{ bgcolor: 'text.secondary', color: 'white', textAlign: 'center' }}
-                  >
-                    Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      bgcolor: 'text.disabled',
-                      color: 'white',
-                      textAlign: 'center',
-                      fontSize: 24
-                    }}
-                  >
-                    {
-                      selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(
-                        ' '
-                      )[0]
-                    }
-                  </Typography>
-                  <Typography
-                    variant="h6"
-                    sx={{ bgcolor: 'text.disabled', color: 'white', textAlign: 'center' }}
-                    color="textSecondary"
-                    gutterBottom
-                  >
-                    {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
-                  </Typography>
-                  {etasu_status_enabled && (
-                    <Button variant="contained" onClick={handleOpenCheckETASU}>
-                      Check ETASU
-                    </Button>
-                  )}
-                  {pharmacy_status_enabled && (
-                    <Button variant="contained" onClick={handleOpenCheckPharmacy}>
-                      Check Pharmacy
-                    </Button>
-                  )}
-                  {sendRxEnabled && (
-                    <Button variant="contained" onClick={handleSendRx}>
-                      Send RX to PIMS
-                    </Button>
-                  )}
-                </CardContent>
+                <>
+                  <Grid item>
+                    <Typography bgcolor="text.secondary" color="white" textAlign="center">
+                      Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
+                    </Typography>
+                    <Typography
+                      bgcolor="text.disabled"
+                      variant="h5"
+                      textAlign="center"
+                      color="white"
+                    >
+                      {medicationName}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      bgcolor="text.disabled"
+                      color="white"
+                      textAlign="center"
+                    >
+                      {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
+                    </Typography>
+                  </Grid>
+                  <Grid item container justifyContent="center" spacing={2}>
+                    {etasu_status_enabled && (
+                      <Grid item>
+                        <Button variant="contained" onClick={handleOpenCheckETASU}>
+                          Check ETASU
+                        </Button>
+                      </Grid>
+                    )}
+                    {pharmacy_status_enabled && (
+                      <Grid item>
+                        <Button variant="contained" onClick={handleOpenCheckPharmacy}>
+                          Check Pharmacy
+                        </Button>
+                      </Grid>
+                    )}
+                    {sendRxEnabled && (
+                      <Grid item>
+                        <Button variant="contained" onClick={handleSendRx}>
+                          Send RX to PIMS
+                        </Button>
+                      </Grid>
+                    )}
+                  </Grid>
+                </>
               )}
-            </Card>
-            {selectedOption ? (
-              <Card>
-                <CardContent>
-                  <CdsHooksCards
-                    cards={hooksCards}
-                    client={client}
-                    tabCallback={props.tabCallback}
-                  ></CdsHooksCards>
-                </CardContent>
-              </Card>
-            ) : (
-              <p></p>
+            </Grid>
+
+            {selectedOption && (
+              <CdsHooksCards
+                cards={hooksCards}
+                client={client}
+                name={medicationName}
+                tabIndex={tabIndex}
+                setTabIndex={setTabIndex}
+                tabCallback={props.tabCallback}
+              />
             )}
-          </div>
-        </div>
-      </Box>
+          </Grid>
+        </CardContent>
+      </Card>
       <Modal open={showEtasu} onClose={handleCloseCheckETASU}>
         <Box sx={modal_style}>
-          <EtasuStatus
-            patient={patient}
-            medication={selectedMedicationCard}
-            update={showEtasu}
-          ></EtasuStatus>
+          <EtasuStatus patient={patient} medication={selectedMedicationCard} update={showEtasu} />
         </Box>
       </Modal>
       <Modal open={showPharmacy} onClose={handleCloseCheckPharmacy}>
@@ -349,10 +347,10 @@ function MedReqDropDown(props: MedReqDropDownProps) {
             patient={patient}
             medication={selectedMedicationCard}
             update={showPharmacy}
-          ></PharmacyStatus>
+          />
         </Box>
       </Modal>
-    </div>
+    </>
   );
 }
 

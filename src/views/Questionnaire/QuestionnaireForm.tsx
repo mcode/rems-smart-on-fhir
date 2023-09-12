@@ -70,6 +70,7 @@ interface QuestionnaireProps {
   setSpecialtyRxBundle: (n: Bundle) => void;
   setRemsAdminResponse: (n: any) => void;
   setFormElement: (n: HTMLElement) => void;
+  tabIndex: number;
 }
 
 interface GTableResult {
@@ -110,6 +111,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const [formValidationErrors, setFormValidationErrors] = useState<any[]>([]);
   const partialForms: PartialForms = {};
   const LForms = window.LForms;
+  const questionnaireFormId = `formContainer-${props.qform.id}-${props.tabIndex}`;
   const setPopupOptions = (options: string[]) => {
     setPopupInfo({
       popupTitle: popupInfo.popupTitle,
@@ -225,8 +227,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
     console.log(lform);
 
-    LForms.Util.addFormToPage(lform, `formContainer-${props.qform.id}`);
-    const specificForm = document.getElementById(`formContainer-${props.qform.id}`);
+    LForms.Util.addFormToPage(lform, questionnaireFormId);
+    const specificForm = document.getElementById(questionnaireFormId);
     if (specificForm) {
       const header = specificForm.getElementsByClassName('lf-form-title')[0];
       const el = document.createElement('div');
@@ -920,7 +922,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     const currentQuestionnaireResponse = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
       props.fhirVersion.toUpperCase(),
-      `#formContainer-${props.qform.id}`
+      `#${questionnaireFormId}`
     );
     //const mergedResponse = this.mergeResponseForSameLinkId(currentQuestionnaireResponse);
     retrieveQuestions(url, buildNextQuestionRequest(props.qform, currentQuestionnaireResponse))
@@ -1145,7 +1147,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     const qr: QuestionnaireResponseSmart = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
       props.fhirVersion.toUpperCase(),
-      `#formContainer-${props.qform.id}`
+      `#${questionnaireFormId}`
     );
     //console.log(qr);
     qr.status = status;
@@ -1605,7 +1607,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const showPopup = !isAdaptive || isAdaptiveFormWithoutItem();
   return (
     <div>
-      <div id={`formContainer-${props.qform.id}`}></div>
+      <div id={questionnaireFormId}></div>
       {!isAdaptive && props.formFilled ? (
         <div className="form-message-panel">
           <p>

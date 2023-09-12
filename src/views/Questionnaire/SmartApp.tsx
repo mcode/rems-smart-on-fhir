@@ -31,6 +31,7 @@ interface SmartAppProps {
   patientId: string;
   smartClient: Client;
   appContext?: AppContext;
+  tabIndex: number;
 }
 export type OrderResource = DeviceRequest | MedicationRequest | ServiceRequest | MedicationDispense;
 export type LogType = 'infoClass' | 'errorClass' | 'warningClass';
@@ -104,7 +105,7 @@ export function SmartApp(props: SmartAppProps) {
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
   const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
-  const [filterChecked, setFilterChecked] = useState<boolean>(false);
+  const [filterChecked, setFilterChecked] = useState<boolean>(true);
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
@@ -383,22 +384,22 @@ export function SmartApp(props: SmartAppProps) {
           return Promise.all(
             artifacts.mainLibraryElms.map(mainLibraryElm => {
               let parameterObj: ParameterObject = {};
-              if (orderResource) {
-                if (orderResource.resourceType === 'DeviceRequest') {
+              if (orderResourceArtifact) {
+                if (orderResourceArtifact.resourceType === 'DeviceRequest') {
                   parameterObj = {
-                    device_request: fhirWrapper.wrap(orderResource)
+                    device_request: fhirWrapper.wrap(orderResourceArtifact)
                   };
-                } else if (orderResource.resourceType === 'ServiceRequest') {
+                } else if (orderResourceArtifact.resourceType === 'ServiceRequest') {
                   parameterObj = {
-                    service_request: fhirWrapper.wrap(orderResource)
+                    service_request: fhirWrapper.wrap(orderResourceArtifact)
                   };
-                } else if (orderResource.resourceType === 'MedicationRequest') {
+                } else if (orderResourceArtifact.resourceType === 'MedicationRequest') {
                   parameterObj = {
-                    medication_request: fhirWrapper.wrap(orderResource)
+                    medication_request: fhirWrapper.wrap(orderResourceArtifact)
                   };
-                } else if (orderResource.resourceType === 'MedicationDispense') {
+                } else if (orderResourceArtifact.resourceType === 'MedicationDispense') {
                   parameterObj = {
-                    medication_dispense: fhirWrapper.wrap(orderResource)
+                    medication_dispense: fhirWrapper.wrap(orderResourceArtifact)
                   };
                 }
               }
@@ -505,8 +506,9 @@ export function SmartApp(props: SmartAppProps) {
       // iterate over valueSet definitions
       elm.library.valueSets.def.forEach(valueSetDef => {
         // find FHIR value set artifact
+        const valueSetDefId = valueSetDef.id.replace(/https:\/\//, 'http://'); // vsac only returns urls with http in the resource
         const valueSet = artifacts.valueSets.find(
-          valueSet => valueSet.id == valueSetDef.id || valueSet.url == valueSetDef.id
+          valueSet => valueSet.id == valueSetDefId || valueSet.url == valueSetDefId
         );
         if (valueSet != null) {
           // make sure it has an expansion
@@ -669,6 +671,7 @@ export function SmartApp(props: SmartAppProps) {
               adFormResponseFromServer={adFormResponseFromServer}
               updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
               setFormElement={setFormElement}
+              tabIndex={props.tabIndex}
             />
           )}
         </div>
