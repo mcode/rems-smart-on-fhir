@@ -171,6 +171,28 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   const [selectedMedicationCard, setSelectedMedicationCard] = useState<MedicationRequest>();
   const [medicationName, setMedicationName] = useState<string>('');
   const [tabIndex, setTabIndex] = useState<number>(1);
+
+  const sendOrderSelect = () => {
+    if (patient && patient.id && user && selectedMedicationCardBundle) {
+      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+      const hook = new OrderSelect(
+        patient.id,
+        user,
+        {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [selectedMedicationCardBundle]
+        },
+        [resourceId]
+      );
+      const tempHook = hook.generate();
+
+      hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
+        setCDSHook(tempHook);
+      });
+    }
+  };
+
   useEffect(() => {
     if (selectedOption != '') {
       setSelectedMedicationCard(
@@ -190,26 +212,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     }
   }, [selectedMedicationCard]);
 
-  useEffect(() => {
-    if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
-      const hook = new OrderSelect(
-        patient.id,
-        user,
-        {
-          resourceType: 'Bundle',
-          type: 'batch',
-          entry: [selectedMedicationCardBundle]
-        },
-        [resourceId]
-      );
-      const tempHook = hook.generate();
-
-      hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
-        setCDSHook(tempHook);
-      });
-    }
-  }, [selectedMedicationCardBundle]);
+  useEffect(sendOrderSelect, [selectedMedicationCardBundle]);
 
   useEffect(() => {
     if (
@@ -315,6 +318,13 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                       <Grid item>
                         <Button variant="contained" onClick={handleSendRx}>
                           Send RX to PIMS
+                        </Button>
+                      </Grid>
+                    )}
+                    {true && (
+                      <Grid item>
+                        <Button variant="contained" onClick={sendOrderSelect}>
+                          Resend order-select hook
                         </Button>
                       </Grid>
                     )}
