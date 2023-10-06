@@ -150,7 +150,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     }
   };
 
-  // MedicationRequest Prefectching Bundle
+  // MedicationRequest Prefetching Bundle
   const [medication, setMedication] = useState<MedicationBundle | null>(null);
 
   const getMedicationRequest = () => {
@@ -165,15 +165,15 @@ function MedReqDropDown(props: MedReqDropDownProps) {
       });
   };
 
-  const [selectedMedicationCardBundle, setselectedMedicationCardBundle] =
+  const [selectedMedicationCardBundle, setSelectedMedicationCardBundle] =
     useState<BundleEntry<MedicationRequest>>();
 
-  const [selectedMedicationCard, setselectedMedicationCard] = useState<MedicationRequest>();
+  const [selectedMedicationCard, setSelectedMedicationCard] = useState<MedicationRequest>();
   const [medicationName, setMedicationName] = useState<string>('');
   const [tabIndex, setTabIndex] = useState<number>(1);
   useEffect(() => {
     if (selectedOption != '') {
-      setselectedMedicationCard(
+      setSelectedMedicationCard(
         medication?.data.find(medication => medication.id === selectedOption)
       );
     }
@@ -186,7 +186,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
       if (medName) {
         setMedicationName(medName);
       }
-      setselectedMedicationCardBundle({ resource: selectedMedicationCard });
+      setSelectedMedicationCardBundle({ resource: selectedMedicationCard });
     }
   }, [selectedMedicationCard]);
 
