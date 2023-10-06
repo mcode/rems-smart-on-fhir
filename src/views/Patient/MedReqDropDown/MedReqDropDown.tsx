@@ -321,13 +321,11 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                         </Button>
                       </Grid>
                     )}
-                    {true && (
-                      <Grid item>
-                        <Button variant="contained" onClick={sendOrderSelect}>
-                          Resend order-select hook
-                        </Button>
-                      </Grid>
-                    )}
+                    <Grid item>
+                      <Button variant="contained" onClick={sendOrderSelect}>
+                        Resend order-select hook
+                      </Button>
+                    </Grid>
                   </Grid>
                 </>
               )}
