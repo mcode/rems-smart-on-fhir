@@ -55,11 +55,23 @@ const EtasuStatus = (props: EtasuStatusProps) => {
     const etasuUrl = `${env
       .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
       .asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+
     axios({
       method: 'get',
       url: etasuUrl
     }).then(
       response => {
+        // Sorting an array mutates the data in place.
+        (response.data as RemsMetEtasuResponse).metRequirements
+          .sort((first: MetRequirements, second: MetRequirements) => {
+            // Keep the other forms unsorted.
+            if (second.requirementName.includes('Patient Status Update')) {
+              // Sort the Patient Status Update forms in descending order of timestamp.
+              return second.requirementName.localeCompare(first.requirementName);
+            }
+            return 0;
+          }
+        );
         console.log(response.data);
         setRemsAdminResponse(response.data);
       },
