@@ -103,7 +103,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   }, []);
 
   //CDS-Hook Request to REMS-Admin for cards
-  const SubmitToREMS = () => {
+  const submitToREMS = () => {
     axios({
       method: 'post',
       url:
@@ -123,7 +123,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   useEffect(() => {
     if (cdsHook) {
-      SubmitToREMS();
+      submitToREMS();
     }
   }, [cdsHook]);
 
@@ -320,7 +320,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                       </Grid>
                     )}
                     <Grid item>
-                      <Button variant="contained" onClick={SubmitToREMS}>
+                      <Button variant="contained" onClick={submitToREMS}>
                         Resend order-select hook
                       </Button>
                     </Grid>
