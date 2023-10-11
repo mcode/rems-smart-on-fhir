@@ -172,27 +172,6 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   const [medicationName, setMedicationName] = useState<string>('');
   const [tabIndex, setTabIndex] = useState<number>(1);
 
-  const sendOrderSelect = () => {
-    if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
-      const hook = new OrderSelect(
-        patient.id,
-        user,
-        {
-          resourceType: 'Bundle',
-          type: 'batch',
-          entry: [selectedMedicationCardBundle]
-        },
-        [resourceId]
-      );
-      const tempHook = hook.generate();
-
-      hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
-        setCDSHook(tempHook);
-      });
-    }
-  };
-
   useEffect(() => {
     if (selectedOption != '') {
       setSelectedMedicationCard(
@@ -212,7 +191,26 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     }
   }, [selectedMedicationCard]);
 
-  useEffect(sendOrderSelect, [selectedMedicationCardBundle]);
+  useEffect(() => {
+    if (patient && patient.id && user && selectedMedicationCardBundle) {
+      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+      const hook = new OrderSelect(
+        patient.id,
+        user,
+        {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [selectedMedicationCardBundle]
+        },
+        [resourceId]
+      );
+      const tempHook = hook.generate();
+
+      hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
+        setCDSHook(tempHook);
+      });
+    }
+  }, [selectedMedicationCardBundle]);
 
   useEffect(() => {
     if (
@@ -322,7 +320,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                       </Grid>
                     )}
                     <Grid item>
-                      <Button variant="contained" onClick={sendOrderSelect}>
+                      <Button variant="contained" onClick={SubmitToREMS}>
                         Resend order-select hook
                       </Button>
                     </Grid>
