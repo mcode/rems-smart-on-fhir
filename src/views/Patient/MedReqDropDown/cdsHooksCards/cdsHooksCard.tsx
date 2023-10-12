@@ -159,7 +159,7 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
   const cardSource = { fontSize: '.85rem', fontStyle: 'italic', margin: '0 0 5px' };
   const sourceLink = { marginRight: '8px', color: '#4183c4', textDecoration: 'none' };
   return (
-    <Grid item>
+    <Grid item xs={12}>
       <Card variant="outlined" style={decisionCard}>
         <CardContent>
           <Typography variant="h5" component="div">
