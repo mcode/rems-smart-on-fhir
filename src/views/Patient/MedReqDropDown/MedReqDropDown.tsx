@@ -9,8 +9,10 @@ import {
   Select,
   SelectChangeEvent,
   Typography,
-  Modal
+  Modal,
+  IconButton
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 import { BundleEntry, Patient, MedicationRequest, Practitioner } from 'fhir/r4';
@@ -276,27 +278,42 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
               {selectedMedicationCard && (
                 <>
-                  <Grid item>
-                    <Typography bgcolor="text.secondary" color="white" textAlign="center">
-                      Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
-                    </Typography>
-                    <Typography
-                      bgcolor="text.disabled"
-                      variant="h5"
-                      textAlign="center"
-                      color="white"
+                  <Grid item container>
+                    <Grid item xs={10} sm={11}>
+                      <Typography bgcolor="text.secondary" color="white" textAlign="center">
+                        Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
+                      </Typography>
+                      <Typography
+                        bgcolor="text.disabled"
+                        variant="h5"
+                        textAlign="center"
+                        color="white"
+                      >
+                        {medicationName}
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        bgcolor="text.disabled"
+                        color="white"
+                        textAlign="center"
+                      >
+                        {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
+                      </Typography>
+                    </Grid>
+                    <Grid
+                      item
+                      container
+                      xs={2}
+                      sm={1}
+                      alignContent="center"
+                      justifyContent="center"
                     >
-                      {medicationName}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      bgcolor="text.disabled"
-                      color="white"
-                      textAlign="center"
-                    >
-                      {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
-                    </Typography>
+                      <IconButton color="primary" onClick={submitToREMS} size="large">
+                        <RefreshIcon fontSize="large" />
+                      </IconButton>
+                    </Grid>
                   </Grid>
+
                   <Grid item container justifyContent="center" spacing={2}>
                     {etasu_status_enabled && (
                       <Grid item>
@@ -319,11 +336,6 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                         </Button>
                       </Grid>
                     )}
-                    <Grid item>
-                      <Button variant="contained" onClick={submitToREMS}>
-                        Resend order-select hook
-                      </Button>
-                    </Grid>
                   </Grid>
                 </>
               )}
