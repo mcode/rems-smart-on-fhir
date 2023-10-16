@@ -111,6 +111,7 @@ export function SmartApp(props: SmartAppProps) {
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
   const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
   const [formElement, setFormElement] = useState<HTMLElement>();
+  const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
   const smart = props.smartClient;
   let FHIR_VERSION = 'r4';
   const toggleOverlay = () => {
@@ -339,6 +340,18 @@ export function SmartApp(props: SmartAppProps) {
       setFormFilled(document.querySelector('input.ng-empty:not([disabled])') == null);
     }
   };
+
+  const updateRequired = (defaultFilter: boolean) => {
+    let checked: boolean, requiredCheckbox: HTMLInputElement;
+      if (!defaultFilter) {
+        requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+        checked = requiredCheckbox ? requiredCheckbox.checked : false;
+      } else {
+        checked = true;
+      }
+      setIgnoreRequiredCheckbox(checked);
+  };
+
   const fetchResourcesAndExecuteCql = (
     order: string,
     coverage: string,
@@ -573,6 +586,14 @@ export function SmartApp(props: SmartAppProps) {
       filterCheckbox.checked = filterChecked;
     }
   };
+
+  const onRequiredCheckboxRefChange = () => {
+    const requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+    if (requiredCheckbox != null) {
+      requiredCheckbox.checked = ignoreRequiredCheckbox;
+    }
+  };
+
   const getFhirWrapper = (fhirVersion: string): cqlfhir.FHIRWrapper => {
     if (fhirVersion == 'r4') {
       return cqlfhir.FHIRWrapper.FHIRv400();
@@ -612,6 +633,17 @@ export function SmartApp(props: SmartAppProps) {
               }}
               id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
               ref={onFilterCheckboxRefChange}
+            ></input>
+          </div>
+          <div className="task-button">
+            <label>Ignore required fields</label>{' '}
+            <input
+              type="checkbox"
+              onChange={() => {
+                updateRequired(false);
+              }}
+              id='required-fields-checkbox'
+              ref={onRequiredCheckboxRefChange}
             ></input>
           </div>
         </div>
@@ -661,6 +693,7 @@ export function SmartApp(props: SmartAppProps) {
               renderButtons={renderButtons}
               filterFieldsFn={filter}
               filterChecked={filterChecked}
+              ignoreRequiredChecked={ignoreRequiredCheckbox}
               formFilled={formFilled}
               updateQuestionnaire={updateQuestionnaire}
               ehrLaunch={ehrLaunch}

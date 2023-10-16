@@ -27,6 +27,7 @@ import {
   searchQuestionnaire
 } from './questionnaireUtil';
 import './QuestionnaireForm.css';
+import { Button } from '@mui/material';
 
 import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
@@ -56,6 +57,7 @@ interface QuestionnaireProps {
   updateQuestionnaire: (n: Questionnaire) => void;
   fhirVersion: string;
   filterChecked: boolean;
+  ignoreRequiredChecked: boolean;
   filterFieldsFn: (n: boolean) => void;
   renderButtons: (n: Element) => void;
   adFormResponseFromServer?: QuestionnaireResponse;
@@ -199,8 +201,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
   });
   const loadAndMergeForms = (newResponse: QuestionnaireResponse | null) => {
-    console.log(JSON.stringify(props.qform));
-    console.log(JSON.stringify(newResponse));
 
     let lform = LForms.Util.convertFHIRQuestionnaireToLForms(
       props.qform,
@@ -225,7 +225,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       );
     }
 
-    console.log(lform);
 
     LForms.Util.addFormToPage(lform, questionnaireFormId);
     const specificForm = document.getElementById(questionnaireFormId);
@@ -1032,62 +1031,74 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     return isAdaptiveForm() && props.qform && props.qform.item && props.qform.item.length > 0;
   };
 
+  const isFilledOut = () => {
+    // if checked to ignore required fields, return true to enable the submit button
+    if (props.ignoreRequiredChecked) {
+      return true;
+    } else {
+      // check if form is fully filled out based on required fields
+      const requiredFieldErrors = formValidationErrors ? formValidationErrors.filter((error) => {
+        return error.includes('requires a value');
+      }) : [];
+      return !(formValidationErrors && requiredFieldErrors.length);
+    }
+  };
+
   const getDisplayButtons = () => {
     if (!isAdaptiveForm()) {
       return (
-        <div className="submit-button-panel">
-          <button className="btn submit-button" onClick={() => loadPreviousForm()}>
-            Load Previous Form
-          </button>
-          <button
-            className="btn submit-button"
-            onClick={() => {
-              outputResponse('in-progress');
-            }}
-          >
-            Save to EHR
-          </button>
-          <button
-            className="btn submit-button"
-            onClick={() => {
-              outputResponse('completed');
-            }}
-          >
-            Submit REMS Bundle
-          </button>
+        <div className='submit-button-panel'>
+          <div className="btn-row">
+            <Button variant="outlined" onClick={() => loadPreviousForm()}>
+              Load Previous Form
+            </Button>
+            <Button variant="outlined"
+              onClick={() => {
+                outputResponse('in-progress');
+              }}
+            >
+              Save to EHR
+            </Button>
+              <Button variant="outlined" disabled={!isFilledOut()}
+                onClick={() => {
+                  outputResponse('completed');
+                }}
+              >
+                Submit REMS Bundle
+              </Button>
+          </div>
+          {!isFilledOut() ? <p className='error-text'>* Fill out all required fields before submitting</p> : <></>}
         </div>
       );
     } else {
       if (props.adFormCompleted) {
         return (
           <div className="submit-button-panel">
-            <button
-              className="btn submit-button"
+            <Button variant="outlined" disabled={!isFilledOut()}
               onClick={() => {
                 outputResponse('completed');
               }}
             >
               Submit REMS Bundle
-            </button>
+            </Button>
           </div>
         );
       } else {
         return (
           <div className="submit-button-panel">
             {isAdaptiveFormWithoutItem() ? (
-              <button className="btn submit-button" onClick={() => loadPreviousForm()}>
+              <Button variant="outlined" onClick={() => loadPreviousForm()}>
                 Load Previous Form
-              </button>
+              </Button>
             ) : null}
             {isAdaptiveFormWithItem() ? (
-              <button
-                className="btn submit-button"
+              <Button variant="outlined"
                 onClick={() => {
                   outputResponse('in-progress');
                 }}
               >
                 Save To EHR
-              </button>
+              </Button>
             ) : null}
           </div>
         );
@@ -1640,9 +1651,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           {!props.adFormCompleted ? (
             <div>
               {' '}
-              <button className="btn submit-button" onClick={loadNextQuestions}>
+              <Button variant='outlined' onClick={loadNextQuestions}>
                 Next Question
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>
