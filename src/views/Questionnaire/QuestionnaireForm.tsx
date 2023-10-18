@@ -27,7 +27,8 @@ import {
   searchQuestionnaire
 } from './questionnaireUtil';
 import './QuestionnaireForm.css';
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
 
 import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
@@ -1044,6 +1045,27 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
   };
 
+  // Get tooltip for Submit button
+  const getMissingFieldsTooltip = () => {
+    const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing fields';
+    return <Typography fontSize={16}>{tooltip}</Typography>;
+  };
+
+  // Get missing fields to display 
+  const getMissingFields = () => {
+    const fields: string[] = [];
+    const requiredFieldErrors = formValidationErrors ? formValidationErrors.filter((error) => {
+      return error.includes('requires a value');
+    }) : [];
+    if (requiredFieldErrors.length) {
+      requiredFieldErrors.forEach((err) => {
+        const name = err.split(' requires a value')[0];
+        fields.push(name);
+      });
+    }
+    return fields.join(', ');
+  };
+
   const getDisplayButtons = () => {
     if (!isAdaptiveForm()) {
       return (
@@ -1059,6 +1081,26 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             >
               Save to EHR
             </Button>
+            <Tooltip title={getMissingFieldsTooltip()}>
+              <span>
+                <Button variant="outlined" disabled={!isFilledOut()}
+                  onClick={() => {
+                    outputResponse('completed');
+                  }}
+                >
+                  Submit REMS Bundle
+                </Button>
+              </span>
+            </Tooltip>
+          </div>
+          {!isFilledOut() ? <p className='error-text'>You must include a value for {getMissingFields()}</p> : <></>}
+        </div>
+      );
+    } else {
+      if (props.adFormCompleted) {
+        return (
+          <div className="submit-button-panel">
+            <Tooltip title={getMissingFieldsTooltip()}>
               <Button variant="outlined" disabled={!isFilledOut()}
                 onClick={() => {
                   outputResponse('completed');
@@ -1066,21 +1108,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               >
                 Submit REMS Bundle
               </Button>
-          </div>
-          {!isFilledOut() ? <p className='error-text'>* Fill out all required fields before submitting</p> : <></>}
-        </div>
-      );
-    } else {
-      if (props.adFormCompleted) {
-        return (
-          <div className="submit-button-panel">
-            <Button variant="outlined" disabled={!isFilledOut()}
-              onClick={() => {
-                outputResponse('completed');
-              }}
-            >
-              Submit REMS Bundle
-            </Button>
+            </Tooltip>
           </div>
         );
       } else {
@@ -1658,8 +1686,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           ) : null}
         </div>
       ) : null}
-      {!isAdaptive ? <div className="status-panel">Form Loaded: {formLoaded}</div> : null}
-      {getDisplayButtons()}
+      <div style={{display: 'flex', justifyContent: 'space-between'}}>
+        {!isAdaptive ? <div className="status-panel">Form Loaded: {formLoaded}</div> : <div/>}
+        {getDisplayButtons()}
+      </div>
     </div>
   );
 }

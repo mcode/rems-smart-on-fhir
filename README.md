@@ -34,6 +34,7 @@ Following are a list of modifiable paths:
 | REACT_APP_PHARMACY_SERVER_BASE       | `http://localhost:5051`  |
 | REACT_APP_ETASU_STATUS_ENABLED       | `true`  |
 | REACT_APP_PHARMACY_STATUS_ENABLED       | `true`  |
+| REACT_APP_DEVELOPER_MODE        | `true`  |
 | REACT_APP_SEND_RX_ENABLED       | `true`  |
 | PORT   | `4040`|
 

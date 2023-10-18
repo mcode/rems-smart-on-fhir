@@ -25,6 +25,7 @@ import executeElm from './elm/executeElm';
 import PatientSelect from './components/PatientSelect/PatientSelect';
 import RemsInterface from './components/RemsInterface/RemsInterface';
 import { createRoot } from 'react-dom/client';
+import * as env from 'env-var';
 
 interface SmartAppProps {
   standalone: boolean;
@@ -112,6 +113,8 @@ export function SmartApp(props: SmartAppProps) {
   const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
   const [formElement, setFormElement] = useState<HTMLElement>();
   const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
+
+  const showRequiredCheckbox: boolean = env.get('REACT_APP_DEVELOPER_MODE').asBool() ? true : false;
   const smart = props.smartClient;
   let FHIR_VERSION = 'r4';
   const toggleOverlay = () => {
@@ -341,6 +344,7 @@ export function SmartApp(props: SmartAppProps) {
     }
   };
 
+  // update the ignore required checkbox
   const updateRequired = (defaultFilter: boolean) => {
     let checked: boolean, requiredCheckbox: HTMLInputElement;
       if (!defaultFilter) {
@@ -587,6 +591,7 @@ export function SmartApp(props: SmartAppProps) {
     }
   };
 
+  // update required checkbox ref
   const onRequiredCheckboxRefChange = () => {
     const requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
     if (requiredCheckbox != null) {
@@ -635,17 +640,19 @@ export function SmartApp(props: SmartAppProps) {
               ref={onFilterCheckboxRefChange}
             ></input>
           </div>
-          <div className="task-button">
-            <label>Ignore required fields</label>{' '}
-            <input
-              type="checkbox"
-              onChange={() => {
-                updateRequired(false);
-              }}
-              id='required-fields-checkbox'
-              ref={onRequiredCheckboxRefChange}
-            ></input>
-          </div>
+          { showRequiredCheckbox ? 
+            <div className="task-button">
+              <label>Ignore required fields</label>{' '}
+              <input
+                type="checkbox"
+                onChange={() => {
+                  updateRequired(false);
+                }}
+                id='required-fields-checkbox'
+                ref={onRequiredCheckboxRefChange}
+              ></input>
+            </div>
+          : <div/>}
         </div>
       </div>
     );

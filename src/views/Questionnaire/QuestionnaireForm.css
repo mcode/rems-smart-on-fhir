@@ -47,7 +47,6 @@
   }
   
   .submit-button-panel {
-    float:right;
     margin-right: 10px;
     margin-bottom: 10px;
   }
@@ -59,6 +58,7 @@
   .error-text {
     text-align: end;
     font-style: italic;
+    color: #8b0000;
   }
   
   .submit-button {
@@ -83,7 +83,6 @@
   }
   
   .status-panel {
-    float:left;
     margin-left: 10px;
     margin-bottom: 10px;
   }
