@@ -4,6 +4,7 @@
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
+  "plugins": ["eslint-plugin-react"],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module"
