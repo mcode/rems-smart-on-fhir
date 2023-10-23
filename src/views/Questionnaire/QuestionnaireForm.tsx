@@ -100,11 +100,9 @@ interface RxAlert {
 
 export function QuestionnaireForm(props: QuestionnaireProps) {
   const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
-  const [popupInfo, setPopupInfo] = useState<PopupInfo>({
-    popupTitle: '',
-    popupOptions: [],
-    popupFinalOption: ''
-  });
+  const [popupTitle, setPopupTitle] = useState<PopupInfo['popupTitle']>('');
+  const [popupOptions, setPopupOptions] = useState<PopupInfo['popupOptions']>([]);
+  const [popupFinalOption, setPopupFinalOption] = useState<PopupInfo['popupFinalOption']>('');
   const [openPopup, setOpenPopup] = useState<boolean>(false);
   const [formLoaded, setFormLoaded] = useState<string>('');
   const [showRxAlert, setShowRxAlert] = useState<RxAlert>({ open: false });
@@ -112,13 +110,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const partialForms: PartialForms = {};
   const LForms = window.LForms;
   const questionnaireFormId = `formContainer-${props.qform.id}-${props.tabIndex}`;
-  const setPopupOptions = (options: string[]) => {
-    setPopupInfo({
-      popupTitle: popupInfo.popupTitle,
-      popupOptions: options,
-      popupFinalOption: popupInfo.popupFinalOption
-    });
-  };
   useEffect(() => {
     // search for any partially completed QuestionnaireResponses
     if (props.response) {
@@ -732,11 +723,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       .catch(console.error);
   };
   const popupClear = (title: string, finalOption: string, logTitle: boolean) => {
-    setPopupInfo({
-      popupTitle: title,
-      popupOptions: [],
-      popupFinalOption: finalOption
-    });
+    setPopupTitle(title);
+    setPopupOptions([]);
+    setPopupFinalOption(finalOption);
     if (logTitle) {
       console.log(title);
     }
@@ -986,13 +975,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             ' (' +
             bundleEntry?.resource?.status +
             ')';
-          setPopupOptions([...popupInfo.popupOptions, option]);
+          setPopupOptions([...popupOptions, option]);
           if (bundleEntry.resource) {
             partialForms[option] = bundleEntry.resource;
           }
         }
       });
-      console.log(popupInfo.popupOptions);
+      console.log(popupOptions);
       console.log(partialForms);
 
       //check if show popup
@@ -1618,9 +1607,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       ) : null}
       {showPopup ? (
         <SelectPopup
-          title={popupInfo.popupTitle}
-          options={popupInfo.popupOptions}
-          finalOption={popupInfo.popupFinalOption}
+          title={popupTitle}
+          options={popupOptions}
+          finalOption={popupFinalOption}
           selectedCallback={popupCallback}
           open={openPopup}
         />
