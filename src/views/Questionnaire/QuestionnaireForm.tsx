@@ -82,11 +82,6 @@ interface MetaSmart extends Meta {
 interface QuestionnaireResponseSmart extends QuestionnaireResponse {
   meta?: MetaSmart;
 }
-interface PopupInfo {
-  popupTitle: string;
-  popupOptions: string[];
-  popupFinalOption: string;
-}
 interface PartialForms {
   [key: string]: QuestionnaireResponse;
 }
@@ -100,9 +95,9 @@ interface RxAlert {
 
 export function QuestionnaireForm(props: QuestionnaireProps) {
   const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
-  const [popupTitle, setPopupTitle] = useState<PopupInfo['popupTitle']>('');
-  const [popupOptions, setPopupOptions] = useState<PopupInfo['popupOptions']>([]);
-  const [popupFinalOption, setPopupFinalOption] = useState<PopupInfo['popupFinalOption']>('');
+  const [popupTitle, setPopupTitle] = useState<string>('');
+  const [popupOptions, setPopupOptions] = useState<string[]>([]);
+  const [popupFinalOption, setPopupFinalOption] = useState<string>('');
   const [openPopup, setOpenPopup] = useState<boolean>(false);
   const [formLoaded, setFormLoaded] = useState<string>('');
   const [showRxAlert, setShowRxAlert] = useState<RxAlert>({ open: false });
