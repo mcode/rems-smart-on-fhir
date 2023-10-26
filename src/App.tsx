@@ -129,7 +129,7 @@ function App(props: AppProps) {
                           {tab.closeable && (
                             <IconButton
                               component="div"
-                              onClick={event => handleClose(event, tab)}
+                              onClick={(event: MouseEvent<Element, globalThis.MouseEvent>) => handleClose(event, tab)}
                               style={{ padding: '0px 5px 0px 5px' }}
                             >
                               <CloseIcon fontSize="small" />
