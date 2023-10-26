@@ -593,7 +593,7 @@ export function SmartApp(props: SmartAppProps) {
 
   // update required checkbox ref
   const onRequiredCheckboxRefChange = () => {
-    const requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+    const requiredCheckbox = document.getElementById(questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox') as HTMLInputElement;
     if (requiredCheckbox != null) {
       requiredCheckbox.checked = ignoreRequiredCheckbox;
     }
@@ -648,7 +648,7 @@ export function SmartApp(props: SmartAppProps) {
                 onChange={() => {
                   updateRequired(false);
                 }}
-                id='required-fields-checkbox'
+                id={questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'}
                 ref={onRequiredCheckboxRefChange}
               ></input>
             </div>
