@@ -41,10 +41,10 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "lint": "tsc && eslint \"**/*.{js,ts}\"",
-    "lint:fix": "tsc --noEmit && eslint \"**/*.{js,ts,tsx}\" --quiet --fix",
-    "prettier": "prettier --check \"**/*.{js,ts}\"",
-    "prettier:fix": "prettier --write \"**/*.{js,ts,tsx}\""
+    "lint": "tsc && eslint \"**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "tsc --noEmit && eslint \"**/*.{js,jsx,ts,tsx}\" --quiet --fix",
+    "prettier": "prettier --check \"**/*.{js,jsx,ts,tsx,json,jsonc}\"",
+    "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,jsonc}\""
   },
   "eslintConfig": {
     "extends": [
@@ -77,6 +77,7 @@
   "devDependencies": {
     "@types/uuid": "^9.0.2",
     "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-react": "^7.33.2",
     "expo": "^49.0.5",
     "jest": "^27.4.5",
     "jest-extended": "^1.2.0",
