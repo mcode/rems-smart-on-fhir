@@ -1,5 +1,5 @@
 import { Button, IconButton } from '@mui/material';
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface RegisterProps {
@@ -11,12 +11,12 @@ const Register = (props: RegisterProps) => {
     const [fhirUrl, setFhirUrl] = useState<string>('');
     const [newSelection, setNewSelection] = useState<boolean>(true);
 
-    const currentClients = JSON.parse(localStorage.getItem('clients') || '[]');
-    console.log('current clients -- > ', currentClients);
+    const [currentClients, setCurrentClients] = useState(JSON.parse(localStorage.getItem('clients') || '[]'));
 
     function submit() {
         console.log('wants to submit --> ', { name: fhirUrl, client: clientId });
         if (newSelection) {
+            console.log('new selection add to LS');
             currentClients.push({name: fhirUrl, client: clientId });
             localStorage.setItem('clients', JSON.stringify(currentClients));
         }
@@ -30,8 +30,9 @@ const Register = (props: RegisterProps) => {
     }
 
     function deleteClient(client: any) {
-        console.log('client to delete is-- > ', client);
-
+        const newClients = currentClients.filter((c: { name: any; client: any; }) => !(c.name === client.name && c.client === client.client));
+        localStorage.setItem('clients', JSON.stringify(newClients));
+        setCurrentClients(newClients);
     }
 
     function selectClient(client: any) {

@@ -185,6 +185,7 @@ function PatientView(props: PatientViewProps) {
   function onSubmit(clientId: string, fhirUrl: string) {
     console.log('client id -- > ', clientId);
     console.log('fhirUrl -- > ', fhirUrl);
+    handleCloseRegisterPage();
   }
 
   return (
