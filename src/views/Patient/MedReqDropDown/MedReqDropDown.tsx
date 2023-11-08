@@ -207,7 +207,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
         [resourceId]
       );
       let tempHook: OrderSelectHook;
-      if(env.get('REACT_APP_SEND_FHIR_AUTH_ENABLED').asBool()){
+      if (env.get('REACT_APP_SEND_FHIR_AUTH_ENABLED').asBool()) {
         tempHook = hook.generate(client);
       } else {
         tempHook = hook.generate();

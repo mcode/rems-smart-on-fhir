@@ -188,7 +188,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
   });
   const loadAndMergeForms = (newResponse: QuestionnaireResponse | null) => {
-
     let lform = LForms.Util.convertFHIRQuestionnaireToLForms(
       props.qform,
       props.fhirVersion.toUpperCase()
@@ -211,7 +210,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         props.fhirVersion.toUpperCase()
       );
     }
-
 
     LForms.Util.addFormToPage(lform, questionnaireFormId);
     const specificForm = document.getElementById(questionnaireFormId);
@@ -1022,9 +1020,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       return true;
     } else {
       // check if form is fully filled out based on required fields
-      const requiredFieldErrors = formValidationErrors ? formValidationErrors.filter((error) => {
-        return error.includes('requires a value');
-      }) : [];
+      const requiredFieldErrors = formValidationErrors
+        ? formValidationErrors.filter(error => {
+            return error.includes('requires a value');
+          })
+        : [];
       return !(formValidationErrors && requiredFieldErrors.length);
     }
   };
@@ -1035,14 +1035,16 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     return <Typography fontSize={16}>{tooltip}</Typography>;
   };
 
-  // Get missing fields to display 
+  // Get missing fields to display
   const getMissingFields = () => {
     const fields: string[] = [];
-    const requiredFieldErrors = formValidationErrors ? formValidationErrors.filter((error) => {
-      return error.includes('requires a value');
-    }) : [];
+    const requiredFieldErrors = formValidationErrors
+      ? formValidationErrors.filter(error => {
+          return error.includes('requires a value');
+        })
+      : [];
     if (requiredFieldErrors.length) {
-      requiredFieldErrors.forEach((err) => {
+      requiredFieldErrors.forEach(err => {
         const name = err.split(' requires a value')[0];
         fields.push(name);
       });
@@ -1053,12 +1055,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const getDisplayButtons = () => {
     if (!isAdaptiveForm()) {
       return (
-        <div className='submit-button-panel'>
+        <div className="submit-button-panel">
           <div className="btn-row">
             <Button variant="outlined" onClick={() => loadPreviousForm()}>
               Load Previous Form
             </Button>
-            <Button variant="outlined"
+            <Button
+              variant="outlined"
               onClick={() => {
                 outputResponse('in-progress');
               }}
@@ -1067,7 +1070,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             </Button>
             <Tooltip title={getMissingFieldsTooltip()}>
               <span>
-                <Button variant="outlined" disabled={!isFilledOut()}
+                <Button
+                  variant="outlined"
+                  disabled={!isFilledOut()}
                   onClick={() => {
                     outputResponse('completed');
                   }}
@@ -1077,7 +1082,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               </span>
             </Tooltip>
           </div>
-          {!isFilledOut() ? <p className='error-text'>You must include a value for {getMissingFields()}</p> : <></>}
+          {!isFilledOut() ? (
+            <p className="error-text">You must include a value for {getMissingFields()}</p>
+          ) : (
+            <></>
+          )}
         </div>
       );
     } else {
@@ -1085,7 +1094,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         return (
           <div className="submit-button-panel">
             <Tooltip title={getMissingFieldsTooltip()}>
-              <Button variant="outlined" disabled={!isFilledOut()}
+              <Button
+                variant="outlined"
+                disabled={!isFilledOut()}
                 onClick={() => {
                   outputResponse('completed');
                 }}
@@ -1104,7 +1115,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               </Button>
             ) : null}
             {isAdaptiveFormWithItem() ? (
-              <Button variant="outlined"
+              <Button
+                variant="outlined"
                 onClick={() => {
                   outputResponse('in-progress');
                 }}
@@ -1663,15 +1675,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           {!props.adFormCompleted ? (
             <div>
               {' '}
-              <Button variant='outlined' onClick={loadNextQuestions}>
+              <Button variant="outlined" onClick={loadNextQuestions}>
                 Next Question
               </Button>
             </div>
           ) : null}
         </div>
       ) : null}
-      <div style={{display: 'flex', justifyContent: 'space-between'}}>
-        {!isAdaptive ? <div className="status-panel">Form Loaded: {formLoaded}</div> : <div/>}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        {!isAdaptive ? <div className="status-panel">Form Loaded: {formLoaded}</div> : <div />}
         {getDisplayButtons()}
       </div>
     </div>

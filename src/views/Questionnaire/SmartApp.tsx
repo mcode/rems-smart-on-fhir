@@ -347,13 +347,13 @@ export function SmartApp(props: SmartAppProps) {
   // update the ignore required checkbox
   const updateRequired = (defaultFilter: boolean) => {
     let checked: boolean, requiredCheckbox: HTMLInputElement;
-      if (!defaultFilter) {
-        requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
-        checked = requiredCheckbox ? requiredCheckbox.checked : false;
-      } else {
-        checked = true;
-      }
-      setIgnoreRequiredCheckbox(checked);
+    if (!defaultFilter) {
+      requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+      checked = requiredCheckbox ? requiredCheckbox.checked : false;
+    } else {
+      checked = true;
+    }
+    setIgnoreRequiredCheckbox(checked);
   };
 
   const fetchResourcesAndExecuteCql = (
@@ -593,7 +593,9 @@ export function SmartApp(props: SmartAppProps) {
 
   // update required checkbox ref
   const onRequiredCheckboxRefChange = () => {
-    const requiredCheckbox = document.getElementById(questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox') as HTMLInputElement;
+    const requiredCheckbox = document.getElementById(
+      questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'
+    ) as HTMLInputElement;
     if (requiredCheckbox != null) {
       requiredCheckbox.checked = ignoreRequiredCheckbox;
     }
@@ -640,7 +642,7 @@ export function SmartApp(props: SmartAppProps) {
               ref={onFilterCheckboxRefChange}
             ></input>
           </div>
-          { showRequiredCheckbox ? 
+          {showRequiredCheckbox ? (
             <div className="task-button">
               <label>Ignore required fields</label>{' '}
               <input
@@ -648,11 +650,17 @@ export function SmartApp(props: SmartAppProps) {
                 onChange={() => {
                   updateRequired(false);
                 }}
-                id={questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'}
+                id={
+                  questionnaire
+                    ? `required-fields-checkbox-${questionnaire.id}`
+                    : 'required-fields-checkbox'
+                }
                 ref={onRequiredCheckboxRefChange}
               ></input>
             </div>
-          : <div/>}
+          ) : (
+            <div />
+          )}
         </div>
       </div>
     );
