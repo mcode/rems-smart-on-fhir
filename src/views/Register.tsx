@@ -1,32 +1,19 @@
 import { Button, IconButton } from '@mui/material';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 
-interface RegisterProps {
-    onSubmit: any;
-}
-const Register = (props: RegisterProps) => {
-
+const Register = () => {
     const [clientId, setClientId] = useState<string>('');
     const [fhirUrl, setFhirUrl] = useState<string>('');
-    const [newSelection, setNewSelection] = useState<boolean>(true);
 
     const [currentClients, setCurrentClients] = useState(JSON.parse(localStorage.getItem('clients') || '[]'));
+    const selectedClient = JSON.parse(localStorage.getItem('selectedClient') || '{}');
 
     function submit() {
-        console.log('wants to submit --> ', { name: fhirUrl, client: clientId });
-        if (newSelection) {
-            console.log('new selection add to LS');
-            currentClients.push({name: fhirUrl, client: clientId });
-            localStorage.setItem('clients', JSON.stringify(currentClients));
-        }
-        props.onSubmit(clientId, fhirUrl);
-    }
-
-    function clear () {
-        setNewSelection(true);
-        setClientId('');
-        setFhirUrl('');
+        console.log('new selection add to LS');
+        currentClients.push({name: fhirUrl, client: clientId });
+        localStorage.setItem('clients', JSON.stringify(currentClients));
+        window.location.reload();
     }
 
     function deleteClient(client: any) {
@@ -36,9 +23,13 @@ const Register = (props: RegisterProps) => {
     }
 
     function selectClient(client: any) {
-        setNewSelection(false);
-        setClientId(client.client);
-        setFhirUrl(client.name);
+        localStorage.setItem('selectedClient', JSON.stringify({ name: client.name, client: client.client }));
+        window.location.reload();
+    }
+
+    function useDefault() {
+        localStorage.setItem('selectedClient', JSON.stringify({}));
+        window.location.reload();
     }
 
     return (
@@ -50,6 +41,10 @@ const Register = (props: RegisterProps) => {
 
                 <p>Fhir Server (iss)</p>
                 <input className="client-id" value={fhirUrl} onChange={(e)=>{setFhirUrl(e.target.value);}}></input>
+                <div style={{display: 'flex', paddingTop: '25px'}}>
+                    <Button variant='outlined' disabled={clientId === '' || fhirUrl === ''} onClick={submit}>{'Submit'}</Button>
+                </div>
+                <hr style={{ color: '#000000', width: '80%'}}/>
                 <div className="current-selection">
                     <h4>Existing Client Ids</h4>
                     { currentClients.map((client: any, index: React.Key | null | undefined)=>{ 
@@ -63,9 +58,18 @@ const Register = (props: RegisterProps) => {
                             </div>);
                     })}
                 </div>
-                <div style={{display: 'flex'}}>
-                    { !newSelection ?  <Button variant='outlined' onClick={clear}>Clear</Button> : <div/> }
-                    <Button variant='outlined' onClick={submit}>{newSelection ? 'Submit' : 'Sign in'}</Button>
+                <hr style={{ color: '#000000', width: '80%'}}/>
+                <div className="current-selection" style={{alignItems: 'center', display: 'flex', 'flexDirection': 'column'}}>
+                    <h4>Selected Client Id</h4>
+                    <p><i>The selected client id will be used when opening a smart application in the future. To change, select an existing client id above.</i></p>
+                    <div style={{display: 'flex', alignItems: 'center'}}>
+                        {selectedClient.name ?  
+                        (<>
+                            <span style={{marginRight: '35px'}}><b>{selectedClient.name}</b>: {selectedClient.client}</span>
+                            <Button variant='outlined' style={{marginRight: '5px'}} onClick={ () => { useDefault(); }}>Use default</Button>
+                        </>)
+                        : <span>Using default client id from environment variable</span>}
+                    </div>
                 </div>
             </div>
         </div>

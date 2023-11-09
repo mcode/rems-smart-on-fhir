@@ -17,6 +17,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { MedicationRequest, Patient, Practitioner } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Register from '../Register';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
 import './PatientView.css';
@@ -73,7 +74,6 @@ function PatientView(props: PatientViewProps) {
 
   //Prefetch
   const [patient, setPatient] = useState<Patient | null>(null);
-  const [openRegister, setOpenRegister] = useState<boolean>(false);
 
   const [user, setUser] = useState<string | null>(null);
 
@@ -162,42 +162,13 @@ function PatientView(props: PatientViewProps) {
     }
   ];
 
-  const modal_style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '1px solid #000',
-    boxShadow: 24,
-    p: 4
-  };
-
-  function openRegisterPage() {
-    setOpenRegister(true);
-  }
-
-  function handleCloseRegisterPage() {
-    setOpenRegister(false);
-  }
-
-  function onSubmit(clientId: string, fhirUrl: string) {
-    console.log('client id -- > ', clientId);
-    console.log('fhirUrl -- > ', fhirUrl);
-    handleCloseRegisterPage();
-  }
-
   return (
     <Box flexGrow={1}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
-          <Button variant='outlined' className='setting-btn' onClick={openRegisterPage}>Register New Client</Button>
-          <Modal open={openRegister} onClose={handleCloseRegisterPage}>
-            <Box sx={modal_style}>
-              <Register onSubmit={onSubmit}/>
-            </Box>
-          </Modal>
+          <Link to="/register"> 
+            <Button variant='outlined' className='setting-btn'>Register New Client</Button>
+          </Link>
           {patient ? (
             <Card sx={{ bgcolor: 'white' }}>
               <CardContent>
