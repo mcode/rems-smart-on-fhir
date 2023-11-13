@@ -40,8 +40,9 @@ function PatientView(props: PatientViewProps) {
     { header: 'Date of Birth', data: patient?.['birthDate'] || '' },
     {
       header: 'Address',
-      data: `${(patient?.address?.[0].line, patient?.address?.[0]['city'])}\n${patient?.address?.[0]
-        ?.state}, ${patient?.address?.[0]?.postalCode}`
+      data: `${(patient?.address?.[0].line, patient?.address?.[0]['city'])}\n${
+        patient?.address?.[0]?.state
+      }, ${patient?.address?.[0]?.postalCode}`
     }
   ];
 
