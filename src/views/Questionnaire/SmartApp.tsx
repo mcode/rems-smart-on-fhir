@@ -25,6 +25,7 @@ import executeElm from './elm/executeElm';
 import PatientSelect from './components/PatientSelect/PatientSelect';
 import RemsInterface from './components/RemsInterface/RemsInterface';
 import { createRoot } from 'react-dom/client';
+import * as env from 'env-var';
 
 interface SmartAppProps {
   standalone: boolean;
@@ -111,6 +112,9 @@ export function SmartApp(props: SmartAppProps) {
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
   const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
   const [formElement, setFormElement] = useState<HTMLElement>();
+  const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
+
+  const showRequiredCheckbox: boolean = env.get('REACT_APP_DEVELOPER_MODE').asBool() ? true : false;
   const smart = props.smartClient;
   let FHIR_VERSION = 'r4';
   const toggleOverlay = () => {
@@ -339,6 +343,19 @@ export function SmartApp(props: SmartAppProps) {
       setFormFilled(document.querySelector('input.ng-empty:not([disabled])') == null);
     }
   };
+
+  // update the ignore required checkbox
+  const updateRequired = (defaultFilter: boolean) => {
+    let checked: boolean, requiredCheckbox: HTMLInputElement;
+      if (!defaultFilter) {
+        requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+        checked = requiredCheckbox ? requiredCheckbox.checked : false;
+      } else {
+        checked = true;
+      }
+      setIgnoreRequiredCheckbox(checked);
+  };
+
   const fetchResourcesAndExecuteCql = (
     order: string,
     coverage: string,
@@ -573,6 +590,15 @@ export function SmartApp(props: SmartAppProps) {
       filterCheckbox.checked = filterChecked;
     }
   };
+
+  // update required checkbox ref
+  const onRequiredCheckboxRefChange = () => {
+    const requiredCheckbox = document.getElementById(questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox') as HTMLInputElement;
+    if (requiredCheckbox != null) {
+      requiredCheckbox.checked = ignoreRequiredCheckbox;
+    }
+  };
+
   const getFhirWrapper = (fhirVersion: string): cqlfhir.FHIRWrapper => {
     if (fhirVersion == 'r4') {
       return cqlfhir.FHIRWrapper.FHIRv400();
@@ -614,6 +640,19 @@ export function SmartApp(props: SmartAppProps) {
               ref={onFilterCheckboxRefChange}
             ></input>
           </div>
+          { showRequiredCheckbox ? 
+            <div className="task-button">
+              <label>Ignore required fields</label>{' '}
+              <input
+                type="checkbox"
+                onChange={() => {
+                  updateRequired(false);
+                }}
+                id={questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'}
+                ref={onRequiredCheckboxRefChange}
+              ></input>
+            </div>
+          : <div/>}
         </div>
       </div>
     );
@@ -661,6 +700,7 @@ export function SmartApp(props: SmartAppProps) {
               renderButtons={renderButtons}
               filterFieldsFn={filter}
               filterChecked={filterChecked}
+              ignoreRequiredChecked={ignoreRequiredCheckbox}
               formFilled={formFilled}
               updateQuestionnaire={updateQuestionnaire}
               ehrLaunch={ehrLaunch}
