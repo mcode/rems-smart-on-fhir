@@ -63,19 +63,3 @@ box-sizing: unset;
   grid-template-areas: ' main right';
 }
 
-.setting-btn {
-  margin-top: 6px !important;
-  margin-bottom: 6px !important;
-}
-
-
-.register-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 50px;
-}
-
-.current-selection {
-  margin: 20px 4px;
-}
