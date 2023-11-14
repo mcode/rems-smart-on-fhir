@@ -5,7 +5,6 @@ import Patient from './views/Patient/PatientView';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CloseIcon from '@mui/icons-material/CloseOutlined';
-
 import { ReactElement, useCallback, useEffect, useState, MouseEvent } from 'react';
 import { MemoizedTabPanel } from './TabDisplay';
 import { IconButton } from '@mui/material';
@@ -129,7 +128,9 @@ function App(props: AppProps) {
                           {tab.closeable && (
                             <IconButton
                               component="div"
-                              onClick={(event: MouseEvent<Element, globalThis.MouseEvent>) => handleClose(event, tab)}
+                              onClick={(event: MouseEvent<Element, globalThis.MouseEvent>) =>
+                                handleClose(event, tab)
+                              }
                               style={{ padding: '0px 5px 0px 5px' }}
                             >
                               <CloseIcon fontSize="small" />

@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Grid,
@@ -10,15 +9,12 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Typography,
-  Modal
+  Typography
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { MedicationRequest, Patient, Practitioner } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Register from '../Register';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
 import './PatientView.css';
 import { Hook, Card as HooksCard } from '../../cds-hooks/resources/HookTypes';
@@ -166,9 +162,6 @@ function PatientView(props: PatientViewProps) {
     <Box flexGrow={1}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
-          <Link to="/register"> 
-            <Button variant='outlined' className='setting-btn'>Register New Client</Button>
-          </Link>
           {patient ? (
             <Card sx={{ bgcolor: 'white' }}>
               <CardContent>
