@@ -22,7 +22,6 @@ import axios from 'axios';
 import * as env from 'env-var';
 import PatientViewHook from '../../cds-hooks/resources/PatientView';
 import { hydrate } from '../../cds-hooks/prefetch/PrefetchHydrator';
-import example from '../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 
 interface PatientViewProps {
   client: Client;
@@ -95,7 +94,15 @@ function PatientView(props: PatientViewProps) {
       const hook = new PatientViewHook(patient.id, user);
       const tempHook = hook.generate();
 
-      hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
+      hydrate(
+        getFhirResource,
+        {
+          patient: 'Patient/{{context.patientId}}',
+          practitioner: 'Practitioner/{{context.userId}}',
+          medicationRequests: 'MedicationRequest?subject={{context.patientId}}'
+        },
+        tempHook
+      ).then(() => {
         setCDSHook(tempHook);
       });
     }
