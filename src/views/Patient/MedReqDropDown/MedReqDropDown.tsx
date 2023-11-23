@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
-import axios from 'axios';
 import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
@@ -24,6 +23,7 @@ import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes'
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
+import { MedicationBundle } from '../PatientView';
 
 // Adding in cards
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -34,30 +34,29 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import sendRx from './rxSend/rxSend';
-import { HooksAction, MedicationBundle } from '../PatientView';
 
 interface MedReqDropDownProps {
-  tabCallback: (n: ReactElement, m: string, o: string) => void;
   client: Client;
+  getFhirResource: (token: string) => Promise<Resource>;
   hooksCards: HooksCard[];
-  setHooksCards: React.Dispatch<HooksAction>;
   medication: MedicationBundle | null;
   patient: Patient | null;
-  user: string | null;
   practitioner: Practitioner | null;
-  getFhirResource: (token: string) => Promise<Resource>;
+  submitToREMS: (cdsHook: Hook | null) => void;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
+  user: string | null;
 }
 
 function MedReqDropDown({
-  tabCallback,
   client,
+  getFhirResource,
   hooksCards,
-  setHooksCards,
   medication,
   patient,
-  user,
   practitioner,
-  getFhirResource
+  submitToREMS,
+  tabCallback,
+  user
 }: MedReqDropDownProps) {
   //For dropdown UI
   const [selectedOption, setSelectedOption] = useState<string>('');
@@ -77,30 +76,9 @@ function MedReqDropDown({
 
   const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
 
-  //CDS-Hook Request to REMS-Admin for cards
-  const submitToREMS = () => {
-    const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
-    axios({
-      method: 'post',
-      url:
-        `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
-        `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
-        hookType,
-      data: cdsHook
-    }).then(
-      response => {
-        console.log(response.data.cards);
-        setHooksCards({ type: 'replace', value: response.data.cards });
-      },
-      error => {
-        console.log(error);
-      }
-    );
-  };
-
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS();
+      submitToREMS(cdsHook);
     }
   }, [cdsHook]);
 
@@ -268,7 +246,11 @@ function MedReqDropDown({
                       alignContent="center"
                       justifyContent="center"
                     >
-                      <IconButton color="primary" onClick={submitToREMS} size="large">
+                      <IconButton
+                        color="primary"
+                        onClick={() => submitToREMS(cdsHook)}
+                        size="large"
+                      >
                         <RefreshIcon fontSize="large" />
                       </IconButton>
                     </Grid>

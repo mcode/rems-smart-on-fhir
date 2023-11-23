@@ -14,7 +14,7 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { MedicationRequest, Patient, Practitioner } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
-import { ReactElement, useEffect, useReducer, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
 import './PatientView.css';
 import { Hook, Card as HooksCard } from '../../cds-hooks/resources/HookTypes';
@@ -33,22 +33,6 @@ export interface MedicationBundle {
   reference: Patient;
 }
 
-export type HooksAction = {
-  type: 'replace' | 'append';
-  value: HooksCard[];
-};
-
-function reducer(state: HooksCard[], action: HooksAction): HooksCard[] {
-  switch (action.type) {
-    case 'replace':
-      return action.value;
-    case 'append':
-      return [...state, ...action.value];
-    default:
-      return state;
-  }
-}
-
 function PatientView(props: PatientViewProps) {
   function getFhirResource(token: string) {
     console.log('getFhirResource: ' + token);
@@ -59,7 +43,7 @@ function PatientView(props: PatientViewProps) {
 
   const client = props.client;
 
-  const [hooksCards, setHooksCards] = useReducer(reducer, [] as HooksCard[]);
+  const [hooksCards, setHooksCards] = useState([] as HooksCard[]);
 
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
@@ -70,8 +54,24 @@ function PatientView(props: PatientViewProps) {
 
   const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
 
+  //CDS-Hook Request to REMS-Admin for cards
+  const submitToREMS = (cdsHook: Hook | null) => {
+    const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
+    axios({
+      method: 'post',
+      url:
+        `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
+        `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
+        hookType,
+      data: cdsHook
+    }).then(
+      response => setHooksCards(response.data.cards),
+      error => console.log(error)
+    );
+  };
+
   useEffect(() => {
-    client.patient.read().then((patient: any) => setPatient(patient));
+    client.patient.read().then((patient: Patient) => setPatient(patient));
     if (client.user.id) {
       setUser(client.user.id);
       client.user.read().then(response => {
@@ -108,31 +108,9 @@ function PatientView(props: PatientViewProps) {
     }
   }, [patient, user]);
 
-  const submitToREMS = () => {
-    const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
-    axios({
-      method: 'post',
-      url:
-        `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
-        `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
-        hookType,
-      data: cdsHook
-    }).then(
-      response => {
-        console.log(response.data.cards);
-        setHooksCards({ type: 'append', value: response.data.cards });
-        // should I append the order-sign cards on top of the patient-view cards?
-        // or no, just reuse the GUI element but keep the two types of hooks' cards alone
-      },
-      error => {
-        console.log(error);
-      }
-    );
-  };
-
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS();
+      submitToREMS(cdsHook);
     }
   }, [cdsHook]);
 
@@ -189,7 +167,7 @@ function PatientView(props: PatientViewProps) {
                     </Typography>
                   </Grid>
                   <Grid item xs={2} sm={1} md={12} lg={2}>
-                    <IconButton color="primary" onClick={submitToREMS} size="large">
+                    <IconButton color="primary" onClick={() => submitToREMS(cdsHook)} size="large">
                       <RefreshIcon fontSize="large" />
                     </IconButton>
                   </Grid>
@@ -220,14 +198,14 @@ function PatientView(props: PatientViewProps) {
           {client ? (
             <MedReqDropDown
               client={client}
-              tabCallback={props.tabCallback}
+              getFhirResource={getFhirResource}
               hooksCards={hooksCards}
-              setHooksCards={setHooksCards}
               medication={medication}
               patient={patient}
-              user={user}
               practitioner={practitioner}
-              getFhirResource={getFhirResource}
+              submitToREMS={submitToREMS}
+              tabCallback={props.tabCallback}
+              user={user}
             />
           ) : (
             <p>Loading medication request...</p>
