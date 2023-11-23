@@ -23,7 +23,7 @@ import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes'
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
-import { MedicationBundle } from '../PatientView';
+import { MedicationBundle, submitToREMS } from '../PatientView';
 
 // Adding in cards
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -42,7 +42,7 @@ interface MedReqDropDownProps {
   medication: MedicationBundle | null;
   patient: Patient | null;
   practitioner: Practitioner | null;
-  submitToREMS: (cdsHook: Hook | null) => void;
+  setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>;
   tabCallback: (n: ReactElement, m: string, o: string) => void;
   user: string | null;
 }
@@ -54,7 +54,7 @@ function MedReqDropDown({
   medication,
   patient,
   practitioner,
-  submitToREMS,
+  setHooksCards,
   tabCallback,
   user
 }: MedReqDropDownProps) {
@@ -78,7 +78,7 @@ function MedReqDropDown({
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS(cdsHook);
+      submitToREMS(cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
@@ -248,7 +248,7 @@ function MedReqDropDown({
                     >
                       <IconButton
                         color="primary"
-                        onClick={() => submitToREMS(cdsHook)}
+                        onClick={() => submitToREMS(cdsHook, setHooksCards)}
                         size="large"
                       >
                         <RefreshIcon fontSize="large" />
@@ -283,16 +283,14 @@ function MedReqDropDown({
               )}
             </Grid>
 
-            {selectedOption && (
-              <CdsHooksCards
-                cards={hooksCards}
-                client={client}
-                name={medicationName}
-                tabIndex={tabIndex}
-                setTabIndex={setTabIndex}
-                tabCallback={tabCallback}
-              />
-            )}
+            <CdsHooksCards
+              cards={hooksCards}
+              client={client}
+              name={medicationName}
+              tabIndex={tabIndex}
+              setTabIndex={setTabIndex}
+              tabCallback={tabCallback}
+            />
           </Grid>
         </CardContent>
       </Card>

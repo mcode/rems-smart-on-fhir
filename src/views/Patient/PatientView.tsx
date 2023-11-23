@@ -33,6 +33,27 @@ export interface MedicationBundle {
   reference: Patient;
 }
 
+//CDS-Hook Request to REMS-Admin for cards
+export const submitToREMS = (
+  cdsHook: Hook | null,
+  setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>
+) => {
+  const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
+  axios({
+    method: 'post',
+    url:
+      `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
+      `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
+      hookType,
+    data: cdsHook
+  }).then(
+    response => {
+      setHooksCards(response.data.cards);
+    },
+    error => console.log(error)
+  );
+};
+
 function PatientView(props: PatientViewProps) {
   function getFhirResource(token: string) {
     console.log('getFhirResource: ' + token);
@@ -53,22 +74,6 @@ function PatientView(props: PatientViewProps) {
   const [user, setUser] = useState<string | null>(null);
 
   const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
-
-  //CDS-Hook Request to REMS-Admin for cards
-  const submitToREMS = (cdsHook: Hook | null) => {
-    const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
-    axios({
-      method: 'post',
-      url:
-        `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
-        `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
-        hookType,
-      data: cdsHook
-    }).then(
-      response => setHooksCards(response.data.cards),
-      error => console.log(error)
-    );
-  };
 
   useEffect(() => {
     client.patient.read().then((patient: Patient) => setPatient(patient));
@@ -110,7 +115,7 @@ function PatientView(props: PatientViewProps) {
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS(cdsHook);
+      submitToREMS(cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
@@ -167,7 +172,11 @@ function PatientView(props: PatientViewProps) {
                     </Typography>
                   </Grid>
                   <Grid item xs={2} sm={1} md={12} lg={2}>
-                    <IconButton color="primary" onClick={() => submitToREMS(cdsHook)} size="large">
+                    <IconButton
+                      color="primary"
+                      onClick={() => submitToREMS(cdsHook, setHooksCards)}
+                      size="large"
+                    >
                       <RefreshIcon fontSize="large" />
                     </IconButton>
                   </Grid>
@@ -203,7 +212,7 @@ function PatientView(props: PatientViewProps) {
               medication={medication}
               patient={patient}
               practitioner={practitioner}
-              submitToREMS={submitToREMS}
+              setHooksCards={setHooksCards}
               tabCallback={props.tabCallback}
               user={user}
             />
