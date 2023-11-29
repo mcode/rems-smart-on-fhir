@@ -63,3 +63,9 @@ box-sizing: unset;
   grid-template-areas: ' main right';
 }
 
+.register-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px;
+}
