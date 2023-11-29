@@ -212,8 +212,6 @@ function MedReqDropDown(props: MedReqDropDownProps) {
       } else {
         tempHook = hook.generate();
       }
-      console.log(env.get('REACT_APP_SEND_FHIR_AUTH_ENABLED').asBool());
-      console.log(tempHook);
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
         setCDSHook(tempHook);
       });
