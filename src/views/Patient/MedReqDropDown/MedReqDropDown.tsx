@@ -36,14 +36,12 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import sendRx from './rxSend/rxSend';
 
-interface MedicationComboBundle {
-  data: (MedicationRequest | Medication) [];
-  reference: Patient;
-}
-
 interface MedicationBundle {
   data: MedicationRequest[];
-  reference: Patient;
+
+  // This is a json object with the key of each element matching the  
+  // contained FHIR resource
+  references: any;
 }
 
 interface MedReqDropDownProps {
@@ -163,58 +161,56 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   const getMedicationRequest = () => {
     client
-      .request(`MedicationRequest?subject=Patient/${client.patient.id}&_include=MedicationRequest:medication`, {
-        resolveReferences: ['subject', 'performer'],
+      .request(`MedicationRequest?subject=Patient/${client.patient.id}`, {
+        resolveReferences: ['subject', 'performer', 'medicationReference'],
         graph: false,
         flat: true
       })
-      .then((result: MedicationComboBundle) => {
-
-        // create a new MedicationBundle to output that contains only the MedicationRequests
-        const medicationBundle : MedicationBundle = {
-          data: [],
-          reference: result.reference
-        };
+      .then((result: MedicationBundle) => {
 
         result.data.forEach(e => {
+
+          if (e?.medicationReference) {
+            const medicationReference = e?.medicationReference?.reference;
+          }
+
           if (e?.resourceType === 'MedicationRequest') {
             if (e?.medicationReference) {
               const medicationReference = e?.medicationReference?.reference;
 
-              // find the matching medication
-              result.data.forEach(m => {
-                if (m.resourceType === 'Medication') {
-                  if (m.resourceType + '/' + m.id == medicationReference) {
-                    const code = m?.code?.coding?.[0];
+              if (medicationReference) {
+                // find the matching medication in the references
+                const medication = result?.references?.[medicationReference];
 
-                    if (code) {
-                      // add the reference as a contained resource to the request
-                      if (!e?.contained) {
-                        e.contained = [];
-                        e.contained.push(m);
-                      } else {
-                        // only add to contained if not already in there
-                        let found = false;
-                        e?.contained.forEach(c => {
-                          if (e.id === m.id) {
-                            found = true;
-                          }
-                        });
-                        if (!found) {
-                          e?.contained.push(m);
+                if (medication) {
+                  const code = medication?.code?.coding?.[0];
+
+                  if (code) {
+                    // add the reference as a contained resource to the request
+                    if (!e?.contained) {
+                      e.contained = [];
+                      e.contained.push(medication);
+                    } else {
+                      // only add to contained if not already in there
+                      let found = false;
+                      e?.contained.forEach(c => {
+                        if (medication.id === medication.id) {
+                          found = true;
                         }
+                      });
+                      if (!found) {
+                        e?.contained.push(medication);
                       }
                     }
                   }
                 }
-              });
+              }
             }
-            medicationBundle.data.push(e);
           }
 
         });
 
-        setMedication(medicationBundle);
+        setMedication(result);
       });
   };
 
