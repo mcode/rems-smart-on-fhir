@@ -14,12 +14,11 @@ const Launch = () => {
 
   const smartLaunch = () => {
     let clients: Client[] = JSON.parse(localStorage.getItem('clients') || '[]');
-    console.log(clients);
-    if(clients.length === 0) {
+    if (clients.length === 0) {
       const defaultClient = env.get('REACT_APP_DEFAULT_CLIENT_ID').asString();
       const defaultIss = env.get('REACT_APP_DEFAULT_ISS').asString();
-      if(defaultClient && defaultIss) {
-        clients = [{'client': defaultClient, 'name':  defaultIss}];
+      if (defaultClient && defaultIss) {
+        clients = [{ client: defaultClient, name: defaultIss }];
         localStorage.setItem('clients', JSON.stringify(clients));
       }
     }
