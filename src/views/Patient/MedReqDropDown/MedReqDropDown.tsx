@@ -15,13 +15,14 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import axios from 'axios';
-import { BundleEntry, Patient, MedicationRequest, Practitioner } from 'fhir/r4';
+import { BundleEntry, Patient, MedicationRequest, Medication, Practitioner } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
+import { getDrugCodeFromMedicationRequest } from '../../Questionnaire/questionnaireUtil';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 
@@ -34,6 +35,11 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import sendRx from './rxSend/rxSend';
+
+interface MedicationComboBundle {
+  data: (MedicationRequest | Medication) [];
+  reference: Patient;
+}
 
 interface MedicationBundle {
   data: MedicationRequest[];
@@ -157,13 +163,58 @@ function MedReqDropDown(props: MedReqDropDownProps) {
 
   const getMedicationRequest = () => {
     client
-      .request(`MedicationRequest?subject=Patient/${client.patient.id}`, {
+      .request(`MedicationRequest?subject=Patient/${client.patient.id}&_include=MedicationRequest:medication`, {
         resolveReferences: ['subject', 'performer'],
         graph: false,
         flat: true
       })
-      .then((result: MedicationBundle) => {
-        setMedication(result);
+      .then((result: MedicationComboBundle) => {
+
+        // create a new MedicationBundle to output that contains only the MedicationRequests
+        const medicationBundle : MedicationBundle = {
+          data: [],
+          reference: result.reference
+        };
+
+        result.data.forEach(e => {
+          if (e?.resourceType === 'MedicationRequest') {
+            if (e?.medicationReference) {
+              const medicationReference = e?.medicationReference?.reference;
+
+              // find the matching medication
+              result.data.forEach(m => {
+                if (m.resourceType === 'Medication') {
+                  if (m.resourceType + '/' + m.id == medicationReference) {
+                    const code = m?.code?.coding?.[0];
+
+                    if (code) {
+                      // add the reference as a contained resource to the request
+                      if (!e?.contained) {
+                        e.contained = [];
+                        e.contained.push(m);
+                      } else {
+                        // only add to contained if not already in there
+                        let found = false;
+                        e?.contained.forEach(c => {
+                          if (e.id === m.id) {
+                            found = true;
+                          }
+                        });
+                        if (!found) {
+                          e?.contained.push(m);
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }
+            medicationBundle.data.push(e);
+          }
+
+        });
+
+        setMedication(medicationBundle);
       });
   };
 
@@ -185,7 +236,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   useEffect(() => {
     if (selectedMedicationCard) {
       const medName =
-        selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+        getDrugCodeFromMedicationRequest(selectedMedicationCard)?.display?.split(' ')[0];
       if (medName) {
         setMedicationName(medName);
       }
@@ -266,7 +317,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                     {medication ? (
                       medication.data.map(medications => (
                         <MenuItem key={medications.id} value={medications.id}>
-                          {medications.medicationCodeableConcept?.coding?.[0].display}
+                          {getDrugCodeFromMedicationRequest(medications)?.display}
                         </MenuItem>
                       ))
                     ) : (
@@ -281,7 +332,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                   <Grid item container>
                     <Grid item xs={10} sm={11}>
                       <Typography bgcolor="text.secondary" color="white" textAlign="center">
-                        Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
+                        Code: {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
                       </Typography>
                       <Typography
                         bgcolor="text.disabled"
@@ -297,7 +348,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                         color="white"
                         textAlign="center"
                       >
-                        {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
+                        {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.display}
                       </Typography>
                     </Grid>
                     <Grid

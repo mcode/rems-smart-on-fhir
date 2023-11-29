@@ -24,7 +24,8 @@ import {
   buildNextQuestionRequest,
   findValueByPrefix,
   retrieveQuestions,
-  searchQuestionnaire
+  searchQuestionnaire,
+  getDrugCodeableConceptFromMedicationRequest
 } from './questionnaireUtil';
 import './QuestionnaireForm.css';
 import { Button, Typography } from '@mui/material';
@@ -879,7 +880,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       } else if (request.resourceType == 'ServiceRequest') {
         c = request.code;
       } else if (request.resourceType == 'MedicationRequest') {
-        c = request.medicationCodeableConcept;
+        c = getDrugCodeableConceptFromMedicationRequest(request);
       }
     }
     console.log('getCode(): ' + request?.resourceType + ': ');
