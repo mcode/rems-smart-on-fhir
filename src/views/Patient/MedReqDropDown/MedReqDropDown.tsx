@@ -14,8 +14,7 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
-import axios from 'axios';
-import { BundleEntry, Patient, MedicationRequest, Practitioner } from 'fhir/r4';
+import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
@@ -24,6 +23,7 @@ import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes'
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
+import { MedicationBundle, submitToREMS } from '../PatientView';
 
 // Adding in cards
 import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
@@ -35,25 +35,29 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import sendRx from './rxSend/rxSend';
 
-interface MedicationBundle {
-  data: MedicationRequest[];
-  reference: Patient;
-}
-
 interface MedReqDropDownProps {
-  tabCallback: (n: ReactElement, m: string, o: string) => void;
   client: Client;
+  getFhirResource: (token: string) => Promise<Resource>;
+  hooksCards: HooksCard[];
+  medication: MedicationBundle | null;
+  patient: Patient | null;
+  practitioner: Practitioner | null;
+  setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>;
+  tabCallback: (n: ReactElement, m: string, o: string) => void;
+  user: string | null;
 }
-function MedReqDropDown(props: MedReqDropDownProps) {
-  const client = props.client;
 
-  function getFhirResource(token: string) {
-    console.log('getFhirResource: ' + token);
-    return props.client.request(token).then((e: any) => {
-      return e;
-    });
-  }
-
+function MedReqDropDown({
+  client,
+  getFhirResource,
+  hooksCards,
+  medication,
+  patient,
+  practitioner,
+  setHooksCards,
+  tabCallback,
+  user
+}: MedReqDropDownProps) {
   //For dropdown UI
   const [selectedOption, setSelectedOption] = useState<string>('');
 
@@ -61,18 +65,8 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     setSelectedOption(event.target.value as string);
   };
 
-  //Prefetch
-  const [patient, setPatient] = useState<Patient | null>(null);
-
-  const [user, setUser] = useState<string | null>(null);
-
-  const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
-
   //CDSHooks
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
-
-  //Cards
-  const [hooksCards, setHooksCards] = useState<HooksCard[]>([]);
 
   //ETASU
   const [showEtasu, setShowEtasu] = useState<boolean>(false);
@@ -81,51 +75,10 @@ function MedReqDropDown(props: MedReqDropDownProps) {
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
 
   const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
-  useEffect(() => {
-    client.patient.read().then((patient: any) => setPatient(patient));
-    if (client.user.id) {
-      setUser(client.user.id);
-      client.user.read().then(response => {
-        const practitioner = response as Practitioner;
-        setPractitioner(practitioner);
-      });
-    } else {
-      const appContextString = client.state?.tokenResponse?.appContext;
-      const appContext: { [key: string]: string } = {};
-      appContextString.split('&').map((e: string) => {
-        const temp: string[] = e.split('=');
-        appContext[temp[0]] = temp[1];
-      });
-      setUser(appContext?.user);
-    }
-  }, [client.patient, client]);
-
-  useEffect(() => {
-    getMedicationRequest();
-  }, []);
-
-  //CDS-Hook Request to REMS-Admin for cards
-  const submitToREMS = () => {
-    axios({
-      method: 'post',
-      url:
-        `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
-        `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}`,
-      data: cdsHook
-    }).then(
-      response => {
-        console.log(response.data.cards); // cards for REMS-333
-        setHooksCards(response.data.cards);
-      },
-      error => {
-        console.log(error);
-      }
-    );
-  };
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS();
+      submitToREMS(cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
@@ -150,21 +103,6 @@ function MedReqDropDown(props: MedReqDropDownProps) {
     if (med && patient && practitioner) {
       sendRx(patient, practitioner, med);
     }
-  };
-
-  // MedicationRequest Prefetching Bundle
-  const [medication, setMedication] = useState<MedicationBundle | null>(null);
-
-  const getMedicationRequest = () => {
-    client
-      .request(`MedicationRequest?subject=Patient/${client.patient.id}`, {
-        resolveReferences: ['subject', 'performer'],
-        graph: false,
-        flat: true
-      })
-      .then((result: MedicationBundle) => {
-        setMedication(result);
-      });
   };
 
   const [selectedMedicationCardBundle, setSelectedMedicationCardBundle] =
@@ -308,7 +246,11 @@ function MedReqDropDown(props: MedReqDropDownProps) {
                       alignContent="center"
                       justifyContent="center"
                     >
-                      <IconButton color="primary" onClick={submitToREMS} size="large">
+                      <IconButton
+                        color="primary"
+                        onClick={() => submitToREMS(cdsHook, setHooksCards)}
+                        size="large"
+                      >
                         <RefreshIcon fontSize="large" />
                       </IconButton>
                     </Grid>
@@ -341,16 +283,14 @@ function MedReqDropDown(props: MedReqDropDownProps) {
               )}
             </Grid>
 
-            {selectedOption && (
-              <CdsHooksCards
-                cards={hooksCards}
-                client={client}
-                name={medicationName}
-                tabIndex={tabIndex}
-                setTabIndex={setTabIndex}
-                tabCallback={props.tabCallback}
-              />
-            )}
+            <CdsHooksCards
+              cards={hooksCards}
+              client={client}
+              name={medicationName}
+              tabIndex={tabIndex}
+              setTabIndex={setTabIndex}
+              tabCallback={tabCallback}
+            />
           </Grid>
         </CardContent>
       </Card>
