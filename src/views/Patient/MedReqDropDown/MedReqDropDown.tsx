@@ -19,7 +19,7 @@ import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
-import { Hook, Card as HooksCard } from '../../../cds-hooks/resources/HookTypes';
+import { Hook, Card as HooksCard, OrderSelectHook } from '../../../cds-hooks/resources/HookTypes';
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
@@ -144,8 +144,12 @@ function MedReqDropDown({
         },
         [resourceId]
       );
-      const tempHook = hook.generate();
-
+      let tempHook: OrderSelectHook;
+      if (env.get('REACT_APP_SEND_FHIR_AUTH_ENABLED').asBool()) {
+        tempHook = hook.generate(client);
+      } else {
+        tempHook = hook.generate();
+      }
       hydrate(getFhirResource, example.prefetch, tempHook).then(() => {
         setCDSHook(tempHook);
       });
