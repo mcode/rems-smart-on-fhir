@@ -134,10 +134,6 @@ function PatientView(props: PatientViewProps) {
       })
       .then((result: MedicationBundle) => {
         result.data.forEach(e => {
-          if (e?.medicationReference) {
-            const medicationReference = e?.medicationReference?.reference;
-          }
-
           if (e?.resourceType === 'MedicationRequest') {
             if (e?.medicationReference) {
               const medicationReference = e?.medicationReference?.reference;
@@ -158,7 +154,7 @@ function PatientView(props: PatientViewProps) {
                       // only add to contained if not already in there
                       let found = false;
                       e?.contained.forEach(c => {
-                        if (medication.id === medication.id) {
+                        if (c.id === medication.id) {
                           found = true;
                         }
                       });

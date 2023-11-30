@@ -8,10 +8,7 @@ import { useState, useEffect } from 'react';
 
 import './PharmacyStatus.css';
 import DoctorOrder from './DoctorOrder';
-import {
-  getDrugCodeFromMedicationRequest,
-  getDrugCodeableConceptFromMedicationRequest
-} from '../../../Questionnaire/questionnaireUtil';
+import { getDrugCodeableConceptFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
 import * as env from 'env-var';
 
 interface PharmacyStatusProps {
