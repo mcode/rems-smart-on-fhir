@@ -39,7 +39,7 @@ import sendRx from './rxSend/rxSend';
 interface MedicationBundle {
   data: MedicationRequest[];
 
-  // This is a json object with the key of each element matching the  
+  // This is a json object with the key of each element matching the
   // contained FHIR resource
   references: any;
 }
@@ -167,9 +167,7 @@ function MedReqDropDown(props: MedReqDropDownProps) {
         flat: true
       })
       .then((result: MedicationBundle) => {
-
         result.data.forEach(e => {
-
           if (e?.medicationReference) {
             const medicationReference = e?.medicationReference?.reference;
           }
@@ -207,7 +205,6 @@ function MedReqDropDown(props: MedReqDropDownProps) {
               }
             }
           }
-
         });
 
         setMedication(result);

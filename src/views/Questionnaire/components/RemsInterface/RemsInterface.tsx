@@ -129,9 +129,9 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           const potentialPatient = getResource(props.specialtyRxBundle, patientReference);
           if (potentialPrescription && potentialPatient) {
             const prescription = potentialPrescription as MedicationRequest;
-            const medicationCodeableConcept = getDrugCodeableConceptFromMedicationRequest(prescription);
-            const simpleDrugName = 
-              medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+            const medicationCodeableConcept =
+              getDrugCodeableConceptFromMedicationRequest(prescription);
+            const simpleDrugName = medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
             const rxDate = prescription.authoredOn;
             const patient = potentialPatient as Patient;
             const patientFirstName = patient.name?.[0].given?.[0];
