@@ -3,6 +3,7 @@ build
 
 # Dependencies
 node_modules
+build.js
 
 # This gets modified via `npm install`
 package-lock.json
