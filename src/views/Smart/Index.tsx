@@ -12,13 +12,17 @@ const Index = () => {
     });
   }, []);
 
-  return <div>
-    {client ? <App client={client} /> : 
-      <div className='loading'>
-        <h1>Getting Client...</h1>
-      </div>
-    }
-    </div>;
+  return (
+    <div>
+      {client ? (
+        <App client={client} />
+      ) : (
+        <div className="loading">
+          <h1>Getting Client...</h1>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default Index;
