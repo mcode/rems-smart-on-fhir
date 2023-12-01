@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 
 import './PharmacyStatus.css';
 import DoctorOrder from './DoctorOrder';
+import { getDrugCodeableConceptFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
 import * as env from 'env-var';
 
 interface PharmacyStatusProps {
@@ -32,7 +33,11 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
     const patientLastName = props.patient?.name?.at(0)?.family;
     const patientDOB = props.patient?.birthDate;
     const rxDate = props.medication?.authoredOn;
-    const drugNames = props.medication?.medicationCodeableConcept?.coding?.at(0)?.display;
+    let drugCodeableConcept = undefined;
+    if (props.medication) {
+      drugCodeableConcept = getDrugCodeableConceptFromMedicationRequest(props.medication);
+    }
+    const drugNames = drugCodeableConcept?.coding?.at(0)?.display;
     console.log(
       'refreshPharmacyBundle: ' +
         patientFirstName +
@@ -45,7 +50,7 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
         ' - ' +
         drugNames
     );
-    const ndcDrugCoding = props.medication?.medicationCodeableConcept?.coding?.find(
+    const ndcDrugCoding = drugCodeableConcept?.coding?.find(
       ({ system }) => system === 'http://hl7.org/fhir/sid/ndc'
     );
     let queryString: string =

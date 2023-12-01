@@ -21,6 +21,7 @@ import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TO
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard, OrderSelectHook } from '../../../cds-hooks/resources/HookTypes';
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
+import { getDrugCodeFromMedicationRequest } from '../../Questionnaire/questionnaireUtil';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 import { MedicationBundle, submitToREMS } from '../PatientView';
@@ -123,7 +124,7 @@ function MedReqDropDown({
   useEffect(() => {
     if (selectedMedicationCard) {
       const medName =
-        selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+        getDrugCodeFromMedicationRequest(selectedMedicationCard)?.display?.split(' ')[0];
       if (medName) {
         setMedicationName(medName);
       }
@@ -208,7 +209,7 @@ function MedReqDropDown({
                     {medication ? (
                       medication.data.map(medications => (
                         <MenuItem key={medications.id} value={medications.id}>
-                          {medications.medicationCodeableConcept?.coding?.[0].display}
+                          {getDrugCodeFromMedicationRequest(medications)?.display}
                         </MenuItem>
                       ))
                     ) : (
@@ -223,7 +224,7 @@ function MedReqDropDown({
                   <Grid item container>
                     <Grid item xs={10} sm={11}>
                       <Typography bgcolor="text.secondary" color="white" textAlign="center">
-                        Code: {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].code}
+                        Code: {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
                       </Typography>
                       <Typography
                         bgcolor="text.disabled"
@@ -239,7 +240,7 @@ function MedReqDropDown({
                         color="white"
                         textAlign="center"
                       >
-                        {selectedMedicationCard?.medicationCodeableConcept?.coding?.[0].display}
+                        {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.display}
                       </Typography>
                     </Grid>
                     <Grid

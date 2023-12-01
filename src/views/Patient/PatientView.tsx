@@ -30,7 +30,10 @@ interface PatientViewProps {
 
 export interface MedicationBundle {
   data: MedicationRequest[];
-  reference: Patient;
+
+  // This is a json object with the key of each element matching the
+  // contained FHIR resource
+  references: any;
 }
 
 //CDS-Hook Request to REMS-Admin for cards
@@ -104,7 +107,8 @@ function PatientView(props: PatientViewProps) {
         {
           patient: 'Patient/{{context.patientId}}',
           practitioner: 'Practitioner/{{context.userId}}',
-          medicationRequests: 'MedicationRequest?subject={{context.patientId}}'
+          medicationRequests:
+            'MedicationRequest?subject={{context.patientId}}&_include=MedicationRequest:medication'
         },
         tempHook
       ).then(() => {
@@ -125,11 +129,47 @@ function PatientView(props: PatientViewProps) {
   const getMedicationRequest = () => {
     client
       .request(`MedicationRequest?subject=Patient/${client.patient.id}`, {
-        resolveReferences: ['subject', 'performer'],
+        resolveReferences: ['subject', 'performer', 'medicationReference'],
         graph: false,
         flat: true
       })
       .then((result: MedicationBundle) => {
+        result.data.forEach(e => {
+          if (e?.resourceType === 'MedicationRequest') {
+            if (e?.medicationReference) {
+              const medicationReference = e?.medicationReference?.reference;
+
+              if (medicationReference) {
+                // find the matching medication in the references
+                const medication = result?.references?.[medicationReference];
+
+                if (medication) {
+                  const code = medication?.code?.coding?.[0];
+
+                  if (code) {
+                    // add the reference as a contained resource to the request
+                    if (!e?.contained) {
+                      e.contained = [];
+                      e.contained.push(medication);
+                    } else {
+                      // only add to contained if not already in there
+                      let found = false;
+                      e?.contained.forEach(c => {
+                        if (c.id === medication.id) {
+                          found = true;
+                        }
+                      });
+                      if (!found) {
+                        e?.contained.push(medication);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+
         setMedication(result);
       });
   };

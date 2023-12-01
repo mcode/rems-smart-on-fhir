@@ -19,6 +19,7 @@ import RemsMetEtasuResponse from './RemsMetEtasuResponse';
 import MetRequirements from './MetRequirements';
 import * as env from 'env-var';
 import './EtasuStatus.css';
+import { getDrugCodeFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
 
 interface EtasuStatusProps {
   patient: Patient | null;
@@ -41,7 +42,10 @@ const EtasuStatus = (props: EtasuStatusProps) => {
     const patientFirstName = props.patient?.name?.at(0)?.given?.at(0);
     const patientLastName = props.patient?.name?.at(0)?.family;
     const patientDOB = props.patient?.birthDate;
-    const drugCode = props.medication?.medicationCodeableConcept?.coding?.at(0)?.code;
+    let drugCode = undefined;
+    if (props.medication) {
+      drugCode = getDrugCodeFromMedicationRequest(props.medication)?.code;
+    }
     console.log(
       'refreshEtasuBundle: ' +
         patientFirstName +

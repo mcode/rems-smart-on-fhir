@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ResourceEntry from './ResourceEntry';
 import './RemsInterface.css';
+import { getDrugCodeableConceptFromMedicationRequest } from '../../questionnaireUtil';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
@@ -128,8 +129,9 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           const potentialPatient = getResource(props.specialtyRxBundle, patientReference);
           if (potentialPrescription && potentialPatient) {
             const prescription = potentialPrescription as MedicationRequest;
-            const simpleDrugName =
-              prescription.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+            const medicationCodeableConcept =
+              getDrugCodeableConceptFromMedicationRequest(prescription);
+            const simpleDrugName = medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
             const rxDate = prescription.authoredOn;
             const patient = potentialPatient as Patient;
             const patientFirstName = patient.name?.[0].given?.[0];
