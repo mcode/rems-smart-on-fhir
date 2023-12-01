@@ -109,7 +109,8 @@ function PatientView(props: PatientViewProps) {
         {
           patient: 'Patient/{{context.patientId}}',
           practitioner: 'Practitioner/{{context.userId}}',
-          medicationRequests: 'MedicationRequest?subject={{context.patientId}}&_include=MedicationRequest:medication'
+          medicationRequests:
+            'MedicationRequest?subject={{context.patientId}}&_include=MedicationRequest:medication'
         },
         tempHook
       ).then(() => {
