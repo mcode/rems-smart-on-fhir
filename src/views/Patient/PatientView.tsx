@@ -41,6 +41,8 @@ export const submitToREMS = (
   cdsHook: Hook | null,
   setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>
 ) => {
+  console.log('zzzz: submitToREMS');
+  console.log(cdsHook); //zzzz
   const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
   axios({
     method: 'post',
@@ -107,7 +109,7 @@ function PatientView(props: PatientViewProps) {
         {
           patient: 'Patient/{{context.patientId}}',
           practitioner: 'Practitioner/{{context.userId}}',
-          medicationRequests: 'MedicationRequest?subject={{context.patientId}}'
+          medicationRequests: 'MedicationRequest?subject={{context.patientId}}&_include=MedicationRequest:medication'
         },
         tempHook
       ).then(() => {
@@ -118,6 +120,7 @@ function PatientView(props: PatientViewProps) {
 
   useEffect(() => {
     if (cdsHook) {
+      console.log('zzzz: useEffect submitToREMS');
       submitToREMS(cdsHook, setHooksCards);
     }
   }, [cdsHook]);
