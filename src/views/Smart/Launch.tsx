@@ -7,7 +7,7 @@ interface Client {
   client: string;
 }
 const Launch = () => {
-  const [content, setContent] = useState(<p> Launching </p>);
+  const [content, setContent] = useState(<div className='loading'><h1>Launching...</h1></div>);
   useEffect(() => {
     smartLaunch();
   }, []);
