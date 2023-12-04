@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ResourceEntry from './ResourceEntry';
 import './RemsInterface.css';
+import { getDrugCodeableConceptFromMedicationRequest } from '../../questionnaireUtil';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
@@ -14,17 +15,19 @@ interface RemsInterfaceProps {
 interface RemsAdminResponse {
   data: JsonData;
 }
+
+type MetRequirements = {
+  completed: boolean;
+  requirementName: string;
+  requirementDescription: string;
+};
+
 interface JsonData {
   case_number: string;
   status: string;
-  metRequirements: [
-    {
-      requirementName: string;
-      completed: boolean;
-      requirementDescription: string;
-    }
-  ];
+  metRequirements: MetRequirements[];
 }
+
 export default function RemsInterface(props: RemsInterfaceProps) {
   const [remsAdminResponse, setRemsAdminResponse] = useState<RemsAdminResponse | null>(null);
   const [response, setResponse] = useState<AxiosResponse | null>(null);
@@ -48,18 +51,27 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   };
 
   const unfurlJson = (jsonData: JsonData) => {
-    return jsonData.metRequirements.map(metReq => {
-      console.log(metReq);
-      return (
-        <div>
-          <div className={'resource-entry etasu-container'}>
-            <div className={'resource-entry-text'}>{metReq.requirementName}</div>
-            <div className={'resource-entry-icon'}>{metReq.completed ? '✅' : '❌'}</div>
-            <div className={'resource-entry-hover'}>{metReq.requirementDescription}</div>
+    return jsonData.metRequirements
+      .sort((first: MetRequirements, second: MetRequirements) => {
+        // Keep the other forms unsorted.
+        if (second.requirementName.includes('Patient Status Update')) {
+          // Sort the Patient Status Update forms in descending order of timestamp.
+          return second.requirementName.localeCompare(first.requirementName);
+        }
+        return 0;
+      })
+      .map(metReq => {
+        console.log(metReq);
+        return (
+          <div>
+            <div className={'resource-entry etasu-container'}>
+              <div className={'resource-entry-text'}>{metReq.requirementName}</div>
+              <div className={'resource-entry-icon'}>{metReq.completed ? '✅' : '❌'}</div>
+              <div className={'resource-entry-hover'}>{metReq.requirementDescription}</div>
+            </div>
           </div>
-        </div>
-      );
-    });
+        );
+      });
   };
 
   const getResource = (bundle: Bundle, resourceReference: string) => {
@@ -117,8 +129,9 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           const potentialPatient = getResource(props.specialtyRxBundle, patientReference);
           if (potentialPrescription && potentialPatient) {
             const prescription = potentialPrescription as MedicationRequest;
-            const simpleDrugName =
-              prescription.medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
+            const medicationCodeableConcept =
+              getDrugCodeableConceptFromMedicationRequest(prescription);
+            const simpleDrugName = medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
             const rxDate = prescription.authoredOn;
             const patient = potentialPatient as Patient;
             const patientFirstName = patient.name?.[0].given?.[0];

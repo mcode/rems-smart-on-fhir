@@ -1,4 +1,4 @@
-module.exports = function override(config, env) {
+module.exports = function override(config, _env) {
   console.log('override');
   let loaders = config.resolve;
   loaders.fallback = {

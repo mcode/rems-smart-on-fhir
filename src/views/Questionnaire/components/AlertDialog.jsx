@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, Button } from '@mui/material';
+import {
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  DialogActions,
+  Button
+} from '@mui/material';
 
 export default function AlertDialog(props) {
   const { title, rxAlert, setRxAlert } = props;
@@ -15,22 +22,17 @@ export default function AlertDialog(props) {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {title}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {rxAlert.description}
-          </DialogContentText>
+          <DialogContentText id="alert-dialog-description">{rxAlert.description}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Close</Button>
-          {rxAlert.callback ?
+          {rxAlert.callback ? (
             <Button onClick={rxAlert.callback} autoFocus>
               Yes
             </Button>
-            :
-            null}
+          ) : null}
         </DialogActions>
       </Dialog>
     </div>

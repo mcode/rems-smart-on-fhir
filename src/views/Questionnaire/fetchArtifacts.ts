@@ -212,7 +212,7 @@ function fetchArtifactsOperation(
         completeOperation(orderResource);
       });
     } else {
-      const orderResource = JSON.parse(order.replace(/\\/g, ''));
+      const orderResource = JSON.parse(order);
       completeOperation(orderResource);
     }
   });

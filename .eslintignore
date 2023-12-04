@@ -1,0 +1,5 @@
+# Production
+build
+node_modules 
+build.js
+config-overrides.js

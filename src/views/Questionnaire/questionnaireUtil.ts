@@ -32,7 +32,10 @@ export function getAppContext(appContextString: string) {
       temp[0] === 'coverage' ||
       temp[0] === 'response'
     ) {
-      appContext[temp[0]] = temp[1];
+      const index = temp[0];
+      // remove the index
+      temp.shift();
+      appContext[index] = temp.join('=');
     }
   });
   return appContext;
@@ -149,6 +152,41 @@ export function buildFhirUrl(reference: string, fhirPrefix: string, fhirVersion:
   } else {
     return fhirPrefix + fhirVersion + '/' + reference;
   }
+}
+
+/*
+ * Retrieve the CodeableConcept for the medication from the medicationCodeableConcept if available.
+ * Read CodeableConcept from contained Medication matching the medicationReference otherwise.
+ */
+export function getDrugCodeableConceptFromMedicationRequest(medicationRequest: MedicationRequest) {
+  if (medicationRequest) {
+    if (medicationRequest?.medicationCodeableConcept) {
+      console.log('Get Medication code from CodeableConcept');
+      return medicationRequest?.medicationCodeableConcept;
+    } else if (medicationRequest?.medicationReference) {
+      const reference = medicationRequest?.medicationReference;
+      let coding = undefined;
+      medicationRequest?.contained?.every(e => {
+        if (e.resourceType + '/' + e.id === reference.reference) {
+          if (e.resourceType === 'Medication') {
+            console.log('Get Medication code from contained resource');
+            coding = e.code;
+          }
+        }
+      });
+      return coding;
+    }
+  }
+  return undefined;
+}
+
+/*
+ * Retrieve the coding for the medication from the medicationCodeableConcept if available.
+ * Read coding from contained Medication matching the medicationReference otherwise.
+ */
+export function getDrugCodeFromMedicationRequest(medicationRequest: MedicationRequest) {
+  const codeableConcept = getDrugCodeableConceptFromMedicationRequest(medicationRequest);
+  return codeableConcept?.coding?.[0];
 }
 
 export function fetchFhirVersion(fhirServer: string) {

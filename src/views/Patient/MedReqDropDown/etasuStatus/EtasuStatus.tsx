@@ -19,6 +19,7 @@ import RemsMetEtasuResponse from './RemsMetEtasuResponse';
 import MetRequirements from './MetRequirements';
 import * as env from 'env-var';
 import './EtasuStatus.css';
+import { getDrugCodeFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
 
 interface EtasuStatusProps {
   patient: Patient | null;
@@ -41,7 +42,10 @@ const EtasuStatus = (props: EtasuStatusProps) => {
     const patientFirstName = props.patient?.name?.at(0)?.given?.at(0);
     const patientLastName = props.patient?.name?.at(0)?.family;
     const patientDOB = props.patient?.birthDate;
-    const drugCode = props.medication?.medicationCodeableConcept?.coding?.at(0)?.code;
+    let drugCode = undefined;
+    if (props.medication) {
+      drugCode = getDrugCodeFromMedicationRequest(props.medication)?.code;
+    }
     console.log(
       'refreshEtasuBundle: ' +
         patientFirstName +
@@ -55,11 +59,23 @@ const EtasuStatus = (props: EtasuStatusProps) => {
     const etasuUrl = `${env
       .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
       .asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+
     axios({
       method: 'get',
       url: etasuUrl
     }).then(
       response => {
+        // Sorting an array mutates the data in place.
+        (response.data as RemsMetEtasuResponse).metRequirements.sort(
+          (first: MetRequirements, second: MetRequirements) => {
+            // Keep the other forms unsorted.
+            if (second.requirementName.includes('Patient Status Update')) {
+              // Sort the Patient Status Update forms in descending order of timestamp.
+              return second.requirementName.localeCompare(first.requirementName);
+            }
+            return 0;
+          }
+        );
         console.log(response.data);
         setRemsAdminResponse(response.data);
       },
