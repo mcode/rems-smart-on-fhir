@@ -348,7 +348,9 @@ export function SmartApp(props: SmartAppProps) {
   const updateRequired = (defaultFilter: boolean) => {
     let checked: boolean, requiredCheckbox: HTMLInputElement;
     if (!defaultFilter) {
-      requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+      const requiredCheckbox = document.getElementById(
+        questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'
+      ) as HTMLInputElement;
       checked = requiredCheckbox ? requiredCheckbox.checked : false;
     } else {
       checked = true;
