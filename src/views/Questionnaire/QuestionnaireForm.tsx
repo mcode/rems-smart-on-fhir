@@ -145,7 +145,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     loadAndMergeForms(savedResponse);
     const formErrors = LForms.Util.checkValidity();
     setFormValidationErrors(formErrors == null ? [] : formErrors);
-    
+
     document.addEventListener('click', event => {
       if (
         props.filterChecked &&
