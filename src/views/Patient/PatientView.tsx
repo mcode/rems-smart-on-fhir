@@ -225,7 +225,12 @@ function PatientView(props: PatientViewProps) {
       header: 'Full Name',
       data: patientFullName
     },
-    { header: 'Gender', data: patient?.['gender'] ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : '' },
+    {
+      header: 'Gender',
+      data: patient?.['gender']
+        ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)
+        : ''
+    },
     { header: 'Date of Birth', data: birthday || '' },
     {
       header: 'Address',
