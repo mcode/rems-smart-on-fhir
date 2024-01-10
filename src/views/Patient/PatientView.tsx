@@ -27,6 +27,7 @@ interface PatientViewProps {
   client: Client;
   tabCallback: (n: ReactElement, m: string, o: string) => void;
 }
+type InfoRow = { header: string; data: string }[];
 
 export interface MedicationBundle {
   data: MedicationRequest[];
@@ -182,19 +183,58 @@ function PatientView(props: PatientViewProps) {
     client.patient.read().then((patient: any) => setPatient(patient));
   }, [client.patient, client]);
 
-  const rows: { header: string; data: string }[] = [
-    { header: 'ID', data: patient?.['id'] || '' },
+  function getAge(dateString: string) {
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+  const renderRows = (rows: InfoRow) => {
+    return rows.map(({ header, data }, i) => {
+      let backgroundColor = '#fdfdfd';
+      if (i % 2 === 0) {
+        // is even
+        backgroundColor = '#dcdcdc';
+      }
+      return (
+        <TableRow key={header} sx={{ backgroundColor: backgroundColor }}>
+          <TableCell component="th" scope="row" variant="head">
+            <span style={{ fontWeight: 'bold' }}>{header}</span>
+          </TableCell>
+          <TableCell sx={{ whiteSpace: 'pre' }} variant="body">
+            {data}
+          </TableCell>
+        </TableRow>
+      );
+    });
+  };
+  let birthday = patient?.birthDate;
+  let age;
+  if (birthday) {
+    age = getAge(birthday);
+    birthday = `${birthday} (${age} years old)`;
+  }
+  const patientName = `${patient?.name?.[0]?.given?.[0]} ${patient?.name?.[0]?.family}`;
+  const patientFullName = `${patient?.name?.[0]?.given?.join(' ')} ${patient?.name?.[0]?.family}`;
+  const rows: InfoRow = [
     {
       header: 'Full Name',
-      data: `${patient?.name?.[0]?.given?.[0]} ${patient?.name?.[0]?.family}`
+      data: patientFullName
     },
-    { header: 'Gender', data: patient?.['gender'] || '' },
-    { header: 'Date of Birth', data: patient?.['birthDate'] || '' },
+    {
+      header: 'Gender',
+      data: patient?.['gender']
+        ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)
+        : ''
+    },
+    { header: 'Date of Birth', data: birthday || '' },
     {
       header: 'Address',
-      data: `${(patient?.address?.[0].line, patient?.address?.[0]['city'])}\n${
-        patient?.address?.[0]?.state
-      }, ${patient?.address?.[0]?.postalCode}`
+      data: `${patient?.address?.[0].line?.[0]}\n${patient?.address?.[0].city}\n${patient?.address?.[0]?.state}, ${patient?.address?.[0]?.postalCode}`
     }
   ];
 
@@ -206,12 +246,12 @@ function PatientView(props: PatientViewProps) {
             <Card sx={{ bgcolor: 'white' }}>
               <CardContent>
                 <Grid container>
-                  <Grid item xs={10} sm={11} md={12} lg={10} alignSelf="center">
+                  <Grid item xs={10} sm={11} md={10} lg={10} alignSelf="center">
                     <Typography component="h1" variant="h5">
-                      Patient information loaded from patient context
+                      Patient:
                     </Typography>
                   </Grid>
-                  <Grid item xs={2} sm={1} md={12} lg={2}>
+                  <Grid item xs={2} sm={1} md={2} lg={2}>
                     <IconButton
                       color="primary"
                       onClick={() => submitToREMS(cdsHook, setHooksCards)}
@@ -220,19 +260,16 @@ function PatientView(props: PatientViewProps) {
                       <RefreshIcon fontSize="large" />
                     </IconButton>
                   </Grid>
+                  <Grid item xs={12} sm={12} md={12} lg={12}>
+                    <h5 style={{ paddingLeft: '16px', paddingBottom: '16px' }}>
+                      <span style={{ fontWeight: 'bold' }}>{patientName}</span>{' '}
+                      {`(ID: ${patient.id})`}
+                    </h5>
+                  </Grid>
                 </Grid>
                 <TableContainer>
                   <Table>
-                    <TableBody>
-                      {rows.map(({ header, data }) => (
-                        <TableRow key={header}>
-                          <TableCell component="th" scope="row" variant="head">
-                            {header}
-                          </TableCell>
-                          <TableCell variant="body">{data}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
+                    <TableBody>{renderRows(rows)}</TableBody>
                   </Table>
                 </TableContainer>
               </CardContent>
