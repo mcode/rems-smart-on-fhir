@@ -132,6 +132,8 @@ export function SmartApp(props: SmartAppProps) {
     // TODO: this could be redone like in original DTR to have a big fancy display for errors but I don't think it's necessary or useful.
     // The previous version was persistent at the top of the page.  An alert gets the job done just fine.
     errors.forEach(e => {
+      console.log('<<<<<');
+      console.log(e);
       alert(e.details);
     });
   }, [errors]);
@@ -525,9 +527,17 @@ export function SmartApp(props: SmartAppProps) {
       // iterate over valueSet definitions
       elm.library.valueSets.def.forEach(valueSetDef => {
         // find FHIR value set artifact
-        const valueSetDefId = valueSetDef.id.replace(/https:\/\//, 'http://'); // vsac only returns urls with http in the resource
-        const valueSet = artifacts.valueSets.find(
-          valueSet => valueSet.id == valueSetDefId || valueSet.url == valueSetDefId
+        const valueSetDefId = valueSetDef.id;
+        const valueSet = artifacts.valueSets.find((valueSet) => {
+          if(valueSet.id && valueSetDefId.includes(valueSet.id)) {
+            return true;
+          } else {
+            if(valueSet.url && valueSetDefId.includes(valueSet.url)) {
+              return true;
+            }
+          }
+          return false;
+        }
         );
         if (valueSet != null) {
           // make sure it has an expansion
