@@ -525,10 +525,17 @@ export function SmartApp(props: SmartAppProps) {
       // iterate over valueSet definitions
       elm.library.valueSets.def.forEach(valueSetDef => {
         // find FHIR value set artifact
-        const valueSetDefId = valueSetDef.id.replace(/https:\/\//, 'http://'); // vsac only returns urls with http in the resource
-        const valueSet = artifacts.valueSets.find(
-          valueSet => valueSet.id == valueSetDefId || valueSet.url == valueSetDefId
-        );
+        const valueSetDefId = valueSetDef.id;
+        const valueSet = artifacts.valueSets.find(valueSet => {
+          if (valueSet.id && valueSetDefId.includes(valueSet.id)) {
+            return true;
+          } else {
+            if (valueSet.url && valueSetDefId.includes(valueSet.url)) {
+              return true;
+            }
+          }
+          return false;
+        });
         if (valueSet != null) {
           // make sure it has an expansion
           if (valueSet.expansion != null) {
