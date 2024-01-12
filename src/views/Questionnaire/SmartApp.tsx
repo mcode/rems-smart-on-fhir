@@ -348,7 +348,9 @@ export function SmartApp(props: SmartAppProps) {
   const updateRequired = (defaultFilter: boolean) => {
     let checked: boolean, requiredCheckbox: HTMLInputElement;
     if (!defaultFilter) {
-      requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+      const requiredCheckbox = document.getElementById(
+        questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'
+      ) as HTMLInputElement;
       checked = requiredCheckbox ? requiredCheckbox.checked : false;
     } else {
       checked = true;
@@ -523,10 +525,17 @@ export function SmartApp(props: SmartAppProps) {
       // iterate over valueSet definitions
       elm.library.valueSets.def.forEach(valueSetDef => {
         // find FHIR value set artifact
-        const valueSetDefId = valueSetDef.id.replace(/https:\/\//, 'http://'); // vsac only returns urls with http in the resource
-        const valueSet = artifacts.valueSets.find(
-          valueSet => valueSet.id == valueSetDefId || valueSet.url == valueSetDefId
-        );
+        const valueSetDefId = valueSetDef.id;
+        const valueSet = artifacts.valueSets.find(valueSet => {
+          if (valueSet.id && valueSetDefId.includes(valueSet.id)) {
+            return true;
+          } else {
+            if (valueSet.url && valueSetDefId.includes(valueSet.url)) {
+              return true;
+            }
+          }
+          return false;
+        });
         if (valueSet != null) {
           // make sure it has an expansion
           if (valueSet.expansion != null) {
