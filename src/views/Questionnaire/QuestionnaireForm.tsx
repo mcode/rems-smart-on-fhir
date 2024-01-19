@@ -28,7 +28,16 @@ import {
   getDrugCodeableConceptFromMedicationRequest
 } from './questionnaireUtil';
 import './QuestionnaireForm.css';
-import { Button, Typography } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Chip,
+  Stack,
+  Typography
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Tooltip from '@mui/material/Tooltip';
 
 import Client from 'fhirclient/lib/Client';
@@ -1038,7 +1047,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   };
 
   // Get missing fields to display
-  const getMissingFields = () => {
+  const getMissingFields = (): JSX.Element => {
     const fields: string[] = [];
     const requiredFieldErrors = formValidationErrors
       ? formValidationErrors.filter(error => {
@@ -1051,7 +1060,37 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         fields.push(name);
       });
     }
-    return fields.join(', ');
+    return (
+      <Stack marginTop={1}>
+        <Accordion disableGutters>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography className="error-text">
+              You must include a value for the following missing fields (click to expand):
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {fields.map((field, index) => (
+              <Chip
+                key={`field-${index}`}
+                sx={{
+                  height: 'auto',
+                  '& .MuiChip-label': {
+                    display: 'block',
+                    whiteSpace: 'normal'
+                  },
+                  width: 'unset',
+                  mb: 1,
+                  mr: 1
+                }}
+                label={field}
+                color="error"
+                variant="outlined"
+              />
+            ))}
+          </AccordionDetails>
+        </Accordion>
+      </Stack>
+    );
   };
 
   const getDisplayButtons = () => {
@@ -1084,11 +1123,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               </span>
             </Tooltip>
           </div>
-          {!isFilledOut() ? (
-            <p className="error-text">You must include a value for {getMissingFields()}</p>
-          ) : (
-            <></>
-          )}
+          {!isFilledOut() && getMissingFields()}
         </div>
       );
     } else {
