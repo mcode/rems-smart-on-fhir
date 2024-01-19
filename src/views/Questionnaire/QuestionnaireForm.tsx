@@ -1061,7 +1061,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       });
     }
     return (
-      <Stack marginTop={1}>
+      <Stack mt={1}>
         <Accordion disableGutters>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography className="error-text">
@@ -1096,8 +1096,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const getDisplayButtons = () => {
     if (!isAdaptiveForm()) {
       return (
-        <div className="submit-button-panel">
-          <div className="btn-row">
+        <>
+          <Stack className="submit-button-panel" direction="row" spacing={1}>
             <Button variant="outlined" onClick={() => loadPreviousForm()}>
               Load Previous Form
             </Button>
@@ -1122,14 +1122,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 </Button>
               </span>
             </Tooltip>
-          </div>
+          </Stack>
           {!isFilledOut() && getMissingFields()}
-        </div>
+        </>
       );
     } else {
       if (props.adFormCompleted) {
         return (
-          <div className="submit-button-panel">
+          <Stack className="submit-button-panel">
             <Tooltip title={getMissingFieldsTooltip()}>
               <Button
                 variant="outlined"
@@ -1141,17 +1141,17 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 Submit REMS Bundle
               </Button>
             </Tooltip>
-          </div>
+          </Stack>
         );
       } else {
         return (
-          <div className="submit-button-panel">
-            {isAdaptiveFormWithoutItem() ? (
+          <Stack className="submit-button-panel">
+            {isAdaptiveFormWithoutItem() && (
               <Button variant="outlined" onClick={() => loadPreviousForm()}>
                 Load Previous Form
               </Button>
-            ) : null}
-            {isAdaptiveFormWithItem() ? (
+            )}
+            {isAdaptiveFormWithItem() && (
               <Button
                 variant="outlined"
                 onClick={() => {
@@ -1160,8 +1160,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               >
                 Save To EHR
               </Button>
-            ) : null}
-          </div>
+            )}
+          </Stack>
         );
       }
     }
@@ -1680,15 +1680,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   return (
     <div>
       <div id={questionnaireFormId}></div>
-      {!isAdaptive && props.formFilled ? (
+      {!isAdaptive && props.formFilled && (
         <div className="form-message-panel">
           <p>
             All fields have been filled. Continue or uncheck "Only Show Unfilled Fields" to review
             and modify the form.
           </p>
         </div>
-      ) : null}
-      {showPopup ? (
+      )}
+      {showPopup && (
         <SelectPopup
           title={popupTitle}
           options={popupOptions}
@@ -1696,7 +1696,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           selectedCallback={popupCallback}
           open={openPopup}
         />
-      ) : null}
+      )}
       <AlertDialog
         title="Alert"
         rxAlert={showRxAlert}
@@ -1704,25 +1704,25 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           setShowRxAlert(e);
         }}
       ></AlertDialog>
-      {isAdaptive ? (
+      {isAdaptive && (
         <div className="form-message-panel">
-          {isAdaptiveFormWithoutItem() && !props.adFormCompleted ? (
+          {isAdaptiveFormWithoutItem() && !props.adFormCompleted && (
             <p>Click Next Question button to proceed.</p>
-          ) : null}
-          {!props.adFormCompleted ? (
+          )}
+          {!props.adFormCompleted && (
             <div>
               {' '}
               <Button variant="outlined" onClick={loadNextQuestions}>
                 Next Question
               </Button>
             </div>
-          ) : null}
+          )}
         </div>
-      ) : null}
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {!isAdaptive ? <div className="status-panel">Form Loaded: {formLoaded}</div> : <div />}
+      )}
+      <Stack flexDirection="column" spacing={1} p={1}>
+        {!isAdaptive && <Typography>Form Loaded: {formLoaded}</Typography>}
         {getDisplayButtons()}
-      </div>
+      </Stack>
     </div>
   );
 }
