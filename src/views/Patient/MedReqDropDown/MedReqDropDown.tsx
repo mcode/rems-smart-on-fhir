@@ -14,6 +14,8 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
+import ListIcon from '@mui/icons-material/List';
+import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
 import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
@@ -21,7 +23,10 @@ import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TO
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard, OrderSelectHook } from '../../../cds-hooks/resources/HookTypes';
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
-import { getDrugCodeFromMedicationRequest } from '../../Questionnaire/questionnaireUtil';
+import {
+  getDrugCodeFromMedicationRequest,
+  getDrugCodeableConceptFromMedicationRequest
+} from '../../Questionnaire/questionnaireUtil';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 import { MedicationBundle, submitToREMS } from '../PatientView';
@@ -35,6 +40,10 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import sendRx from './rxSend/rxSend';
+import axios from 'axios';
+import MetRequirements from './etasuStatus/MetRequirements';
+import RemsMetEtasuResponse from './etasuStatus/RemsMetEtasuResponse';
+import DoctorOrder from './pharmacyStatus/DoctorOrder';
 
 interface MedReqDropDownProps {
   client: Client;
@@ -71,10 +80,12 @@ function MedReqDropDown({
 
   //ETASU
   const [showEtasu, setShowEtasu] = useState<boolean>(false);
-
+  const [remsAdminResponse, setRemsAdminResponse] = useState<RemsMetEtasuResponse | null>(null);
+  const [checkedEtasuTime, setCheckedEtasuTime] = useState(0);
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
-
+  const [pimsResponse, setPimsResponse] = useState<DoctorOrder | null>(null);
+  const [checkedPharmacyTime, setCheckedPharmacyTime] = useState(0);
   const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
 
   useEffect(() => {
@@ -169,7 +180,143 @@ function MedReqDropDown({
       setSendRxEnabled(false);
     }
   }, [patient, practitioner, selectedMedicationCardBundle]);
+  useEffect(() => {
+    refreshEtasuBundle();
+    refreshPharmacyBundle();
+  }, [selectedMedicationCard]);
 
+  const convertTimeDifference = (start: number) => {
+    const end = Date.now();
+    const difference = end - start;
+    const diffMin = difference / 60000;
+    let prefix = 'a long time';
+    if (diffMin < 1) {
+      prefix = 'a few seconds';
+    } else if (diffMin > 1 && diffMin < 2) {
+      prefix = 'a minute';
+    } else if (diffMin > 2 && diffMin < 60) {
+      prefix = `${Math.round(diffMin)} minutes`;
+    } else if (diffMin > 60 && diffMin < 120) {
+      prefix = 'an hour';
+    } else if (diffMin > 120 && diffMin < 1440) {
+      prefix = `${Math.round(diffMin / 60)} hours`;
+    } else if (diffMin > 1440 && diffMin < 2880) {
+      prefix = 'a day';
+    } else if (diffMin > 2880) {
+      prefix = `${Math.round(diffMin / 1440)} days`;
+    }
+    return `Last checked ${prefix} ago`;
+  };
+  const refreshPharmacyBundle = () => {
+    // setSpin(true);
+    const patientFirstName = patient?.name?.at(0)?.given?.at(0);
+    const patientLastName = patient?.name?.at(0)?.family;
+    const patientDOB = patient?.birthDate;
+    const rxDate = selectedMedicationCard?.authoredOn;
+    setCheckedPharmacyTime(Date.now());
+    let drugCodeableConcept = undefined;
+    if (selectedMedicationCard) {
+      drugCodeableConcept = getDrugCodeableConceptFromMedicationRequest(selectedMedicationCard);
+    }
+    const drugNames = drugCodeableConcept?.coding?.at(0)?.display;
+    console.log(
+      'refreshPharmacyBundle: ' +
+        patientFirstName +
+        ' ' +
+        patientLastName +
+        ' - ' +
+        patientDOB +
+        ' - ' +
+        rxDate +
+        ' - ' +
+        drugNames
+    );
+    const ndcDrugCoding = drugCodeableConcept?.coding?.find(
+      ({ system }) => system === 'http://hl7.org/fhir/sid/ndc'
+    );
+    let queryString: string =
+      'rxDate=' + rxDate + '&drugNames=' + encodeURIComponent(drugNames || '');
+    if (ndcDrugCoding != undefined) {
+      queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
+    }
+    const pharmacyUrl = `${env
+      .get('REACT_APP_PHARMACY_SERVER_BASE')
+      .asString()}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
+    console.log(pharmacyUrl);
+    axios({
+      method: 'get',
+      url: pharmacyUrl
+    }).then(
+      response => {
+        setPimsResponse(response.data);
+      },
+      error => {
+        console.log(error);
+      }
+    );
+  };
+
+  const refreshEtasuBundle = () => {
+    // setSpin(true);
+    const patientFirstName = patient?.name?.at(0)?.given?.at(0);
+    const patientLastName = patient?.name?.at(0)?.family;
+    const patientDOB = patient?.birthDate;
+    let drugCode = undefined;
+    setCheckedEtasuTime(Date.now());
+    if (selectedMedicationCard) {
+      drugCode = getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code;
+    }
+    console.log(
+      'refreshEtasuBundle: ' +
+        patientFirstName +
+        ' ' +
+        patientLastName +
+        ' - ' +
+        patientDOB +
+        ' - ' +
+        drugCode
+    );
+    const etasuUrl = `${env
+      .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
+      .asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
+
+    axios({
+      method: 'get',
+      url: etasuUrl
+    }).then(
+      response => {
+        // Sorting an array mutates the data in place.
+        const remsMetRes = response.data as RemsMetEtasuResponse;
+        if (remsMetRes.metRequirements) {
+          remsMetRes.metRequirements.sort((first: MetRequirements, second: MetRequirements) => {
+            // Keep the other forms unsorted.
+            if (second.requirementName.includes('Patient Status Update')) {
+              // Sort the Patient Status Update forms in descending order of timestamp.
+              return second.requirementName.localeCompare(first.requirementName);
+            }
+            return 0;
+          });
+        }
+        console.log(response.data);
+        setRemsAdminResponse(response.data);
+      },
+      error => {
+        console.log(error);
+      }
+    );
+  };
+  const renderTimestamp = (checkedTime: number) => {
+    return (
+      <div>
+        <div className="etasuButtonTimestamp">
+          <p>{convertTimeDifference(checkedTime)}</p>
+        </div>
+        <div className="etasuButtonTimestamp timestampString">
+          <p>{new Date(checkedTime).toLocaleString()}</p>
+        </div>
+      </div>
+    );
+  };
   const modal_style = {
     position: 'absolute',
     top: '50%',
@@ -190,6 +337,30 @@ function MedReqDropDown({
     : false;
 
   const label = 'Select Medication Request';
+  let color = '#0c0c0c'; // gray
+  if (remsAdminResponse?.status === 'Approved') {
+    color = '#5cb85c'; // green
+  } else if (remsAdminResponse?.status === 'Pending') {
+    color = '#f0ad4e'; // orange
+  }
+  const pStatus = pimsResponse?.dispenseStatus;
+  let pColor = '#0c0c0c'; // white
+  if (pStatus === 'Approved') {
+    pColor = '#5cb85c'; // green
+  } else if (pStatus === 'Pending') {
+    pColor = '#f0ad4e'; // orange
+  } else if (pStatus === 'Picked Up') {
+    pColor = '#0275d8'; // blue
+  }
+
+  const etasuSx = {
+    backgroundColor: color,
+    ':hover': { filter: 'brightness(110%)', backgroundColor: color }
+  };
+  const pharmSx = {
+    backgroundColor: pColor,
+    ':hover': { filter: 'brightness(110%)', backgroundColor: pColor }
+  };
   return (
     <>
       <Card sx={{ bgcolor: 'white' }}>
@@ -224,7 +395,8 @@ function MedReqDropDown({
                   <Grid item container>
                     <Grid item xs={10} sm={11}>
                       <Typography bgcolor="text.secondary" color="white" textAlign="center">
-                        Code: {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
+                        Medication Code:{' '}
+                        {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
                       </Typography>
                       <Typography
                         bgcolor="text.disabled"
@@ -261,19 +433,39 @@ function MedReqDropDown({
                     </Grid>
                   </Grid>
 
-                  <Grid item container justifyContent="center" spacing={2}>
+                  <Grid item container justifyContent="center" textAlign="center" spacing={2}>
                     {etasu_status_enabled && (
-                      <Grid item>
-                        <Button variant="contained" onClick={handleOpenCheckETASU}>
-                          Check ETASU
+                      <Grid item sm={4} md={4} lg={4}>
+                        <Button
+                          className="etasuButton"
+                          sx={etasuSx}
+                          variant="contained"
+                          onClick={handleOpenCheckETASU}
+                        >
+                          <div>
+                            <ListIcon fontSize="large" />
+                            <p className="etasuButtonText">ETASU: </p>
+                            <p>{remsAdminResponse?.status || 'Not Started'}</p>
+                          </div>
                         </Button>
+                        {renderTimestamp(checkedEtasuTime)}
                       </Grid>
                     )}
                     {pharmacy_status_enabled && (
-                      <Grid item>
-                        <Button variant="contained" onClick={handleOpenCheckPharmacy}>
-                          Check Pharmacy
+                      <Grid item sm={4} md={4} lg={4}>
+                        <Button
+                          className="etasuButton"
+                          sx={pharmSx}
+                          variant="contained"
+                          onClick={handleOpenCheckPharmacy}
+                        >
+                          <div>
+                            <LocalPharmacyIcon fontSize="large" />
+                            <p className="etasuButtonText">Pharmacy: </p>
+                            <p>{pimsResponse?.dispenseStatus || 'Not Started'}</p>
+                          </div>
                         </Button>
+                        {renderTimestamp(checkedPharmacyTime)}
                       </Grid>
                     )}
                     {sendRxEnabled && (
@@ -301,14 +493,18 @@ function MedReqDropDown({
       </Card>
       <Modal open={showEtasu} onClose={handleCloseCheckETASU}>
         <Box sx={modal_style}>
-          <EtasuStatus patient={patient} medication={selectedMedicationCard} update={showEtasu} />
+          <EtasuStatus
+            callback={refreshEtasuBundle}
+            remsAdminResponse={remsAdminResponse}
+            update={showEtasu}
+          />
         </Box>
       </Modal>
       <Modal open={showPharmacy} onClose={handleCloseCheckPharmacy}>
         <Box sx={modal_style}>
           <PharmacyStatus
-            patient={patient}
-            medication={selectedMedicationCard}
+            callback={refreshPharmacyBundle}
+            pimsResponse={pimsResponse}
             update={showPharmacy}
           />
         </Box>

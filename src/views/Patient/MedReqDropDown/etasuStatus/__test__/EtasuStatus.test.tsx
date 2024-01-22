@@ -47,7 +47,6 @@ const testMedicationRequest: MedicationRequest = {
   },
   authoredOn: '2020-07-11'
 };
-
 const generateEtasuStatus = () => {
   const patientEnrollmentForm: MetRequirements = {
     completed: true,
@@ -93,9 +92,7 @@ describe('Test the EtasuStatus Component', () => {
     const update = false;
 
     // render the module
-    render(
-      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
+    render(<EtasuStatus callback={() => {}} update={update} remsAdminResponse={null} />);
 
     // test the status fields and headings are present
     expectContains('REMS Status');
@@ -112,96 +109,49 @@ describe('Test the EtasuStatus Component', () => {
   test('Loads data on start', async () => {
     const update = true;
 
-    const mockRequest = nock(rems_admin_server_base);
-
-    // setup the mocks to handle the axios calls
-    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-    const patientLastName = testPatient?.name?.at(0)?.family;
-    const patientDOB = testPatient.birthDate;
-    const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
-    const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
     const etasuStatus = generateEtasuStatus();
-
-    mockRequest
-      .defaultReplyHeaders({
-        'access-control-allow-origin': '*',
-        'access-control-allow-credentials': 'true'
-      })
-      .get(url)
-      .reply(200, etasuStatus);
+    let called = false;
+    const callback = () => {
+      called = true;
+    };
 
     // render the module
-    render(
-      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
+    render(<EtasuStatus callback={callback} update={update} remsAdminResponse={null} />);
+    // just need to call callback
+    expect(called).toBeTruthy();
+  });
+  test('Renders passed data', async () => {
+    // render the module
+    const etasu = generateEtasuStatus();
+    render(<EtasuStatus callback={() => {}} update={false} remsAdminResponse={etasu} />);
 
     // verify that the values are updated from the call to get the ETASU
-    expect(await screen.findByText('Case Number: ' + etasuStatus.case_number)).toBeInTheDocument();
-    expect(await screen.findByText('Status: ' + etasuStatus.status)).toBeInTheDocument();
+    expect(await screen.findByText('Case Number: ' + etasu.case_number)).toBeInTheDocument();
+    expect(await screen.findByText('Status: ' + etasu.status)).toBeInTheDocument();
     expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
   });
-
   test('Update retrieves data', async () => {
     const update = false;
-
-    const mockRequest = nock(rems_admin_server_base);
+    let called = false;
+    const callback = () => {
+      called = true;
+    };
 
     // render the module
-    render(
-      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
-
-    // setup the mocks to handle the axios calls
-    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-    const patientLastName = testPatient?.name?.at(0)?.family;
-    const patientDOB = testPatient.birthDate;
-    const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
-    const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
-    const etasuStatus = generateEtasuStatus();
-
-    mockRequest
-      .defaultReplyHeaders({
-        'access-control-allow-origin': '*',
-        'access-control-allow-credentials': 'true'
-      })
-      .get(url)
-      .reply(200, etasuStatus);
-
+    render(<EtasuStatus callback={callback} update={update} remsAdminResponse={null} />);
+    expect(called).toBeFalsy();
     // click the refresh button
     const refreshButton = screen.getByTestId('refresh');
     fireEvent.click(refreshButton);
 
-    // verify that the values are updated from the call to get the ETASU
-    expect(await screen.findByText('Case Number: ' + etasuStatus.case_number)).toBeInTheDocument();
-    expect(await screen.findByText('Status: ' + etasuStatus.status)).toBeInTheDocument();
-    expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
+    expect(called).toBeTruthy();
   });
 
   test('Failed to load status', async () => {
     const update = false;
 
-    const mockRequest = nock(rems_admin_server_base);
-
     // render the module
-    render(
-      <EtasuStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
-
-    // setup the mocks to handle the axios calls
-    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-    const patientLastName = testPatient?.name?.at(0)?.family;
-    const patientDOB = testPatient.birthDate;
-    const drugCode = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.code;
-    const url = `/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
-
-    // return an empty response like if there is no match
-    mockRequest
-      .defaultReplyHeaders({
-        'access-control-allow-origin': '*',
-        'access-control-allow-credentials': 'true'
-      })
-      .get(url)
-      .reply(200, '');
+    render(<EtasuStatus callback={() => {}} update={update} remsAdminResponse={null} />);
 
     // click the refresh button
     const refreshButton = screen.getByTestId('refresh');
