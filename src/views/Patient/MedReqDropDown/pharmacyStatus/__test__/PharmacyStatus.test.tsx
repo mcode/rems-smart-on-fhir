@@ -98,7 +98,6 @@ const generateDoctorOrder = () => {
   };
   return doctorOrder;
 };
-
 describe('Test the PharmacyStatus Component', () => {
   function expectContains(value: string) {
     const element = screen.getByText(value);
@@ -109,9 +108,7 @@ describe('Test the PharmacyStatus Component', () => {
     const update = false;
 
     // render the module
-    render(
-      <PharmacyStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
+    render(<PharmacyStatus update={update} callback={() => {}} pimsResponse={null} />);
 
     // test the status fields and headings are present
     expectContains('Pharmacy Status');
@@ -122,129 +119,47 @@ describe('Test the PharmacyStatus Component', () => {
     const refreshButton = screen.getByTestId('refresh');
     expect(refreshButton).toBeInTheDocument();
   });
-
-  test('Loads data on start', async () => {
-    const update = true;
-
-    const mockRequest = nock(pharmacy_server_base);
-
-    // setup the mocks to handle the axios calls
-    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-    const patientLastName = testPatient?.name?.at(0)?.family;
-    const patientDOB = testPatient.birthDate;
-    const rxDate = testMedicationRequest.authoredOn;
-    const drugNames = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.display;
-    const ndcDrugCoding = testMedicationRequest.medicationCodeableConcept?.coding?.find(
-      ({ system }) => system === 'http://hl7.org/fhir/sid/ndc'
-    );
-
-    let queryString: string =
-      'rxDate=' + rxDate + '&drugNames=' + encodeURIComponent(drugNames || '');
-    if (ndcDrugCoding != undefined) {
-      queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
-    }
-    const url = `/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
+  test('Renders order', async () => {
     const doctorOrder = generateDoctorOrder();
+    render(<PharmacyStatus update={false} callback={() => {}} pimsResponse={doctorOrder} />);
 
-    mockRequest
-      .defaultReplyHeaders({
-        'access-control-allow-origin': '*',
-        'access-control-allow-credentials': 'true'
-      })
-      .get(url)
-      .reply(200, doctorOrder);
-
-    // render the module
-    render(
-      <PharmacyStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
-
-    // verify that the values are updated from the call to get the Pharmacy Status
-    expect(await screen.findByText('ID: ' + doctorOrder._id)).toBeInTheDocument();
-    expect(await screen.findByText('Status: ' + doctorOrder.dispenseStatus)).toBeInTheDocument();
+    expect(await screen.findByText(`ID: ${doctorOrder._id}`)).toBeInTheDocument();
+    expect(await screen.findByText(`Status: ${doctorOrder.dispenseStatus}`)).toBeInTheDocument();
   });
 
-  test('Update retrieves data', async () => {
-    const update = false;
-
-    const mockRequest = nock(pharmacy_server_base);
-
+  test('Loads data on start', () => {
+    const update = true;
+    let pimsResponse = false;
+    const callback = () => {
+      pimsResponse = true;
+    };
     // render the module
-    render(
-      <PharmacyStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
+    render(<PharmacyStatus update={update} callback={callback} pimsResponse={null} />);
+    // verify that the values are updated from the call to get the Pharmacy Status
+    expect(pimsResponse).toBeTruthy();
+  });
 
-    // setup the mocks to handle the axios calls
-    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-    const patientLastName = testPatient?.name?.at(0)?.family;
-    const patientDOB = testPatient.birthDate;
-    const rxDate = testMedicationRequest.authoredOn;
-    const drugNames = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.display;
-    const ndcDrugCoding = testMedicationRequest.medicationCodeableConcept?.coding?.find(
-      ({ system }) => system === 'http://hl7.org/fhir/sid/ndc'
-    );
-
-    let queryString: string =
-      'rxDate=' + rxDate + '&drugNames=' + encodeURIComponent(drugNames || '');
-    if (ndcDrugCoding != undefined) {
-      queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
-    }
-    const url = `/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
-    const doctorOrder = generateDoctorOrder();
-
-    mockRequest
-      .defaultReplyHeaders({
-        'access-control-allow-origin': '*',
-        'access-control-allow-credentials': 'true'
-      })
-      .get(url)
-      .reply(200, doctorOrder);
+  test('Update retrieves data', () => {
+    const update = false;
+    let called = false;
+    const callback = () => {
+      called = true;
+    };
+    // render the module
+    render(<PharmacyStatus update={update} callback={callback} pimsResponse={null} />);
 
     // click the refresh button
     const refreshButton = screen.getByTestId('refresh');
     fireEvent.click(refreshButton);
 
     // verify that the values are updated from the call to get the Pharmacy Status
-    expect(await screen.findByText('ID: ' + doctorOrder._id)).toBeInTheDocument();
-    expect(await screen.findByText('Status: ' + doctorOrder.dispenseStatus)).toBeInTheDocument();
+    expect(called).toBe(true);
   });
 
   test('Failed to load status', async () => {
     const update = true;
-
-    const mockRequest = nock(pharmacy_server_base);
-
     // render the module
-    render(
-      <PharmacyStatus patient={testPatient} medication={testMedicationRequest} update={update} />
-    );
-
-    // setup the mocks to handle the axios calls
-    const patientFirstName = testPatient.name?.at(0)?.given?.at(0);
-    const patientLastName = testPatient?.name?.at(0)?.family;
-    const patientDOB = testPatient.birthDate;
-    const rxDate = testMedicationRequest.authoredOn;
-    const drugNames = testMedicationRequest.medicationCodeableConcept?.coding?.at(0)?.display;
-    const ndcDrugCoding = testMedicationRequest.medicationCodeableConcept?.coding?.find(
-      ({ system }) => system === 'http://hl7.org/fhir/sid/ndc'
-    );
-
-    let queryString: string =
-      'rxDate=' + rxDate + '&drugNames=' + encodeURIComponent(drugNames || '');
-    if (ndcDrugCoding != undefined) {
-      queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
-    }
-
-    const url = `/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
-
-    // return an empty response like if there is no match
-    mockRequest
-      .defaultReplyHeaders({
-        'access-control-allow-origin': '*',
-        'access-control-allow-credentials': 'true'
-      })
-      .get(url)
-      .reply(200, '');
+    render(<PharmacyStatus update={update} callback={() => {}} pimsResponse={null} />);
 
     // click the refresh button
     const refreshButton = screen.getByTestId('refresh');
