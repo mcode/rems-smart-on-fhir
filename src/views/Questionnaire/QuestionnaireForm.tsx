@@ -49,6 +49,7 @@ import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
 import axios, { AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client';
+import { red } from '@mui/material/colors';
 declare global {
   interface Window {
     LForms: any;
@@ -118,6 +119,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const partialForms: PartialForms = {};
   const LForms = window.LForms;
   const questionnaireFormId = `formContainer-${props.qform.id}-${props.tabIndex}`;
+
   useEffect(() => {
     // search for any partially completed QuestionnaireResponses
     if (props.response) {
@@ -1078,6 +1080,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                     display: 'block',
                     whiteSpace: 'normal'
                   },
+                  color: red[300],
                   width: 'unset',
                   mb: 1,
                   mr: 1
