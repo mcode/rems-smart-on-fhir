@@ -51,10 +51,6 @@
     margin-bottom: 10px;
   }
 
-  .btn-row {
-    display: flex;
-  }
-
   .error-text {
     text-align: end;
     font-style: italic;
@@ -80,11 +76,6 @@
   
   .patient-info-panel {
     color: white;
-  }
-  
-  .status-panel {
-    margin-left: 10px;
-    margin-bottom: 10px;
   }
   
   .filled {
