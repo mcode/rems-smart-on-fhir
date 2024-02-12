@@ -98,7 +98,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           const params = potentialParams as Parameters;
           // stakeholder and medication references
           let prescriptionReference = '';
-          let patientReference = '';
           if (params.parameter) {
             for (const param of params.parameter) {
               if (

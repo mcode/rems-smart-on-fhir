@@ -61,7 +61,6 @@ describe('Test the PharmacyStatus Component', () => {
     expect(refreshButton).toBeInTheDocument();
   });
   test('Renders order', async () => {
-    const doctorOrder = generateDoctorOrder();
     render(<PharmacyStatus update={false} callback={() => {}} testEhrResponse={testMedicationDispense} />);
     expect(await screen.findByText(`ID: ${testMedicationDispense.resource?.id}`)).toBeInTheDocument();
     expect(await screen.findByText(`Status: ${testMedicationDispense.resource?.status}`)).toBeInTheDocument();
