@@ -52,7 +52,7 @@ describe('Test the PharmacyStatus Component', () => {
     render(<PharmacyStatus update={update} callback={() => {}} testEhrResponse={null} />);
 
     // test the status fields and headings are present
-    expectContains('Pharmacy Status');
+    expectContains('Medication Status');
     expectContains('ID: N/A');
     expectContains('Status: N/A');
 
@@ -80,7 +80,7 @@ describe('Test the PharmacyStatus Component', () => {
     };
     // render the module
     render(<PharmacyStatus update={update} callback={callback} testEhrResponse={null} />);
-    // verify that the values are updated from the call to get the Pharmacy Status
+    // verify that the values are updated from the call to get the Medication Status
     expect(pimsResponse).toBeTruthy();
   });
 
@@ -97,7 +97,7 @@ describe('Test the PharmacyStatus Component', () => {
     const refreshButton = screen.getByTestId('refresh');
     fireEvent.click(refreshButton);
 
-    // verify that the values are updated from the call to get the Pharmacy Status
+    // verify that the values are updated from the call to get the Medication Status
     expect(called).toBe(true);
   });
 
@@ -110,7 +110,7 @@ describe('Test the PharmacyStatus Component', () => {
     const refreshButton = screen.getByTestId('refresh');
     fireEvent.click(refreshButton);
 
-    // verify that the values are updated from the call to get the Pharmacy Status
+    // verify that the values are updated from the call to get the Medication Status
     expect(await screen.findByText('ID: N/A')).toBeInTheDocument();
     expect(await screen.findByText('Status: N/A')).toBeInTheDocument();
   });

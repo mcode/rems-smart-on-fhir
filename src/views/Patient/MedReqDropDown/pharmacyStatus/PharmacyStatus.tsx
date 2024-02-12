@@ -29,7 +29,7 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
 
   return (
     <div>
-      <h1>Pharmacy Status</h1>
+      <h1>Medication Status</h1>
       <div className="status-icon" style={{ backgroundColor: color }}></div>
       <Grid container columns={12}>
         <Grid item xs={10}>

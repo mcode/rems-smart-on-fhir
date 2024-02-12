@@ -249,7 +249,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
             </div>
 
             <div className="right-form">
-              <h1>Pharmacy Status</h1>
+              <h1>Medication Status</h1>
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
                 <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
