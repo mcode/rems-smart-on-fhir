@@ -8,6 +8,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { Bundle, MedicationDispense, BundleEntry, MessageHeader, Parameters, Patient } from 'fhir/r4';
 import * as env from 'env-var';
 
+
 interface RemsInterfaceProps {
   remsAdminResponse: RemsAdminResponse;
   specialtyRxBundle: Bundle;
@@ -31,6 +32,7 @@ interface JsonData {
 export default function RemsInterface(props: RemsInterfaceProps) {
   const [remsAdminResponse, setRemsAdminResponse] = useState<RemsAdminResponse | null>(null);
   const [response, setResponse] = useState<BundleEntry<MedicationDispense>  | null>(null);
+
   const [spin, setSpin] = useState<boolean>(false);
   const [spinPis, setSpinPis] = useState<boolean>(false);
   const [viewResponse, setViewResponse] = useState<boolean>(false);
@@ -39,6 +41,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   useEffect(() => {
     sendRemsMessage();
   }, []);
+
 
   const unfurlJson = (jsonData: JsonData) => {
     return jsonData.metRequirements
@@ -95,6 +98,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           const params = potentialParams as Parameters;
           // stakeholder and medication references
           let prescriptionReference = '';
+          let patientReference = '';
           if (params.parameter) {
             for (const param of params.parameter) {
               if (
@@ -242,10 +246,11 @@ export default function RemsInterface(props: RemsInterfaceProps) {
               <h1>Pharmacy Status</h1>
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
-                <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
+                <div className="bundle-entry">ID : {response?.resource?.id  || 'N/A'}</div>
                 <div className="bundle-entry">Status: {response?.resource?.status ? response?.resource?.status?.charAt(0).toUpperCase() + response?.resource?.status?.slice(1) : 'N/A'}</div>
                 <div className="bundle-entry">
-                  {response?.resource?.id ? (
+                  {/* <Button variant="contained" onClick={this.togglePisBundle}>View Bundle</Button> */}
+                  {response?.resource?.id  ? (
                     <AutorenewIcon
                       className={spinPis === true ? 'refresh' : 'renew-icon'}
                       onClick={refreshPisBundle}

@@ -2,7 +2,6 @@ import { Tooltip, IconButton, Grid } from '@mui/material';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 import { BundleEntry, MedicationDispense } from 'fhir/r4';
-
 import { useState, useEffect } from 'react';
 
 import './PharmacyStatus.css';

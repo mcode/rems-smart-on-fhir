@@ -24,8 +24,7 @@ import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard, OrderSelectHook } from '../../../cds-hooks/resources/HookTypes';
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import {
-  getDrugCodeFromMedicationRequest,
-  getDrugCodeableConceptFromMedicationRequest
+  getDrugCodeFromMedicationRequest
 } from '../../Questionnaire/questionnaireUtil';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
@@ -311,6 +310,7 @@ function MedReqDropDown({
   } else if (remsAdminResponse?.status === 'Pending') {
     color = '#f0ad4e'; // orange
   }
+  
   const pStatus = testEhrResponse?.resource?.status;
   let pColor = '#0c0c0c'; // black
   if (pStatus === 'completed') {
@@ -426,7 +426,7 @@ function MedReqDropDown({
                           <div>
                             <LocalPharmacyIcon fontSize="large" />
                             <p className="etasuButtonText">Pharmacy: </p>
-                            <p>{testEhrResponse?.resource?.status || 'Not Started'}</p>
+                            <p>{testEhrResponse?.resource?.status  || 'Not Started'}</p>
                           </div>
                         </Button>
                         {renderTimestamp(checkedPharmacyTime)}
