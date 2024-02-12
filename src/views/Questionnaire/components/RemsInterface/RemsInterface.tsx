@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import ResourceEntry from './ResourceEntry';
 import './RemsInterface.css';
-import { getDrugCodeableConceptFromMedicationRequest } from '../../questionnaireUtil';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
-import { Bundle, MedicationRequest, MessageHeader, Parameters, Patient } from 'fhir/r4';
+import { Bundle, MedicationDispense, BundleEntry, MessageHeader, Parameters } from 'fhir/r4';
+import * as env from 'env-var';
 
 interface RemsInterfaceProps {
   remsAdminResponse: RemsAdminResponse;
@@ -30,7 +30,7 @@ interface JsonData {
 
 export default function RemsInterface(props: RemsInterfaceProps) {
   const [remsAdminResponse, setRemsAdminResponse] = useState<RemsAdminResponse | null>(null);
-  const [response, setResponse] = useState<AxiosResponse | null>(null);
+  const [response, setResponse] = useState<BundleEntry<MedicationDispense> | null>(null);
   const [spin, setSpin] = useState<boolean>(false);
   const [spinPis, setSpinPis] = useState<boolean>(false);
   const [viewResponse, setViewResponse] = useState<boolean>(false);
@@ -39,16 +39,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   useEffect(() => {
     sendRemsMessage();
   }, []);
-
-  const getAxiosOptions = () => {
-    const options: AxiosRequestConfig = {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      }
-    };
-    return options;
-  };
 
   const unfurlJson = (jsonData: JsonData) => {
     return jsonData.metRequirements
@@ -91,7 +81,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
 
     return null;
   };
-  const sendGetRx = () => {
+  const refreshPharmacyBundle = () => {
     if (props.specialtyRxBundle.entry && props.specialtyRxBundle.entry[0].resource) {
       // extract params and questionnaire response identifier
       const messageHeader: MessageHeader = props.specialtyRxBundle.entry[0]
@@ -105,7 +95,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           const params = potentialParams as Parameters;
           // stakeholder and medication references
           let prescriptionReference = '';
-          let patientReference = '';
           if (params.parameter) {
             for (const param of params.parameter) {
               if (
@@ -114,38 +103,28 @@ export default function RemsInterface(props: RemsInterfaceProps) {
                 param.valueReference.reference
               ) {
                 prescriptionReference = param.valueReference.reference;
-              } else if (
-                param.name === 'source-patient' &&
-                param.valueReference &&
-                param.valueReference.reference
-              ) {
-                patientReference = param.valueReference.reference;
-              }
+              } 
             }
           }
 
           // obtain drug information from database
           const potentialPrescription = getResource(props.specialtyRxBundle, prescriptionReference);
-          const potentialPatient = getResource(props.specialtyRxBundle, patientReference);
-          if (potentialPrescription && potentialPatient) {
-            const prescription = potentialPrescription as MedicationRequest;
-            const medicationCodeableConcept =
-              getDrugCodeableConceptFromMedicationRequest(prescription);
-            const simpleDrugName = medicationCodeableConcept?.coding?.[0].display?.split(' ')[0];
-            const rxDate = prescription.authoredOn;
-            const patient = potentialPatient as Patient;
-            const patientFirstName = patient.name?.[0].given?.[0];
-            const patientLastName = patient.name?.[0].family;
-            const patientDOB = patient.birthDate;
-            axios
-              .get(
-                `http://localhost:5051/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?simpleDrugName=${simpleDrugName}&rxDate=${rxDate}`,
-                getAxiosOptions()
-              )
-              .then(response => {
-                setResponse(response);
-              });
-          }
+
+          const rxId = potentialPrescription?.id;
+          // // now get new url hit:
+
+          const url = `${env.get('REACT_APP_DEFAULT_ISS').asString()}/MedicationDispense?prescription=${rxId}`;
+          axios({
+            method: 'get',
+            url: url
+          }).then(
+            response => {
+              setResponse(response?.data?.entry ? response?.data?.entry[0] : null);
+            },
+            error => {
+              console.log(error);
+            }
+          );
         }
       }
     }
@@ -155,7 +134,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
     setRemsAdminResponse(remsAdminResponse);
     //  Will not send post request to PIS if only for patient enrollment
     if (remsAdminResponse?.data?.case_number) {
-      sendGetRx();
+      refreshPharmacyBundle();
     }
   };
 
@@ -182,7 +161,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
 
   const refreshPisBundle = () => {
     setSpinPis(true);
-    sendGetRx();
+    refreshPharmacyBundle();
   };
 
   const refreshBundle = () => {
@@ -202,15 +181,11 @@ export default function RemsInterface(props: RemsInterfaceProps) {
     color = '#f0ad4e';
   }
 
-  let colorPis = '#f7f7f7';
-  const statusPis = response?.data?.dispenseStatus;
+  let colorPis = '#0c0c0c';
+  const statusPis = response?.resource?.status;
 
-  if (statusPis === 'Approved') {
+  if (statusPis === 'completed') {
     colorPis = '#5cb85c';
-  } else if (statusPis === 'Pending') {
-    colorPis = '#f0ad4e';
-  } else if (statusPis === 'Picked Up') {
-    colorPis = '#0275d8';
   }
 
   // Checking if REMS Request (pt enrollment) || Met Requirments (prescriber Form)
@@ -272,11 +247,10 @@ export default function RemsInterface(props: RemsInterfaceProps) {
               <h1>Pharmacy Status</h1>
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
-                <div className="bundle-entry">ID : {response?.data?._id || 'N/A'}</div>
-                <div className="bundle-entry">Status: {response?.data?.dispenseStatus}</div>
+                <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
+                <div className="bundle-entry">Status: {response?.resource?.status ? response?.resource?.status?.charAt(0).toUpperCase() + response?.resource?.status?.slice(1) : 'N/A'}</div>
                 <div className="bundle-entry">
-                  {/* <Button variant="contained" onClick={this.togglePisBundle}>View Bundle</Button> */}
-                  {response?.data?._id ? (
+                  {response?.resource?.id ? (
                     <AutorenewIcon
                       className={spinPis === true ? 'refresh' : 'renew-icon'}
                       onClick={refreshPisBundle}

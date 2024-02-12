@@ -16,7 +16,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import ListIcon from '@mui/icons-material/List';
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
-import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource } from 'fhir/r4';
+import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource, MedicationDispense } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
@@ -43,7 +43,6 @@ import sendRx from './rxSend/rxSend';
 import axios from 'axios';
 import MetRequirements from './etasuStatus/MetRequirements';
 import RemsMetEtasuResponse from './etasuStatus/RemsMetEtasuResponse';
-import DoctorOrder from './pharmacyStatus/DoctorOrder';
 
 interface MedReqDropDownProps {
   client: Client;
@@ -84,7 +83,7 @@ function MedReqDropDown({
   const [checkedEtasuTime, setCheckedEtasuTime] = useState(0);
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
-  const [pimsResponse, setPimsResponse] = useState<DoctorOrder | null>(null);
+  const [testEhrResponse, setTestEhrResponse] = useState<BundleEntry<MedicationDispense> | null>(null);
   const [checkedPharmacyTime, setCheckedPharmacyTime] = useState(0);
   const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
 
@@ -208,47 +207,18 @@ function MedReqDropDown({
     return `Last checked ${prefix} ago`;
   };
   const refreshPharmacyBundle = () => {
-    // setSpin(true);
-    const patientFirstName = patient?.name?.at(0)?.given?.at(0);
-    const patientLastName = patient?.name?.at(0)?.family;
-    const patientDOB = patient?.birthDate;
-    const rxDate = selectedMedicationCard?.authoredOn;
     setCheckedPharmacyTime(Date.now());
-    let drugCodeableConcept = undefined;
-    if (selectedMedicationCard) {
-      drugCodeableConcept = getDrugCodeableConceptFromMedicationRequest(selectedMedicationCard);
-    }
-    const drugNames = drugCodeableConcept?.coding?.at(0)?.display;
-    console.log(
-      'refreshPharmacyBundle: ' +
-        patientFirstName +
-        ' ' +
-        patientLastName +
-        ' - ' +
-        patientDOB +
-        ' - ' +
-        rxDate +
-        ' - ' +
-        drugNames
-    );
-    const ndcDrugCoding = drugCodeableConcept?.coding?.find(
-      ({ system }) => system === 'http://hl7.org/fhir/sid/ndc'
-    );
-    let queryString: string =
-      'rxDate=' + rxDate + '&drugNames=' + encodeURIComponent(drugNames || '');
-    if (ndcDrugCoding != undefined) {
-      queryString = queryString + '&drugNdcCode=' + ndcDrugCoding?.code;
-    }
-    const pharmacyUrl = `${env
-      .get('REACT_APP_PHARMACY_SERVER_BASE')
-      .asString()}/doctorOrders/api/getRx/${patientFirstName}/${patientLastName}/${patientDOB}?${queryString}`;
-    console.log(pharmacyUrl);
+    const rxId = selectedMedicationCard?.id;
+    console.log('selected medication card -- > ', rxId);
+
+    // new url to hit url --- > 
+    const url = `${env.get('REACT_APP_DEFAULT_ISS').asString()}/MedicationDispense?prescription=${rxId}`;
     axios({
       method: 'get',
-      url: pharmacyUrl
+      url: url
     }).then(
       response => {
-        setPimsResponse(response.data);
+        setTestEhrResponse(response?.data?.entry ? response?.data?.entry[0] : null);
       },
       error => {
         console.log(error);
@@ -343,15 +313,17 @@ function MedReqDropDown({
   } else if (remsAdminResponse?.status === 'Pending') {
     color = '#f0ad4e'; // orange
   }
-  const pStatus = pimsResponse?.dispenseStatus;
+  const pStatus = testEhrResponse?.resource?.status;
+  console.log('pstatus -- > ', pStatus);
   let pColor = '#0c0c0c'; // white
-  if (pStatus === 'Approved') {
+  if (pStatus === 'completed') {
     pColor = '#5cb85c'; // green
-  } else if (pStatus === 'Pending') {
-    pColor = '#f0ad4e'; // orange
-  } else if (pStatus === 'Picked Up') {
-    pColor = '#0275d8'; // blue
   }
+  // else if (pStatus === 'Pending') {
+  //   pColor = '#f0ad4e'; // orange
+  // } else if (pStatus === 'Picked Up') {
+  //   pColor = '#0275d8'; // blue
+  // }
 
   const etasuSx = {
     backgroundColor: color,
@@ -462,7 +434,7 @@ function MedReqDropDown({
                           <div>
                             <LocalPharmacyIcon fontSize="large" />
                             <p className="etasuButtonText">Pharmacy: </p>
-                            <p>{pimsResponse?.dispenseStatus || 'Not Started'}</p>
+                            <p>{testEhrResponse?.resource?.status || 'Not Started'}</p>
                           </div>
                         </Button>
                         {renderTimestamp(checkedPharmacyTime)}
@@ -504,7 +476,7 @@ function MedReqDropDown({
         <Box sx={modal_style}>
           <PharmacyStatus
             callback={refreshPharmacyBundle}
-            pimsResponse={pimsResponse}
+            testEhrResponse={testEhrResponse}
             update={showPharmacy}
           />
         </Box>
