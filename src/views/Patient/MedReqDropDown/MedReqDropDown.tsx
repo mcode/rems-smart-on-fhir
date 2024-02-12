@@ -16,16 +16,21 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import ListIcon from '@mui/icons-material/List';
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
-import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource, MedicationDispense } from 'fhir/r4';
+import {
+  BundleEntry,
+  Patient,
+  MedicationRequest,
+  Practitioner,
+  Resource,
+  MedicationDispense
+} from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
 import { hydrate } from '../../../cds-hooks/prefetch/PrefetchHydrator';
 import { Hook, Card as HooksCard, OrderSelectHook } from '../../../cds-hooks/resources/HookTypes';
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
-import {
-  getDrugCodeFromMedicationRequest
-} from '../../Questionnaire/questionnaireUtil';
+import { getDrugCodeFromMedicationRequest } from '../../Questionnaire/questionnaireUtil';
 import './MedReqDropDown.css';
 import * as env from 'env-var';
 import { MedicationBundle, submitToREMS } from '../PatientView';
@@ -82,7 +87,9 @@ function MedReqDropDown({
   const [checkedEtasuTime, setCheckedEtasuTime] = useState(0);
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
-  const [testEhrResponse, setTestEhrResponse] = useState<BundleEntry<MedicationDispense> | null>(null);
+  const [testEhrResponse, setTestEhrResponse] = useState<BundleEntry<MedicationDispense> | null>(
+    null
+  );
   const [checkedPharmacyTime, setCheckedPharmacyTime] = useState(0);
   const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
 
@@ -209,7 +216,9 @@ function MedReqDropDown({
     setCheckedPharmacyTime(Date.now());
     const rxId = selectedMedicationCard?.id;
 
-    const url = `${env.get('REACT_APP_DEFAULT_ISS').asString()}/MedicationDispense?prescription=${rxId}`;
+    const url = `${env
+      .get('REACT_APP_DEFAULT_ISS')
+      .asString()}/MedicationDispense?prescription=${rxId}`;
     axios({
       method: 'get',
       url: url
@@ -310,7 +319,7 @@ function MedReqDropDown({
   } else if (remsAdminResponse?.status === 'Pending') {
     color = '#f0ad4e'; // orange
   }
-  
+
   const pStatus = testEhrResponse?.resource?.status;
   let pColor = '#0c0c0c'; // black
   if (pStatus === 'completed') {
@@ -426,7 +435,7 @@ function MedReqDropDown({
                           <div>
                             <LocalPharmacyIcon fontSize="large" />
                             <p className="etasuButtonText">Pharmacy: </p>
-                            <p>{testEhrResponse?.resource?.status  || 'Not Started'}</p>
+                            <p>{testEhrResponse?.resource?.status || 'Not Started'}</p>
                           </div>
                         </Button>
                         {renderTimestamp(checkedPharmacyTime)}

@@ -33,8 +33,14 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
       <div className="status-icon" style={{ backgroundColor: color }}></div>
       <Grid container columns={12}>
         <Grid item xs={10}>
-          <div className="bundle-entry">ID: {props.testEhrResponse?.resource?.id|| 'N/A'}</div>
-          <div className="bundle-entry">Status: {props.testEhrResponse?.resource?.status ? props.testEhrResponse?.resource?.status?.charAt(0).toUpperCase() + props.testEhrResponse?.resource?.status?.slice(1) : 'N/A'}</div>
+          <div className="bundle-entry">ID: {props.testEhrResponse?.resource?.id || 'N/A'}</div>
+          <div className="bundle-entry">
+            Status:{' '}
+            {props.testEhrResponse?.resource?.status
+              ? props.testEhrResponse?.resource?.status?.charAt(0).toUpperCase() +
+                props.testEhrResponse?.resource?.status?.slice(1)
+              : 'N/A'}
+          </div>
         </Grid>
         <Grid item xs={2}>
           <div className="bundle-entry">

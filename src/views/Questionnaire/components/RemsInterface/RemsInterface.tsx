@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import ResourceEntry from './ResourceEntry';
 import './RemsInterface.css';
-import axios  from 'axios';
+import axios from 'axios';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
-import { Bundle, MedicationDispense, BundleEntry, MessageHeader, Parameters, Patient } from 'fhir/r4';
+import {
+  Bundle,
+  MedicationDispense,
+  BundleEntry,
+  MessageHeader,
+  Parameters,
+  Patient
+} from 'fhir/r4';
 import * as env from 'env-var';
-
 
 interface RemsInterfaceProps {
   remsAdminResponse: RemsAdminResponse;
@@ -31,7 +37,7 @@ interface JsonData {
 
 export default function RemsInterface(props: RemsInterfaceProps) {
   const [remsAdminResponse, setRemsAdminResponse] = useState<RemsAdminResponse | null>(null);
-  const [response, setResponse] = useState<BundleEntry<MedicationDispense>  | null>(null);
+  const [response, setResponse] = useState<BundleEntry<MedicationDispense> | null>(null);
 
   const [spin, setSpin] = useState<boolean>(false);
   const [spinPis, setSpinPis] = useState<boolean>(false);
@@ -41,7 +47,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   useEffect(() => {
     sendRemsMessage();
   }, []);
-
 
   const unfurlJson = (jsonData: JsonData) => {
     return jsonData.metRequirements
@@ -111,7 +116,9 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           }
           const potentialPrescription = getResource(props.specialtyRxBundle, prescriptionReference);
           const rxId = potentialPrescription?.id;
-          const url = `${env.get('REACT_APP_DEFAULT_ISS').asString()}/MedicationDispense?prescription=${rxId}`;
+          const url = `${env
+            .get('REACT_APP_DEFAULT_ISS')
+            .asString()}/MedicationDispense?prescription=${rxId}`;
           axios({
             method: 'get',
             url: url
@@ -245,11 +252,17 @@ export default function RemsInterface(props: RemsInterfaceProps) {
               <h1>Pharmacy Status</h1>
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
-                <div className="bundle-entry">ID : {response?.resource?.id  || 'N/A'}</div>
-                <div className="bundle-entry">Status: {response?.resource?.status ? response?.resource?.status?.charAt(0).toUpperCase() + response?.resource?.status?.slice(1) : 'N/A'}</div>
+                <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
+                <div className="bundle-entry">
+                  Status:{' '}
+                  {response?.resource?.status
+                    ? response?.resource?.status?.charAt(0).toUpperCase() +
+                      response?.resource?.status?.slice(1)
+                    : 'N/A'}
+                </div>
                 <div className="bundle-entry">
                   {/* <Button variant="contained" onClick={this.togglePisBundle}>View Bundle</Button> */}
-                  {response?.resource?.id  ? (
+                  {response?.resource?.id ? (
                     <AutorenewIcon
                       className={spinPis === true ? 'refresh' : 'renew-icon'}
                       onClick={refreshPisBundle}
