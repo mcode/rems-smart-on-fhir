@@ -68,7 +68,7 @@ describe('Test the PharmacyStatus Component', () => {
       await screen.findByText(`ID: ${testMedicationDispense.resource?.id}`)
     ).toBeInTheDocument();
     expect(
-      await screen.findByText(`Status: ${testMedicationDispense.resource?.status}`)
+      await screen.findByText('Status: Picked Up')
     ).toBeInTheDocument();
   });
 

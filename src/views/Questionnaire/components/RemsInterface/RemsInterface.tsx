@@ -255,9 +255,8 @@ export default function RemsInterface(props: RemsInterfaceProps) {
                 <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
                 <div className="bundle-entry">
                   Status:{' '}
-                  {response?.resource?.status
-                    ? response?.resource?.status?.charAt(0).toUpperCase() +
-                      response?.resource?.status?.slice(1)
+                  { statusPis === 'completed'
+                    ? 'Picked Up'
                     : 'N/A'}
                 </div>
                 <div className="bundle-entry">
