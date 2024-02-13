@@ -34,12 +34,7 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
       <Grid container columns={12}>
         <Grid item xs={10}>
           <div className="bundle-entry">ID: {props.testEhrResponse?.resource?.id || 'N/A'}</div>
-          <div className="bundle-entry">
-            Status:{' '}
-            { status === 'completed' 
-            ? 'Picked Up' 
-            : 'N/A' }
-          </div>
+          <div className="bundle-entry">Status: {status === 'completed' ? 'Picked Up' : 'N/A'}</div>
         </Grid>
         <Grid item xs={2}>
           <div className="bundle-entry">

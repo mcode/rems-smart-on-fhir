@@ -254,10 +254,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
                 <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
                 <div className="bundle-entry">
-                  Status:{' '}
-                  { statusPis === 'completed'
-                    ? 'Picked Up'
-                    : 'N/A'}
+                  Status: {statusPis === 'completed' ? 'Picked Up' : 'N/A'}
                 </div>
                 <div className="bundle-entry">
                   {/* <Button variant="contained" onClick={this.togglePisBundle}>View Bundle</Button> */}

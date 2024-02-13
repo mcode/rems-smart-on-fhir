@@ -435,9 +435,7 @@ function MedReqDropDown({
                           <div>
                             <LocalPharmacyIcon fontSize="large" />
                             <p className="etasuButtonText">Medication: </p>
-                            <p>{pStatus=== 'completed' 
-                            ? 'Picked Up' 
-                            : 'Unknown'}</p>
+                            <p>{pStatus === 'completed' ? 'Picked Up' : 'Unknown'}</p>
                           </div>
                         </Button>
                         {renderTimestamp(checkedPharmacyTime)}
