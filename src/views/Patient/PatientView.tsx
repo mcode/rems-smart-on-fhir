@@ -77,7 +77,6 @@ function PatientView(props: PatientViewProps) {
 
   const [user, setUser] = useState<string | null>(null);
 
-
   useEffect(() => {
     client.patient.read().then((patient: Patient) => setPatient(patient));
     if (client.user.id) {
