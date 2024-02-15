@@ -257,16 +257,11 @@ export default function RemsInterface(props: RemsInterfaceProps) {
                   Status: {statusPis === 'completed' ? 'Picked Up' : 'N/A'}
                 </div>
                 <div className="bundle-entry">
-                  {/* <Button variant="contained" onClick={this.togglePisBundle}>View Bundle</Button> */}
-                  {response?.resource?.id ? (
-                    <AutorenewIcon
-                      className={spinPis === true ? 'refresh' : 'renew-icon'}
-                      onClick={refreshPisBundle}
-                      onAnimationEnd={() => setSpinPis(false)}
-                    />
-                  ) : (
-                    ''
-                  )}
+                  <AutorenewIcon
+                    className={spinPis === true ? 'refresh' : 'renew-icon'}
+                    onClick={refreshPisBundle}
+                    onAnimationEnd={() => setSpinPis(false)}
+                  />
                 </div>
               </Paper>
             </div>
