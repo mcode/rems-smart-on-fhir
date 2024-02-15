@@ -16,7 +16,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import ListIcon from '@mui/icons-material/List';
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
-import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource } from 'fhir/r4';
+import { BundleEntry, Patient, MedicationRequest, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
@@ -39,7 +39,6 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
-import sendRx from './rxSend/rxSend';
 import axios from 'axios';
 import MetRequirements from './etasuStatus/MetRequirements';
 import RemsMetEtasuResponse from './etasuStatus/RemsMetEtasuResponse';
@@ -51,7 +50,6 @@ interface MedReqDropDownProps {
   hooksCards: HooksCard[];
   medication: MedicationBundle | null;
   patient: Patient | null;
-  practitioner: Practitioner | null;
   setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>;
   tabCallback: (n: ReactElement, m: string, o: string) => void;
   user: string | null;
@@ -63,7 +61,6 @@ function MedReqDropDown({
   hooksCards,
   medication,
   patient,
-  practitioner,
   setHooksCards,
   tabCallback,
   user
@@ -86,7 +83,6 @@ function MedReqDropDown({
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
   const [pimsResponse, setPimsResponse] = useState<DoctorOrder | null>(null);
   const [checkedPharmacyTime, setCheckedPharmacyTime] = useState(0);
-  const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     if (cdsHook) {
@@ -108,13 +104,6 @@ function MedReqDropDown({
 
   const handleCloseCheckPharmacy = () => {
     setShowPharmacy(false);
-  };
-
-  const handleSendRx = () => {
-    const med = selectedMedicationCardBundle?.resource;
-    if (med && patient && practitioner) {
-      sendRx(patient, practitioner, med);
-    }
   };
 
   const [selectedMedicationCardBundle, setSelectedMedicationCardBundle] =
@@ -168,18 +157,6 @@ function MedReqDropDown({
     }
   }, [selectedMedicationCardBundle]);
 
-  useEffect(() => {
-    if (
-      patient &&
-      practitioner &&
-      selectedMedicationCardBundle &&
-      env.get('REACT_APP_SEND_RX_ENABLED').asBool() === true
-    ) {
-      setSendRxEnabled(true);
-    } else {
-      setSendRxEnabled(false);
-    }
-  }, [patient, practitioner, selectedMedicationCardBundle]);
   useEffect(() => {
     refreshEtasuBundle();
     refreshPharmacyBundle();
@@ -466,13 +443,6 @@ function MedReqDropDown({
                           </div>
                         </Button>
                         {renderTimestamp(checkedPharmacyTime)}
-                      </Grid>
-                    )}
-                    {sendRxEnabled && (
-                      <Grid item>
-                        <Button variant="contained" onClick={handleSendRx}>
-                          Send RX to PIMS
-                        </Button>
                       </Grid>
                     )}
                   </Grid>
