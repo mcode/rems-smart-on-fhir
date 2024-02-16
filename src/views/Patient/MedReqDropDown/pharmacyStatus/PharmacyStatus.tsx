@@ -21,6 +21,16 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
     }
   }, [props.update]);
 
+  const getMedicationStatus = (status: string | undefined) => {
+    if (status === 'completed') {
+      return 'Picked Up';
+    } else if (status === 'unknown') {
+      return 'Not Started';
+    } else {
+      return 'N/A';
+    }
+  };
+
   const status = props.testEhrResponse?.resource?.status;
   let color = '#0c0c0c'; // black
   if (status === 'completed') {
@@ -34,7 +44,7 @@ const PharmacyStatus = (props: PharmacyStatusProps) => {
       <Grid container columns={12}>
         <Grid item xs={10}>
           <div className="bundle-entry">ID: {props.testEhrResponse?.resource?.id || 'N/A'}</div>
-          <div className="bundle-entry">Status: {status === 'completed' ? 'Picked Up' : 'N/A'}</div>
+          <div className="bundle-entry">Status: {getMedicationStatus(status)}</div>
         </Grid>
         <Grid item xs={2}>
           <div className="bundle-entry">

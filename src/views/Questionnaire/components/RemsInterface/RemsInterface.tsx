@@ -196,6 +196,16 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   // Checking if REMS Request (pt enrollment) || Met Requirments (prescriber Form)
   const hasRemsCase = remsAdminResponse?.data?.case_number ? true : false;
 
+  const getMedicationStatus = (status: string | undefined) => {
+    if (status === 'completed') {
+      return 'Picked Up';
+    } else if (status === 'unknown') {
+      return 'Not Started';
+    } else {
+      return 'N/A';
+    }
+  };
+
   return (
     <div>
       <div>
@@ -254,7 +264,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
                 <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
                 <div className="bundle-entry">
-                  Status: {statusPis === 'completed' ? 'Picked Up' : 'N/A'}
+                  Status: {getMedicationStatus(statusPis)}
                 </div>
                 <div className="bundle-entry">
                   <AutorenewIcon

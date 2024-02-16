@@ -321,6 +321,15 @@ function MedReqDropDown({
   }
 
   const pStatus = testEhrResponse?.resource?.status;
+  const getMedicationStatus = (status: string | undefined) => {
+    if (status === 'completed') {
+      return 'Picked Up';
+    } else if (status === 'unknown') {
+      return 'Not Started';
+    } else {
+      return 'N/A';
+    }
+  };
   let pColor = '#0c0c0c'; // black
   if (pStatus === 'completed') {
     pColor = '#5cb85c'; // green
@@ -435,7 +444,7 @@ function MedReqDropDown({
                           <div>
                             <LocalPharmacyIcon fontSize="large" />
                             <p className="etasuButtonText">Medication: </p>
-                            <p>{pStatus === 'completed' ? 'Picked Up' : 'Unknown'}</p>
+                            <p>{getMedicationStatus(pStatus)}</p>
                           </div>
                         </Button>
                         {renderTimestamp(checkedPharmacyTime)}
