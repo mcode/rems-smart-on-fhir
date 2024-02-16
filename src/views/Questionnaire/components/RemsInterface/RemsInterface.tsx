@@ -263,9 +263,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
               <Paper style={{ paddingBottom: '5px' }}>
                 <div className="status-icon" style={{ backgroundColor: colorPis }}></div>
                 <div className="bundle-entry">ID : {response?.resource?.id || 'N/A'}</div>
-                <div className="bundle-entry">
-                  Status: {getMedicationStatus(statusPis)}
-                </div>
+                <div className="bundle-entry">Status: {getMedicationStatus(statusPis)}</div>
                 <div className="bundle-entry">
                   <AutorenewIcon
                     className={spinPis === true ? 'refresh' : 'renew-icon'}
