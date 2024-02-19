@@ -16,13 +16,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import ListIcon from '@mui/icons-material/List';
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
-import {
-  BundleEntry,
-  Patient,
-  MedicationRequest,
-  Resource,
-  MedicationDispense
-} from 'fhir/r4';
+import { BundleEntry, Patient, MedicationRequest, Resource, MedicationDispense } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
