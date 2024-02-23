@@ -5,7 +5,12 @@ import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
 import { FhirResource, Task } from 'fhir/r4';
 
-import { Card as HooksCard, Link, Suggestion, Action } from '../../../../cds-hooks/resources/HookTypes';
+import {
+  Card as HooksCard,
+  Link,
+  Suggestion,
+  Action
+} from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -119,31 +124,35 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
         uri = action.resource.resourceType;
         console.log('completing suggested action CREATE: ' + uri);
 
-        props.client.request({
-          url: action.resource.resourceType,
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify(action.resource)
-        }).then(result => {
-          console.log('suggested action CREATE result:');
-          console.log(result);
-        });
+        props.client
+          .request({
+            url: action.resource.resourceType,
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(action.resource)
+          })
+          .then(result => {
+            console.log('suggested action CREATE result:');
+            console.log(result);
+          });
       } else if (action.type.toUpperCase() === 'UPDATE') {
         uri = action.resource.resourceType + '/' + action.resource.id;
         console.log('completing suggested action UPDATE: ' + uri);
-        props.client.request({
-          url: action.resource.resourceType + '/' + action.resource.id,
-          method: 'PUT',
-          headers: {
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify(action.resource)
-        }).then(result => {
-          console.log('suggested action UPDATE result:');
-          console.log(result);
-        });
+        props.client
+          .request({
+            url: action.resource.resourceType + '/' + action.resource.id,
+            method: 'PUT',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(action.resource)
+          })
+          .then(result => {
+            console.log('suggested action UPDATE result:');
+            console.log(result);
+          });
       } else {
         console.log('WARNING: unknown action: ' + action.type);
       }
