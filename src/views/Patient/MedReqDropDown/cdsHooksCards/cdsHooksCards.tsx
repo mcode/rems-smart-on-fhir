@@ -16,7 +16,7 @@ interface CdsHooksCardsProps {
 const CdsHooksCards = (props: CdsHooksCardsProps) => {
   return (
     <Grid item container spacing={2}>
-      {props.cards.map((card: HooksCard) => (
+      {props.cards.map((card: HooksCard, cardInd) => (
         <CdsHooksCard
           key={card?.summary}
           card={card}
@@ -25,6 +25,8 @@ const CdsHooksCards = (props: CdsHooksCardsProps) => {
           tabCallback={props.tabCallback}
           tabIndex={props.tabIndex}
           setTabIndex={props.setTabIndex}
+          cardInd={cardInd}
+          selectionBehavior={card.selectionBehavior}
         />
       ))}
     </Grid>

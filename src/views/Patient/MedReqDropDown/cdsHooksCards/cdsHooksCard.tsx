@@ -29,6 +29,8 @@ interface CdsHooksCardProps {
   tabIndex: number;
   setTabIndex: (n: number) => void;
   tabCallback: (n: ReactElement, m: string, o: string, l?: number) => void;
+  cardInd: number;
+  selectionBehavior: string | undefined;
 }
 
 const CdsHooksCard = (props: CdsHooksCardProps) => {
@@ -108,8 +110,30 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     });
   }
 
-  const buttonClickSuggestion = (suggestion: Suggestion) => {
+  const buttonClickSuggestion = (
+    suggestion: Suggestion,
+    buttonId: string,
+    suggestionCount: number,
+    cardNum: number,
+    selectionBehavior: string | undefined
+  ) => {
     console.log('CdsHooksCard::buttonClickSuggestion: ' + suggestion.label);
+
+    if (selectionBehavior === 'at-most-one') {
+      // disable all suggestion buttons for this card
+      for (let i = 0; i < suggestionCount; i++) {
+        const bId = 'suggestion_button-' + cardNum + '-' + i;
+        if (bId) {
+          document.getElementById(bId)?.setAttribute('disabled', 'true');
+        }
+      }
+    } else {
+      // disable this suggestion button if any are allowed
+      const element = document.getElementById(buttonId);
+      element?.setAttribute('disabled', 'true');
+      element?.setAttribute('style', 'background-color:#4BB543;');
+    }
+
     let uri = '';
     suggestion?.actions?.forEach((action: Action) => {
       if (action.type.toUpperCase() === 'DELETE') {
@@ -256,10 +280,23 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
         </CardActions>
         <CardActions>
           <Grid container spacing={1}>
-            {suggestions.map((suggestion: Suggestion) => {
+            {suggestions.map((suggestion: Suggestion, ind) => {
+              const buttonId = 'suggestion_button-' + props.cardInd + '-' + ind;
               return (
                 <Grid item key={suggestion?.label}>
-                  <Button variant="contained" onClick={() => buttonClickSuggestion(suggestion)}>
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      buttonClickSuggestion(
+                        suggestion,
+                        buttonId,
+                        suggestions.length,
+                        props.cardInd,
+                        props.selectionBehavior
+                      )
+                    }
+                    id={buttonId}
+                  >
                     {suggestion?.label}
                   </Button>
                 </Grid>
