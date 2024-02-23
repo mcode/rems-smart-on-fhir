@@ -3,7 +3,6 @@ import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/m
 
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
-import { FhirResource, Task } from 'fhir/r4';
 
 import {
   Card as HooksCard,
