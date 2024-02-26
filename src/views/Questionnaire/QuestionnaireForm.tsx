@@ -28,7 +28,16 @@ import {
   getDrugCodeableConceptFromMedicationRequest
 } from './questionnaireUtil';
 import './QuestionnaireForm.css';
-import { Button, Typography } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Chip,
+  Stack,
+  Typography
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Tooltip from '@mui/material/Tooltip';
 
 import Client from 'fhirclient/lib/Client';
@@ -40,6 +49,7 @@ import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
 import axios, { AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client';
+import { red } from '@mui/material/colors';
 declare global {
   interface Window {
     LForms: any;
@@ -109,6 +119,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const partialForms: PartialForms = {};
   const LForms = window.LForms;
   const questionnaireFormId = `formContainer-${props.qform.id}-${props.tabIndex}`;
+
   useEffect(() => {
     // search for any partially completed QuestionnaireResponses
     if (props.response) {
@@ -1038,7 +1049,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   };
 
   // Get missing fields to display
-  const getMissingFields = () => {
+  const getMissingFields = (): JSX.Element => {
     const fields: string[] = [];
     const requiredFieldErrors = formValidationErrors
       ? formValidationErrors.filter(error => {
@@ -1051,14 +1062,45 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         fields.push(name);
       });
     }
-    return fields.join(', ');
+    return (
+      <Stack mt={1}>
+        <Accordion disableGutters>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography className="error-text">
+              You must include a value for the following missing fields (click to expand):
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {fields.map((field, index) => (
+              <Chip
+                key={`field-${index}`}
+                sx={{
+                  height: 'auto',
+                  '& .MuiChip-label': {
+                    display: 'block',
+                    whiteSpace: 'normal'
+                  },
+                  color: red[300],
+                  width: 'unset',
+                  mb: 1,
+                  mr: 1
+                }}
+                label={field}
+                color="error"
+                variant="outlined"
+              />
+            ))}
+          </AccordionDetails>
+        </Accordion>
+      </Stack>
+    );
   };
 
   const getDisplayButtons = () => {
     if (!isAdaptiveForm()) {
       return (
-        <div className="submit-button-panel">
-          <div className="btn-row">
+        <>
+          <Stack className="submit-button-panel" direction="row" spacing={1}>
             <Button variant="outlined" onClick={() => loadPreviousForm()}>
               Load Previous Form
             </Button>
@@ -1083,18 +1125,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 </Button>
               </span>
             </Tooltip>
-          </div>
-          {!isFilledOut() ? (
-            <p className="error-text">You must include a value for {getMissingFields()}</p>
-          ) : (
-            <></>
-          )}
-        </div>
+          </Stack>
+          {!isFilledOut() && getMissingFields()}
+        </>
       );
     } else {
       if (props.adFormCompleted) {
         return (
-          <div className="submit-button-panel">
+          <Stack className="submit-button-panel">
             <Tooltip title={getMissingFieldsTooltip()}>
               <Button
                 variant="outlined"
@@ -1106,17 +1144,17 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 Submit REMS Bundle
               </Button>
             </Tooltip>
-          </div>
+          </Stack>
         );
       } else {
         return (
-          <div className="submit-button-panel">
-            {isAdaptiveFormWithoutItem() ? (
+          <Stack className="submit-button-panel">
+            {isAdaptiveFormWithoutItem() && (
               <Button variant="outlined" onClick={() => loadPreviousForm()}>
                 Load Previous Form
               </Button>
-            ) : null}
-            {isAdaptiveFormWithItem() ? (
+            )}
+            {isAdaptiveFormWithItem() && (
               <Button
                 variant="outlined"
                 onClick={() => {
@@ -1125,8 +1163,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               >
                 Save To EHR
               </Button>
-            ) : null}
-          </div>
+            )}
+          </Stack>
         );
       }
     }
@@ -1645,15 +1683,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   return (
     <div>
       <div id={questionnaireFormId}></div>
-      {!isAdaptive && props.formFilled ? (
+      {!isAdaptive && props.formFilled && (
         <div className="form-message-panel">
           <p>
             All fields have been filled. Continue or uncheck "Only Show Unfilled Fields" to review
             and modify the form.
           </p>
         </div>
-      ) : null}
-      {showPopup ? (
+      )}
+      {showPopup && (
         <SelectPopup
           title={popupTitle}
           options={popupOptions}
@@ -1661,7 +1699,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           selectedCallback={popupCallback}
           open={openPopup}
         />
-      ) : null}
+      )}
       <AlertDialog
         title="Alert"
         rxAlert={showRxAlert}
@@ -1669,25 +1707,25 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           setShowRxAlert(e);
         }}
       ></AlertDialog>
-      {isAdaptive ? (
+      {isAdaptive && (
         <div className="form-message-panel">
-          {isAdaptiveFormWithoutItem() && !props.adFormCompleted ? (
+          {isAdaptiveFormWithoutItem() && !props.adFormCompleted && (
             <p>Click Next Question button to proceed.</p>
-          ) : null}
-          {!props.adFormCompleted ? (
+          )}
+          {!props.adFormCompleted && (
             <div>
               {' '}
               <Button variant="outlined" onClick={loadNextQuestions}>
                 Next Question
               </Button>
             </div>
-          ) : null}
+          )}
         </div>
-      ) : null}
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {!isAdaptive ? <div className="status-panel">Form Loaded: {formLoaded}</div> : <div />}
+      )}
+      <Stack flexDirection="column" spacing={1} p={1}>
+        {!isAdaptive && <Typography>Form Loaded: {formLoaded}</Typography>}
         {getDisplayButtons()}
-      </div>
+      </Stack>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
   Typography
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { MedicationRequest, Patient, Practitioner } from 'fhir/r4';
+import { MedicationRequest, Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
@@ -77,16 +77,10 @@ function PatientView(props: PatientViewProps) {
 
   const [user, setUser] = useState<string | null>(null);
 
-  const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
-
   useEffect(() => {
     client.patient.read().then((patient: Patient) => setPatient(patient));
     if (client.user.id) {
       setUser(client.user.id);
-      client.user.read().then(response => {
-        const practitioner = response as Practitioner;
-        setPractitioner(practitioner);
-      });
     } else {
       const appContextString = client.state?.tokenResponse?.appContext;
       const appContext: { [key: string]: string } = {};
@@ -288,7 +282,6 @@ function PatientView(props: PatientViewProps) {
               hooksCards={hooksCards}
               medication={medication}
               patient={patient}
-              practitioner={practitioner}
               setHooksCards={setHooksCards}
               tabCallback={props.tabCallback}
               user={user}

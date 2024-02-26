@@ -4,7 +4,12 @@ import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/m
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
 
-import { Card as HooksCard, Link } from '../../../../cds-hooks/resources/HookTypes';
+import {
+  Card as HooksCard,
+  Link,
+  Suggestion,
+  Action
+} from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -24,10 +29,13 @@ interface CdsHooksCardProps {
   tabIndex: number;
   setTabIndex: (n: number) => void;
   tabCallback: (n: ReactElement, m: string, o: string, l?: number) => void;
+  cardInd: number;
+  selectionBehavior: string | undefined;
 }
 
 const CdsHooksCard = (props: CdsHooksCardProps) => {
   const [links, setLinks] = useState<Link[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   useEffect(() => {
     modifySmartLaunchURLs(props.card).then(updatedLinks => {
       setLinks(updatedLinks);
@@ -35,6 +43,9 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
         'CdsHooksCard::useEffect: updated all of the smart links for: ' + props.card?.summary
       );
     });
+    if (props?.card?.suggestions) {
+      setSuggestions(props.card?.suggestions);
+    }
   }, [props.card]);
 
   function retrieveLaunchContext(client: Client, link: Link) {
@@ -98,6 +109,78 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
         });
     });
   }
+
+  const buttonClickSuggestion = (
+    suggestion: Suggestion,
+    buttonId: string,
+    suggestionCount: number,
+    cardNum: number,
+    selectionBehavior: string | undefined
+  ) => {
+    console.log('CdsHooksCard::buttonClickSuggestion: ' + suggestion.label);
+
+    if (selectionBehavior === 'at-most-one') {
+      // disable all suggestion buttons for this card
+      for (let i = 0; i < suggestionCount; i++) {
+        const bId = 'suggestion_button-' + cardNum + '-' + i;
+        if (bId) {
+          document.getElementById(bId)?.setAttribute('disabled', 'true');
+        }
+      }
+    } else {
+      // disable this suggestion button if any are allowed
+      const element = document.getElementById(buttonId);
+      element?.setAttribute('disabled', 'true');
+      element?.setAttribute('style', 'background-color:#4BB543;');
+    }
+
+    let uri = '';
+    suggestion?.actions?.forEach((action: Action) => {
+      if (action.type.toUpperCase() === 'DELETE') {
+        uri = action.resource.resourceType + '/' + action.resource.id;
+        console.log('completing suggested action DELETE: ' + uri);
+        props.client.delete(uri).then(result => {
+          console.log('suggested action DELETE result:');
+          console.log(result);
+        });
+      } else if (action.type.toUpperCase() === 'CREATE') {
+        uri = action.resource.resourceType;
+        console.log('completing suggested action CREATE: ' + uri);
+
+        props.client
+          .request({
+            url: action.resource.resourceType,
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(action.resource)
+          })
+          .then(result => {
+            console.log('suggested action CREATE result:');
+            console.log(result);
+          });
+      } else if (action.type.toUpperCase() === 'UPDATE') {
+        uri = action.resource.resourceType + '/' + action.resource.id;
+        console.log('completing suggested action UPDATE: ' + uri);
+        props.client
+          .request({
+            url: action.resource.resourceType + '/' + action.resource.id,
+            method: 'PUT',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify(action.resource)
+          })
+          .then(result => {
+            console.log('suggested action UPDATE result:');
+            console.log(result);
+          });
+      } else {
+        console.log('WARNING: unknown action: ' + action.type);
+      }
+    });
+  };
 
   const buttonClickAction = (link: Link) => {
     console.log('CdsHooksCard::buttonClickAction(' + link.type + '): ' + link.label);
@@ -189,6 +272,32 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
                 <Grid item key={link?.label}>
                   <Button endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
                     {link?.label}
+                  </Button>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </CardActions>
+        <CardActions>
+          <Grid container spacing={1}>
+            {suggestions.map((suggestion: Suggestion, ind) => {
+              const buttonId = 'suggestion_button-' + props.cardInd + '-' + ind;
+              return (
+                <Grid item key={suggestion?.label}>
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      buttonClickSuggestion(
+                        suggestion,
+                        buttonId,
+                        suggestions.length,
+                        props.cardInd,
+                        props.selectionBehavior
+                      )
+                    }
+                    id={buttonId}
+                  >
+                    {suggestion?.label}
                   </Button>
                 </Grid>
               );
