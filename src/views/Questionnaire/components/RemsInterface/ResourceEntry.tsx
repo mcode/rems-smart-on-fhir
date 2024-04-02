@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './RemsInterface.css';
 import { FhirResource } from 'fhir/r4';
 
