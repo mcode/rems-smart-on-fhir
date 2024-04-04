@@ -10,7 +10,13 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Close from '@mui/icons-material/Close';
 
-import { MedicationRequest, Patient } from 'fhir/r4';
+import {
+  GuidanceResponse,
+  MedicationRequest,
+  Parameters,
+  ParametersParameter,
+  Patient
+} from 'fhir/r4';
 
 import axios from 'axios';
 import { useState, useEffect } from 'react';
@@ -23,8 +29,14 @@ import { getDrugCodeFromMedicationRequest } from '../../../Questionnaire/questio
 
 interface EtasuStatusProps {
   callback: () => void;
-  remsAdminResponse: RemsMetEtasuResponse | null;
+  remsAdminResponse: GuidanceResponse | null;
   update: boolean;
+}
+interface EtasuParam extends Parameters {
+  parameter: EtasuParamParam[];
+}
+interface EtasuParamParam extends ParametersParameter {
+  resource: GuidanceResponse;
 }
 
 const EtasuStatus = (props: EtasuStatusProps) => {
@@ -41,11 +53,36 @@ const EtasuStatus = (props: EtasuStatusProps) => {
     }
   }, [props.update]);
 
+  const getRequirements = () => {
+    const output = props.remsAdminResponse?.outputParameters?.reference;
+    if (output) {
+      if (output.startsWith('#')) {
+        // contained reference
+        const reference = output.slice(1);
+        if (props.remsAdminResponse?.contained) {
+          const outputParams = props.remsAdminResponse.contained.find(containedResource => {
+            return containedResource.id === reference;
+          }) as EtasuParam;
+          if (outputParams.parameter) {
+            return outputParams.parameter;
+          } else {
+            console.log('unsupported etasu - no parameters found');
+          }
+        }
+      } else {
+        console.log('unsupported etasu - no contained reference');
+      }
+    } else {
+      console.log('unsupported etasu - no output parameter reference');
+    }
+    return []; // do not return undefined
+  };
+
   const status = props.remsAdminResponse?.status;
   let color = '#f7f7f7'; // off-white
-  if (status === 'Approved') {
+  if (status === 'success') {
     color = '#5cb85c'; // green
-  } else if (status === 'Pending') {
+  } else if (status === 'data-required') {
     color = '#f0ad4e'; // orange
   }
 
@@ -55,9 +92,6 @@ const EtasuStatus = (props: EtasuStatusProps) => {
       <div className="status-icon" style={{ backgroundColor: color }}></div>
       <Grid container columns={12}>
         <Grid item xs={10}>
-          <div className="bundle-entry">
-            Case Number: {props.remsAdminResponse?.case_number || 'N/A'}
-          </div>
           <div className="bundle-entry">Status: {props.remsAdminResponse?.status || 'N/A'}</div>
         </Grid>
         <Grid item xs={2}>
@@ -80,26 +114,19 @@ const EtasuStatus = (props: EtasuStatusProps) => {
         <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
           {props.remsAdminResponse ? (
             <List>
-              {props.remsAdminResponse?.metRequirements.map((metRequirements: MetRequirements) => (
-                <ListItem
-                  disablePadding
-                  key={metRequirements.metRequirementId}
-                  data-testid="etasu-item"
-                >
+              {getRequirements().map((param: EtasuParamParam) => (
+                <ListItem disablePadding key={param.name} data-testid="etasu-item">
                   <ListItemIcon>
-                    {metRequirements.completed ? (
+                    {param.resource.status === 'success' ? (
                       <CheckCircle color="success" />
                     ) : (
                       <Close color="warning" />
                     )}
                   </ListItemIcon>
-                  {metRequirements.completed ? (
-                    <ListItemText primary={metRequirements.requirementName} />
+                  {param.resource.status === 'success' ? (
+                    <ListItemText primary={param.name} />
                   ) : (
-                    <ListItemText
-                      primary={metRequirements.requirementName}
-                      secondary={metRequirements.requirementDescription}
-                    />
+                    <ListItemText primary={param.name} secondary={param.resource.note?.[0]?.text} />
                   )}
                 </ListItem>
               ))}

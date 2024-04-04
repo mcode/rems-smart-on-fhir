@@ -16,7 +16,15 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
 import ListIcon from '@mui/icons-material/List';
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
-import { BundleEntry, Patient, MedicationRequest, Resource, MedicationDispense } from 'fhir/r4';
+import {
+  BundleEntry,
+  Patient,
+  MedicationRequest,
+  Resource,
+  MedicationDispense,
+  Parameters,
+  GuidanceResponse
+} from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
@@ -73,7 +81,7 @@ function MedReqDropDown({
 
   //ETASU
   const [showEtasu, setShowEtasu] = useState<boolean>(false);
-  const [remsAdminResponse, setRemsAdminResponse] = useState<RemsMetEtasuResponse | null>(null);
+  const [remsAdminResponse, setRemsAdminResponse] = useState<GuidanceResponse | null>(null);
   const [checkedEtasuTime, setCheckedEtasuTime] = useState(0);
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
@@ -203,53 +211,35 @@ function MedReqDropDown({
   };
 
   const refreshEtasuBundle = () => {
-    // setSpin(true);
-    const patientFirstName = patient?.name?.at(0)?.given?.at(0);
-    const patientLastName = patient?.name?.at(0)?.family;
-    const patientDOB = patient?.birthDate;
-    let drugCode = undefined;
-    setCheckedEtasuTime(Date.now());
-    if (selectedMedicationCard) {
-      drugCode = getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code;
-    }
-    console.log(
-      'refreshEtasuBundle: ' +
-        patientFirstName +
-        ' ' +
-        patientLastName +
-        ' - ' +
-        patientDOB +
-        ' - ' +
-        drugCode
-    );
-    const etasuUrl = `${env
-      .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
-      .asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
-
-    axios({
-      method: 'get',
-      url: etasuUrl
-    }).then(
-      response => {
-        // Sorting an array mutates the data in place.
-        const remsMetRes = response.data as RemsMetEtasuResponse;
-        if (remsMetRes.metRequirements) {
-          remsMetRes.metRequirements.sort((first: MetRequirements, second: MetRequirements) => {
-            // Keep the other forms unsorted.
-            if (second.requirementName.includes('Patient Status Update')) {
-              // Sort the Patient Status Update forms in descending order of timestamp.
-              return second.requirementName.localeCompare(first.requirementName);
-            }
-            return 0;
-          });
+    if (patient && selectedMedicationCard) {
+      setCheckedEtasuTime(Date.now());
+      const params: Parameters = {
+        resourceType: 'Parameters',
+        parameter: [
+          {
+            name: 'patient',
+            resource: patient
+          },
+          {
+            name: 'medication',
+            resource: selectedMedicationCard
+          }
+        ]
+      };
+      axios({
+        method: 'post',
+        url: `${env
+          .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
+          .asString()}/4_0_0/GuidanceResponse/$rems-etasu`,
+        data: params
+      }).then(res => {
+        const resParams = res.data as Parameters;
+        const etasu = resParams.parameter?.find(e => e.name === 'rems-etasu');
+        if (etasu && etasu.resource?.resourceType === 'GuidanceResponse') {
+          setRemsAdminResponse(etasu.resource);
         }
-        console.log(response.data);
-        setRemsAdminResponse(response.data);
-      },
-      error => {
-        console.log(error);
-      }
-    );
+      });
+    }
   };
   const renderTimestamp = (checkedTime: number) => {
     return (
@@ -284,9 +274,9 @@ function MedReqDropDown({
 
   const label = 'Select Medication Request';
   let color = '#0c0c0c'; // gray
-  if (remsAdminResponse?.status === 'Approved') {
+  if (remsAdminResponse?.status === 'success') {
     color = '#5cb85c'; // green
-  } else if (remsAdminResponse?.status === 'Pending') {
+  } else if (remsAdminResponse?.status === 'data-required') {
     color = '#f0ad4e'; // orange
   }
 
