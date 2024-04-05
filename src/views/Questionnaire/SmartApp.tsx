@@ -23,6 +23,7 @@ import {
 } from './fetchArtifacts';
 import executeElm from './elm/executeElm';
 import PatientSelect from './components/PatientSelect/PatientSelect';
+import RemsInterface from './components/RemsInterface/RemsInterface';
 import { createRoot } from 'react-dom/client';
 import * as env from 'env-var';
 
@@ -100,6 +101,8 @@ export function SmartApp(props: SmartAppProps) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const appContext: AppContext | undefined = props.appContext;
+  const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
+  const [remsAdminResponse, setRemsAdminResponse] = useState<any | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
   const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
@@ -691,35 +694,43 @@ export function SmartApp(props: SmartAppProps) {
               toggleOverlay();
             }}
           ></div>
-
-          <QuestionnaireForm
-            qform={questionnaire}
-            appContext={appContext}
-            cqlPrepopulationResults={cqlPrepopulationResults}
-            request={orderResource}
-            bundle={bundle}
-            standalone={props.standalone}
-            response={response}
-            attested={attested}
-            setPriorAuthClaim={setPriorAuthClaim}
-            fhirVersion={FHIR_VERSION}
-            smartClient={smart}
-            renderButtons={renderButtons}
-            filterFieldsFn={filter}
-            filterChecked={filterChecked}
-            ignoreRequiredChecked={ignoreRequiredCheckbox}
-            formFilled={formFilled}
-            updateQuestionnaire={updateQuestionnaire}
-            ehrLaunch={ehrLaunch}
-            reloadQuestionnaire={reloadQuestionnaire}
-            updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
-            adFormCompleted={adFormCompleted}
-            updateAdFormCompleted={completed => setAdFormCompleted(completed)}
-            adFormResponseFromServer={adFormResponseFromServer}
-            updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
-            setFormElement={setFormElement}
-            tabIndex={props.tabIndex}
-          />
+          {specialtyRxBundle && remsAdminResponse ? (
+            <RemsInterface
+              specialtyRxBundle={specialtyRxBundle}
+              remsAdminResponse={remsAdminResponse}
+            />
+          ) : (
+            <QuestionnaireForm
+              qform={questionnaire}
+              appContext={appContext}
+              cqlPrepopulationResults={cqlPrepopulationResults}
+              request={orderResource}
+              bundle={bundle}
+              standalone={props.standalone}
+              response={response}
+              attested={attested}
+              setPriorAuthClaim={setPriorAuthClaim}
+              setSpecialtyRxBundle={setSpecialtyRxBundle}
+              setRemsAdminResponse={setRemsAdminResponse}
+              fhirVersion={FHIR_VERSION}
+              smartClient={smart}
+              renderButtons={renderButtons}
+              filterFieldsFn={filter}
+              filterChecked={filterChecked}
+              ignoreRequiredChecked={ignoreRequiredCheckbox}
+              formFilled={formFilled}
+              updateQuestionnaire={updateQuestionnaire}
+              ehrLaunch={ehrLaunch}
+              reloadQuestionnaire={reloadQuestionnaire}
+              updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
+              adFormCompleted={adFormCompleted}
+              updateAdFormCompleted={completed => setAdFormCompleted(completed)}
+              adFormResponseFromServer={adFormResponseFromServer}
+              updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
+              setFormElement={setFormElement}
+              tabIndex={props.tabIndex}
+            />
+          )}
         </div>
       </div>
     );

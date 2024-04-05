@@ -81,6 +81,8 @@ interface QuestionnaireProps {
   reloadQuestionnaire: boolean;
   bundle?: Bundle;
   setPriorAuthClaim: (n: Bundle) => void;
+  setSpecialtyRxBundle: (n: Bundle) => void;
+  setRemsAdminResponse: (n: any) => void;
   setFormElement: (n: HTMLElement) => void;
   tabIndex: number;
 }
@@ -1638,17 +1640,19 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         axios
           .post('http://localhost:8090/etasu/met', specialtyRxBundle, options)
           .then(response => {
+            const proceedToRems = () => {
+              props.setSpecialtyRxBundle(specialtyRxBundle);
+              props.setRemsAdminResponse(response);
+            };
             if (response.status == 201) {
-              setShowRxAlert({
-                description: 'Form submitted successfully.',
-                open: true
-              });
+              proceedToRems();
             } else if (response.status == 200) {
               setShowRxAlert({
                 response: response,
                 rxBundle: specialtyRxBundle,
-                description: 'Form was already submitted previously.',
+                description: 'Form was already submitted previously. View current case?',
                 open: true,
+                callback: proceedToRems
               });
             }
           })
