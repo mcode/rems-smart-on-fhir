@@ -73,7 +73,7 @@ export function getStatus(etasuResource: GuidanceResponse | null | undefined): e
     color = '#f0ad4e'; // orange
     display = 'Pending';
   }
-  return {color, display};
+  return { color, display };
 }
 function MedReqDropDown({
   client,
