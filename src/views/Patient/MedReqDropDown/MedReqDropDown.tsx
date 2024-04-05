@@ -59,6 +59,22 @@ interface MedReqDropDownProps {
   user: string | null;
 }
 
+export interface etasuStatus {
+  color: string;
+  display: string | undefined;
+}
+export function getStatus(etasuResource: GuidanceResponse | null | undefined): etasuStatus {
+  let color = '#0c0c0c'; // gray
+  let display;
+  if (etasuResource?.status === 'success') {
+    color = '#5cb85c'; // green
+    display = 'Approved';
+  } else if (etasuResource?.status === 'data-required') {
+    color = '#f0ad4e'; // orange
+    display = 'Pending';
+  }
+  return {color, display};
+}
 function MedReqDropDown({
   client,
   getFhirResource,
@@ -273,12 +289,7 @@ function MedReqDropDown({
     : false;
 
   const label = 'Select Medication Request';
-  let color = '#0c0c0c'; // gray
-  if (remsAdminResponse?.status === 'success') {
-    color = '#5cb85c'; // green
-  } else if (remsAdminResponse?.status === 'data-required') {
-    color = '#f0ad4e'; // orange
-  }
+  const eStatus = getStatus(remsAdminResponse);
 
   const pStatus = testEhrResponse?.resource?.status;
   const getMedicationStatus = (status: string | undefined) => {
@@ -296,8 +307,8 @@ function MedReqDropDown({
   }
 
   const etasuSx = {
-    backgroundColor: color,
-    ':hover': { filter: 'brightness(110%)', backgroundColor: color }
+    backgroundColor: eStatus.color,
+    ':hover': { filter: 'brightness(110%)', backgroundColor: eStatus.color }
   };
   const pharmSx = {
     backgroundColor: pColor,
@@ -387,7 +398,7 @@ function MedReqDropDown({
                           <div>
                             <ListIcon fontSize="large" />
                             <p className="etasuButtonText">ETASU: </p>
-                            <p>{remsAdminResponse?.status || 'Not Started'}</p>
+                            <p>{eStatus.display || 'Not Started'}</p>
                           </div>
                         </Button>
                         {renderTimestamp(checkedEtasuTime)}

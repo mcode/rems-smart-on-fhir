@@ -26,6 +26,7 @@ import MetRequirements from './MetRequirements';
 import * as env from 'env-var';
 import './EtasuStatus.css';
 import { getDrugCodeFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
+import { getStatus } from '../MedReqDropDown';
 
 interface EtasuStatusProps {
   callback: () => void;
@@ -78,21 +79,15 @@ const EtasuStatus = (props: EtasuStatusProps) => {
     return []; // do not return undefined
   };
 
-  const status = props.remsAdminResponse?.status;
-  let color = '#f7f7f7'; // off-white
-  if (status === 'success') {
-    color = '#5cb85c'; // green
-  } else if (status === 'data-required') {
-    color = '#f0ad4e'; // orange
-  }
+  const status = getStatus(props.remsAdminResponse);
 
   return (
     <div>
       <h1>REMS Status</h1>
-      <div className="status-icon" style={{ backgroundColor: color }}></div>
+      <div className="status-icon" style={{ backgroundColor: status.color }}></div>
       <Grid container columns={12}>
         <Grid item xs={10}>
-          <div className="bundle-entry">Status: {props.remsAdminResponse?.status || 'N/A'}</div>
+          <div className="bundle-entry">Status: {status.display || 'N/A'}</div>
         </Grid>
         <Grid item xs={2}>
           <div className="bundle-entry">
