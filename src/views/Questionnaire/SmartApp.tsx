@@ -301,9 +301,9 @@ export function SmartApp(props: SmartAppProps) {
           } else {
             // check for multi-choice questions
             // get all empty questions
-            const emptyq = element.querySelectorAll('.ng-empty');
+            const emptyQuestions = element.querySelectorAll('.ng-empty');
             let doFilter = true;
-            emptyq.forEach(e => {
+            emptyQuestions.forEach(e => {
               const ul = e.parentElement?.querySelector('ul');
               if (ul && !ul.querySelector('li')) {
                 // the multi-choice question doesn't have an answer
@@ -346,7 +346,7 @@ export function SmartApp(props: SmartAppProps) {
 
   // update the ignore required checkbox
   const updateRequired = (defaultFilter: boolean) => {
-    let checked: boolean, requiredCheckbox: HTMLInputElement;
+    let checked: boolean;
     if (!defaultFilter) {
       const requiredCheckbox = document.getElementById(
         questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'
@@ -508,7 +508,7 @@ export function SmartApp(props: SmartAppProps) {
         });
     });
   };
-  // fill the valueSetDB in executionInputs with the required valuesets from their artifact source
+  // fill the valueSetDB in executionInputs with the required ValueSets from their artifact source
   const fillValueSetDB = (executionInputs: ExecutionInputs, artifacts: ReturnValue) => {
     if (!executionInputs.elmDependencies) {
       return;
@@ -540,7 +540,7 @@ export function SmartApp(props: SmartAppProps) {
           // make sure it has an expansion
           if (valueSet.expansion != null) {
             // add all codes to the the value set db. it is a map in a map, where the first layer key
-            // is the value set id and second layer key is the value set version. for this purpose we are using un-versioned valuesets
+            // is the value set id and second layer key is the value set version. for this purpose we are using un-versioned ValueSets
             executionInputs.valueSetDB[valueSetDef.id] = {};
             executionInputs.valueSetDB[valueSetDef.id][''] = valueSet.expansion.contains?.map(
               code => {
@@ -701,7 +701,7 @@ export function SmartApp(props: SmartAppProps) {
             />
           ) : (
             <QuestionnaireForm
-              qform={questionnaire}
+              questionnaireForm={questionnaire}
               appContext={appContext}
               cqlPrepopulationResults={cqlPrepopulationResults}
               request={orderResource}

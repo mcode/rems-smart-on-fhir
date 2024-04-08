@@ -4,7 +4,7 @@ export interface RemsMetEtasuResponse {
   case_number: string;
   drugCode: string;
   drugName: string;
-  patientFirstname: string;
+  patientFirstName: string;
   patientLastName: string;
   patientDOB: string;
   status: string;

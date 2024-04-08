@@ -58,7 +58,7 @@ declare global {
 
 interface QuestionnaireProps {
   response: QuestionnaireResponse | null;
-  qform: Questionnaire;
+  questionnaireForm: Questionnaire;
   standalone: boolean;
   cqlPrepopulationResults: PrepopulationResults | null;
   smartClient: Client;
@@ -118,13 +118,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const [formValidationErrors, setFormValidationErrors] = useState<any[]>([]);
   const partialForms: PartialForms = {};
   const LForms = window.LForms;
-  const questionnaireFormId = `formContainer-${props.qform.id}-${props.tabIndex}`;
+  const questionnaireFormId = `formContainer-${props.questionnaireForm.id}-${props.tabIndex}`;
 
   useEffect(() => {
     // search for any partially completed QuestionnaireResponses
     if (props.response) {
       const response = props.response;
-      const items = props.qform.item;
+      const items = props.questionnaireForm.item;
       const parentItems: QuestionnaireResponseItem[] = [];
       if (items && response.item) {
         handleGtable(items, parentItems, response.item);
@@ -142,7 +142,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         status: 'in-progress'
       };
       newResponse.item = []; // defined here to avoid compiler thinking it's potentially undefined
-      const items = props.qform.item || [];
+      const items = props.questionnaireForm.item || [];
       const parentItems: QuestionnaireResponseItem[] = [];
       handleGtable(items, parentItems, newResponse.item);
       prepopulate(items, newResponse.item, false);
@@ -161,7 +161,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       if (
         props.filterChecked &&
         event.target instanceof Element &&
-        event.target?.id != `filterCheckbox-${props.qform.id}` &&
+        event.target?.id != `filterCheckbox-${props.questionnaireForm.id}` &&
         event.target.id != 'attestationCheckbox'
       ) {
         const checkIfFilter = (
@@ -202,7 +202,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   });
   const loadAndMergeForms = (newResponse: QuestionnaireResponse | null) => {
     let lform = LForms.Util.convertFHIRQuestionnaireToLForms(
-      props.qform,
+      props.questionnaireForm,
       props.fhirVersion.toUpperCase()
     );
 
@@ -229,7 +229,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     if (specificForm) {
       const header = specificForm.getElementsByClassName('lf-form-title')[0];
       const el = document.createElement('div');
-      el.setAttribute('id', `button-container-${props.qform.id}`);
+      el.setAttribute('id', `button-container-${props.questionnaireForm.id}`);
       header.appendChild(el);
       props.renderButtons(el);
 
@@ -267,7 +267,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       status: 'in-progress'
     };
     newResponse.item = [];
-    const items = props.qform.item || [];
+    const items = props.questionnaireForm.item || [];
     const parentItems: QuestionnaireResponseItem[] = [];
     handleGtable(items, parentItems, newResponse.item);
     prepopulate(items, newResponse.item, false);
@@ -303,7 +303,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return firstResponse;
   };
-  // handlGtable expands the items with contains a table level expression
+  // handleGtable expands the items with contains a table level expression
   // the expression should be a list of objects
   // this function creates the controls based on the size of the expression
   // then set the value of for each item
@@ -602,9 +602,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       const answerOption = item.answerOption;
       let selectedCode;
 
-      if (answerValueSetReference && props.qform.contained) {
+      if (answerValueSetReference && props.questionnaireForm.contained) {
         const vs_id = answerValueSetReference.substr(1);
-        const fhirResource = props.qform.contained.find(r => r.id == vs_id);
+        const fhirResource = props.questionnaireForm.contained.find(r => r.id == vs_id);
         if (fhirResource && fhirResource.resourceType == 'ValueSet') {
           const vs: ValueSet = fhirResource;
           if (vs && vs.expansion && vs.expansion.contains) {
@@ -765,7 +765,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         };
         newResponse.item = [];
 
-        const items = props.qform.item;
+        const items = props.questionnaireForm.item;
         if (items) {
           prepopulate(items, newResponse.item, saved_response);
 
@@ -920,7 +920,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       `#${questionnaireFormId}`
     );
     //const mergedResponse = this.mergeResponseForSameLinkId(currentQuestionnaireResponse);
-    retrieveQuestions(url, buildNextQuestionRequest(props.qform, currentQuestionnaireResponse))
+    retrieveQuestions(
+      url,
+      buildNextQuestionRequest(props.questionnaireForm, currentQuestionnaireResponse)
+    )
       .then(result => result.json())
       .then(result => {
         console.log(
@@ -965,13 +968,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         let idMatch = false;
         if (bundleEntry.resource?.contained) {
           const questionnaireId = bundleEntry.resource?.contained[0].id;
-          idMatch = props.qform.id === questionnaireId;
+          idMatch = props.questionnaireForm.id === questionnaireId;
         }
         const questionnaireIdUrl = bundleEntry.resource?.questionnaire;
 
         if (
           idMatch ||
-          (questionnaireIdUrl && props.qform.id && questionnaireIdUrl.includes(props.qform.id))
+          (questionnaireIdUrl &&
+            props.questionnaireForm.id &&
+            questionnaireIdUrl.includes(props.questionnaireForm.id))
         ) {
           count = count + 1;
           // add the option to the popupOptions
@@ -1007,9 +1012,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   };
   const isAdaptiveForm = () => {
     return (
-      props.qform.meta &&
-      props.qform.meta.profile &&
-      props.qform.meta.profile.includes(
+      props.questionnaireForm.meta &&
+      props.questionnaireForm.meta.profile &&
+      props.questionnaireForm.meta.profile.includes(
         'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-adapt'
       )
     );
@@ -1018,13 +1023,18 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const isAdaptiveFormWithoutItem = () => {
     return (
       isAdaptiveForm() &&
-      props.qform &&
-      (props.qform.item === undefined || props.qform.item.length <= 0)
+      props.questionnaireForm &&
+      (props.questionnaireForm.item === undefined || props.questionnaireForm.item.length <= 0)
     );
   };
 
   const isAdaptiveFormWithItem = () => {
-    return isAdaptiveForm() && props.qform && props.qform.item && props.qform.item.length > 0;
+    return (
+      isAdaptiveForm() &&
+      props.questionnaireForm &&
+      props.questionnaireForm.item &&
+      props.questionnaireForm.item.length > 0
+    );
   };
 
   const isFilledOut = () => {
@@ -1291,14 +1301,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   };
 
   const storeQuestionnaireResponseToEhr = (
-    questionnaireReponse: QuestionnaireResponseSmart,
+    questionnaireResponse: QuestionnaireResponseSmart,
     showPopup: boolean | undefined
   ) => {
     // send the QuestionnaireResponse to the EHR FHIR server
     const questionnaireUrl = sessionStorage['serviceUri'] + '/QuestionnaireResponse';
     console.log('Storing QuestionnaireResponse to: ' + questionnaireUrl);
     props.smartClient
-      .create(questionnaireReponse)
+      .create(questionnaireResponse)
       .then(
         result => {
           if (showPopup) {
@@ -1326,7 +1336,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     // add the contained questionnaire for adaptive form
     if (isAdaptiveForm()) {
       qr.contained = [];
-      qr.contained.push(props.qform);
+      qr.contained.push(props.questionnaireForm);
     }
 
     if (status == 'in-progress') {
@@ -1614,8 +1624,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             focus: [{ reference: 'Parameters/param0111' }],
             source: {
               // TODO: url should be dynamically created
-              // also if DTR expects to recieve a response it
-              // will need an endpoint to recieve it at
+              // also if DTR expects to receive a response it
+              // will need an endpoint to receive it at
               endpoint: 'http://localhost:3005'
             }
           };
