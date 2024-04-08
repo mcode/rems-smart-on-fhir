@@ -10,22 +10,11 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Close from '@mui/icons-material/Close';
 
-import {
-  GuidanceResponse,
-  MedicationRequest,
-  Parameters,
-  ParametersParameter,
-  Patient
-} from 'fhir/r4';
+import { GuidanceResponse, Parameters, ParametersParameter } from 'fhir/r4';
 
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-import RemsMetEtasuResponse from './RemsMetEtasuResponse';
-import MetRequirements from './MetRequirements';
-import * as env from 'env-var';
 import './EtasuStatus.css';
-import { getDrugCodeFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
 import { getStatus } from '../MedReqDropDown';
 
 interface EtasuStatusProps {

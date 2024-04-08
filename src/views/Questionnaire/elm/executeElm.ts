@@ -83,7 +83,6 @@ function executeElmAgainstPatientSource(
   executionInputs: ExecutionInputs,
   patientSource: PatientSource
 ): Promise<any> {
-  // executionInputs.elmDependencies = [ fhirhelpersElm ]
   let repository = undefined;
   if (executionInputs.elmDependencies) {
     repository = new cql.Repository(executionInputs.elmDependencies);

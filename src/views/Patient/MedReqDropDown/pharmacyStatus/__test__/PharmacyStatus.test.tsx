@@ -11,7 +11,7 @@ const testMedicationDispense: BundleEntry<MedicationDispense> = {
     meta: {
       versionId: '4',
       lastUpdated: '2024-02-08T16:02:57.850+00:00',
-      source: '#pat017-mr-turali'
+      source: '#pat017-mr-turalio'
     },
     status: 'completed',
     medicationCodeableConcept: {

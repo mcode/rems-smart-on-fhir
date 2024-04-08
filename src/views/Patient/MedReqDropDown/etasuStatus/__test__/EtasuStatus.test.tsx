@@ -1,58 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import {
-  Patient,
-  MedicationRequest,
-  GuidanceResponse,
-  ParametersParameter,
-  Parameters
-} from 'fhir/r4';
-import nock from 'nock';
+import { ParametersParameter, Parameters } from 'fhir/r4';
 
 import EtasuStatus from '../EtasuStatus';
-import RemsMetEtasuResponse from '../RemsMetEtasuResponse';
-import MetRequirements from '../MetRequirements';
 
-const rems_admin_server_base = 'http://localhost:8090';
-
-const testPatient: Patient = {
-  resourceType: 'Patient',
-  id: 'pat017',
-  gender: 'male',
-  birthDate: '1996-06-01',
-  name: [
-    {
-      use: 'official',
-      family: 'Snow',
-      given: ['Jon', 'Stark']
-    }
-  ]
-};
-
-const testMedicationRequest: MedicationRequest = {
-  resourceType: 'MedicationRequest',
-  id: 'pat017-mr-IPledge',
-  medicationCodeableConcept: {
-    coding: [
-      {
-        system: 'http://www.nlm.nih.gov/research/umls/rxnorm',
-        code: '6064',
-        display: 'Isotretinoin 20 MG Oral Capsule'
-      },
-      {
-        system: 'http://hl7.org/fhir/sid/ndc',
-        code: '0245-0571-01'
-      }
-    ]
-  },
-  status: 'active',
-  intent: 'order',
-  subject: {
-    reference: 'Patient/pat017',
-    display: 'Jon Snow'
-  },
-  authoredOn: '2020-07-11'
-};
 const generateEtasuStatus = () => {
   const patientEnrollmentForm: ParametersParameter = {
     name: 'Patient Enrollment',
@@ -157,9 +108,8 @@ describe('Test the EtasuStatus Component', () => {
 
   test('Loads data on start', async () => {
     const update = true;
-
-    const etasuStatus = generateEtasuStatus();
     let called = false;
+
     const callback = () => {
       called = true;
     };
@@ -169,6 +119,7 @@ describe('Test the EtasuStatus Component', () => {
     // just need to call callback
     expect(called).toBeTruthy();
   });
+
   test('Renders passed data', async () => {
     // render the module
     const etasu = generateEtasuStatus();
@@ -188,6 +139,7 @@ describe('Test the EtasuStatus Component', () => {
       expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
     }
   });
+
   test('Update retrieves data', async () => {
     const update = false;
     let called = false;

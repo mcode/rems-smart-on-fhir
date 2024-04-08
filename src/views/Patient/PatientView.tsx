@@ -16,7 +16,6 @@ import { MedicationRequest, Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
-import './PatientView.css';
 import { Hook, Card as HooksCard } from '../../cds-hooks/resources/HookTypes';
 import axios from 'axios';
 import * as env from 'env-var';

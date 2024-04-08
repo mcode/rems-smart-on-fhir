@@ -21,7 +21,6 @@ body {
   }
 
   .resource-entry{
-    /* clear: both; */
     border-left: 4px solid #ffcccb;
     padding: 5px;
     border-bottom: 1px solid grey;
