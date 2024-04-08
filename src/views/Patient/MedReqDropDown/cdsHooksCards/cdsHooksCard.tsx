@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactElement } from 'react';
+import { useState, useEffect, ReactElement } from 'react';
 import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/material';
 
 import axios from 'axios';
