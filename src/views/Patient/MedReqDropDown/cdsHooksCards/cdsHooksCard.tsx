@@ -1,5 +1,5 @@
-import React, { useState, useEffect, ReactElement } from 'react';
-import { Button, Box, Card, CardActions, CardContent, Grid, Typography } from '@mui/material';
+import { useState, useEffect, ReactElement } from 'react';
+import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/material';
 
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';

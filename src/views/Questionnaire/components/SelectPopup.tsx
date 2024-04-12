@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { List, ListItemButton, ListItemText, DialogTitle, Dialog } from '@mui/material';
 
 interface SimpleDialogProps {

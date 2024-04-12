@@ -1,6 +1,6 @@
 import MetRequirements from '../etasuStatus/MetRequirements';
 
-export interface DoctorOrder {
+export type DoctorOrder = {
   _id: string;
   caseNumber: string;
   patientName: string;
@@ -20,11 +20,9 @@ export interface DoctorOrder {
   rxDate: string;
   drugPrice: number;
   drugNdcCode: string;
-  quanitities: string;
+  quantities: string;
   total: number;
   pickupDate: string;
   dispenseStatus: string;
   metRequirements: MetRequirements[];
-}
-
-export default DoctorOrder;
+};

@@ -20,7 +20,7 @@ export interface AppContext {
 // to get FHIR properties of the form answer{whatever}
 export function getAppContext(appContextString: string) {
   const appContext: AppContext = {};
-  // Fix + encoded spaces back to precent encoded spaces
+  // Fix + encoded spaces back to percent encoded spaces
   const encodedAppString = appContextString.replace(/\+/g, '%20');
   const appString = decodeURIComponent(encodedAppString);
   // Could switch to this later
@@ -147,8 +147,8 @@ export function buildFhirUrl(reference: string, fhirPrefix: string, fhirVersion:
   if (reference.startsWith('http')) {
     const endIndex = reference.lastIndexOf('/');
     const startIndex = reference.lastIndexOf('/', endIndex - 1) + 1;
-    const resoruce = reference.substr(startIndex, endIndex - startIndex);
-    return fhirPrefix + fhirVersion + '/' + resoruce + '?url=' + reference;
+    const resource = reference.substr(startIndex, endIndex - startIndex);
+    return fhirPrefix + fhirVersion + '/' + resource + '?url=' + reference;
   } else {
     return fhirPrefix + fhirVersion + '/' + reference;
   }
