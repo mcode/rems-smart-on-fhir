@@ -1,26 +1,26 @@
-import { useState, useEffect, ReactElement } from 'react';
-import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Grid, Typography } from '@mui/material';
+import { ReactElement, useEffect, useState } from 'react';
 
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
 
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import {
+  Action,
   Card as HooksCard,
   Link,
-  Suggestion,
-  Action
+  Suggestion
 } from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 
 
 // TODO:
