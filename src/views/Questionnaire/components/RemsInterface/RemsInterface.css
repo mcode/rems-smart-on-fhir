@@ -4,14 +4,6 @@ body {
   font-family: sans-serif;
 }
 
-.left-form {
-  width: 46%;
-  display: inline-block;
-  margin-top: 25px;
-  margin-left: 25px;
-  padding: 5px;
-}
-
 .resource-entry {
   border-left: 4px solid #ffcccb;
   padding: 5px;

@@ -685,53 +685,51 @@ export function SmartApp(props: SmartAppProps) {
     return isFetchingArtifacts ? (
       <div> Fetching resources ... </div>
     ) : (
-      <div>
-        <div className="App">
-          <div
-            className={'overlay ' + (showOverlay ? 'on' : 'off')}
-            onClick={() => {
-              console.log(showOverlay);
-              toggleOverlay();
-            }}
-          ></div>
-          {specialtyRxBundle && remsAdminResponse ? (
-            <RemsInterface
-              specialtyRxBundle={specialtyRxBundle}
-              remsAdminResponse={remsAdminResponse}
-            />
-          ) : (
-            <QuestionnaireForm
-              questionnaireForm={questionnaire}
-              appContext={appContext}
-              cqlPrepopulationResults={cqlPrepopulationResults}
-              request={orderResource}
-              bundle={bundle}
-              standalone={props.standalone}
-              response={response}
-              attested={attested}
-              setPriorAuthClaim={setPriorAuthClaim}
-              setSpecialtyRxBundle={setSpecialtyRxBundle}
-              setRemsAdminResponse={setRemsAdminResponse}
-              fhirVersion={FHIR_VERSION}
-              smartClient={smart}
-              renderButtons={renderButtons}
-              filterFieldsFn={filter}
-              filterChecked={filterChecked}
-              ignoreRequiredChecked={ignoreRequiredCheckbox}
-              formFilled={formFilled}
-              updateQuestionnaire={updateQuestionnaire}
-              ehrLaunch={ehrLaunch}
-              reloadQuestionnaire={reloadQuestionnaire}
-              updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
-              adFormCompleted={adFormCompleted}
-              updateAdFormCompleted={completed => setAdFormCompleted(completed)}
-              adFormResponseFromServer={adFormResponseFromServer}
-              updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
-              setFormElement={setFormElement}
-              tabIndex={props.tabIndex}
-            />
-          )}
-        </div>
+      <div className="App">
+        <div
+          className={'overlay ' + (showOverlay ? 'on' : 'off')}
+          onClick={() => {
+            console.log(showOverlay);
+            toggleOverlay();
+          }}
+        />
+        {specialtyRxBundle && remsAdminResponse ? (
+          <RemsInterface
+            specialtyRxBundle={specialtyRxBundle}
+            remsAdminResponse={remsAdminResponse}
+          />
+        ) : (
+          <QuestionnaireForm
+            questionnaireForm={questionnaire}
+            appContext={appContext}
+            cqlPrepopulationResults={cqlPrepopulationResults}
+            request={orderResource}
+            bundle={bundle}
+            standalone={props.standalone}
+            response={response}
+            attested={attested}
+            setPriorAuthClaim={setPriorAuthClaim}
+            setSpecialtyRxBundle={setSpecialtyRxBundle}
+            setRemsAdminResponse={setRemsAdminResponse}
+            fhirVersion={FHIR_VERSION}
+            smartClient={smart}
+            renderButtons={renderButtons}
+            filterFieldsFn={filter}
+            filterChecked={filterChecked}
+            ignoreRequiredChecked={ignoreRequiredCheckbox}
+            formFilled={formFilled}
+            updateQuestionnaire={updateQuestionnaire}
+            ehrLaunch={ehrLaunch}
+            reloadQuestionnaire={reloadQuestionnaire}
+            updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
+            adFormCompleted={adFormCompleted}
+            updateAdFormCompleted={completed => setAdFormCompleted(completed)}
+            adFormResponseFromServer={adFormResponseFromServer}
+            updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
+            setFormElement={setFormElement}
+            tabIndex={props.tabIndex}
+          />
+        )}
       </div>
     );
   } else if (props.standalone) {
