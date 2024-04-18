@@ -8,19 +8,22 @@ interface ResourceEntryProps {
 export default function ResourceEntry(props: ResourceEntryProps) {
   const [viewDetails, setViewDetails] = useState<boolean>(false);
 
-  const openDetails = () => {
+  const toggleOpenDetails = () => {
     setViewDetails(!viewDetails);
   };
   return (
     <div>
-      <div className={'resource-entry ' + [viewDetails ? 'active' : '']} onClick={openDetails}>
+      <div
+        className={'resource-entry ' + [viewDetails ? 'active' : '']}
+        onClick={toggleOpenDetails}
+      >
         <div>{props.resource['resourceType']}</div>
       </div>
-      {viewDetails ? (
+      {viewDetails && (
         <div className="details">
           <pre>{JSON.stringify(props.resource, null, '\t')}</pre>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
