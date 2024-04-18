@@ -82,7 +82,6 @@ interface QuestionnaireProps {
   bundle?: Bundle;
   setPriorAuthClaim: (n: Bundle) => void;
   setSpecialtyRxBundle: (n: Bundle) => void;
-  setRemsAdminResponse: (n: any) => void;
   setFormElement: (n: HTMLElement) => void;
   tabIndex: number;
 }
@@ -1652,7 +1651,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           .then(response => {
             const proceedToRems = () => {
               props.setSpecialtyRxBundle(specialtyRxBundle);
-              props.setRemsAdminResponse(response);
             };
             if (response.status == 201) {
               proceedToRems();

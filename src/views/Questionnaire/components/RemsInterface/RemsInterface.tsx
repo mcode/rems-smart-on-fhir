@@ -7,23 +7,7 @@ import { Bundle } from 'fhir/r4';
 import { Box } from '@mui/material';
 
 interface RemsInterfaceProps {
-  remsAdminResponse: RemsAdminResponse;
   specialtyRxBundle: Bundle;
-}
-interface RemsAdminResponse {
-  data: JsonData;
-}
-
-type MetRequirements = {
-  completed: boolean;
-  requirementName: string;
-  requirementDescription: string;
-};
-
-interface JsonData {
-  case_number: string;
-  status: string;
-  metRequirements: MetRequirements[];
 }
 
 export default function RemsInterface(props: RemsInterfaceProps) {

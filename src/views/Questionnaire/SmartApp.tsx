@@ -102,7 +102,6 @@ export function SmartApp(props: SmartAppProps) {
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const appContext: AppContext | undefined = props.appContext;
   const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
-  const [remsAdminResponse, setRemsAdminResponse] = useState<any | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
   const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
@@ -693,11 +692,8 @@ export function SmartApp(props: SmartAppProps) {
             toggleOverlay();
           }}
         />
-        {specialtyRxBundle && remsAdminResponse ? (
-          <RemsInterface
-            specialtyRxBundle={specialtyRxBundle}
-            remsAdminResponse={remsAdminResponse}
-          />
+        {specialtyRxBundle ? (
+          <RemsInterface specialtyRxBundle={specialtyRxBundle} />
         ) : (
           <QuestionnaireForm
             questionnaireForm={questionnaire}
@@ -710,7 +706,6 @@ export function SmartApp(props: SmartAppProps) {
             attested={attested}
             setPriorAuthClaim={setPriorAuthClaim}
             setSpecialtyRxBundle={setSpecialtyRxBundle}
-            setRemsAdminResponse={setRemsAdminResponse}
             fhirVersion={FHIR_VERSION}
             smartClient={smart}
             renderButtons={renderButtons}
