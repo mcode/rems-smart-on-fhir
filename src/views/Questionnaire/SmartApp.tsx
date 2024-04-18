@@ -638,38 +638,34 @@ export function SmartApp(props: SmartAppProps) {
   const renderButtons = (ref: Element) => {
     const element = (
       <div>
-        <div>
+        <div className="task-button">
+          <label>Only Show Unfilled Fields</label>{' '}
+          <input
+            type="checkbox"
+            onChange={() => {
+              filter(false);
+            }}
+            id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
+            ref={onFilterCheckboxRefChange}
+          ></input>
+        </div>
+        {showRequiredCheckbox && (
           <div className="task-button">
-            <label>Only Show Unfilled Fields</label>{' '}
+            <label>Ignore required fields</label>{' '}
             <input
               type="checkbox"
               onChange={() => {
-                filter(false);
+                updateRequired(false);
               }}
-              id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
-              ref={onFilterCheckboxRefChange}
+              id={
+                questionnaire
+                  ? `required-fields-checkbox-${questionnaire.id}`
+                  : 'required-fields-checkbox'
+              }
+              ref={onRequiredCheckboxRefChange}
             ></input>
           </div>
-          {showRequiredCheckbox ? (
-            <div className="task-button">
-              <label>Ignore required fields</label>{' '}
-              <input
-                type="checkbox"
-                onChange={() => {
-                  updateRequired(false);
-                }}
-                id={
-                  questionnaire
-                    ? `required-fields-checkbox-${questionnaire.id}`
-                    : 'required-fields-checkbox'
-                }
-                ref={onRequiredCheckboxRefChange}
-              ></input>
-            </div>
-          ) : (
-            <div />
-          )}
-        </div>
+        )}
       </div>
     );
     const root = createRoot(ref);
