@@ -196,7 +196,7 @@ function PatientView(props: PatientViewProps) {
           <TableCell component="th" scope="row" variant="head">
             <span style={{ fontWeight: 'bold' }}>{header}</span>
           </TableCell>
-          <TableCell sx={{ whiteSpace: 'pre' }} variant="body">
+          <TableCell sx={{ whiteSpace: 'pre-wrap' }} variant="body">
             {data}
           </TableCell>
         </TableRow>

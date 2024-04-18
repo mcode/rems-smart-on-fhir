@@ -329,10 +329,15 @@ function MedReqDropDown({
                     label={label}
                     value={selectedOption}
                     onChange={handleOptionSelect}
+                    sx={{ '& #dropdown': { textWrap: 'wrap' } }}
                   >
                     {medication ? (
                       medication.data.map(medications => (
-                        <MenuItem key={medications.id} value={medications.id}>
+                        <MenuItem
+                          key={medications.id}
+                          value={medications.id}
+                          sx={{ textWrap: 'wrap' }}
+                        >
                           {getDrugCodeFromMedicationRequest(medications)?.display}
                         </MenuItem>
                       ))
@@ -388,13 +393,8 @@ function MedReqDropDown({
 
                   <Grid item container justifyContent="center" textAlign="center" spacing={2}>
                     {etasu_status_enabled && (
-                      <Grid item sm={4} md={4} lg={4}>
-                        <Button
-                          className="etasuButton"
-                          sx={etasuSx}
-                          variant="contained"
-                          onClick={handleOpenCheckETASU}
-                        >
+                      <Grid item xs={12} sm={6}>
+                        <Button sx={etasuSx} variant="contained" onClick={handleOpenCheckETASU}>
                           <div>
                             <ListIcon fontSize="large" />
                             <p className="etasuButtonText">ETASU: </p>
@@ -405,16 +405,11 @@ function MedReqDropDown({
                       </Grid>
                     )}
                     {pharmacy_status_enabled && (
-                      <Grid item sm={4} md={4} lg={4}>
-                        <Button
-                          className="etasuButton"
-                          sx={pharmSx}
-                          variant="contained"
-                          onClick={handleOpenCheckPharmacy}
-                        >
+                      <Grid item xs={12} sm={6}>
+                        <Button sx={pharmSx} variant="contained" onClick={handleOpenCheckPharmacy}>
                           <div>
                             <LocalPharmacyIcon fontSize="large" />
-                            <p className="etasuButtonText">Medication: </p>
+                            <p className="etasuButtonText">Medication:</p>
                             <p>{getMedicationStatus(pStatus)}</p>
                           </div>
                         </Button>
