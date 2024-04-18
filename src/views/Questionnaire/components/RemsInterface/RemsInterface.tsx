@@ -21,7 +21,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
     return bundle.entry?.map(entry => {
       const resource = entry.resource;
       if (resource) {
-        return <ResourceEntry resource={resource}></ResourceEntry>;
+        return <ResourceEntry resource={resource} />;
       }
     });
   };
