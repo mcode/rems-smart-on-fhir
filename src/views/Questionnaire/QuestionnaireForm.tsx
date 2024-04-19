@@ -80,7 +80,6 @@ interface QuestionnaireProps {
   updateReloadQuestionnaire: (n: boolean) => void;
   reloadQuestionnaire: boolean;
   bundle?: Bundle;
-  setPriorAuthClaim: (n: Bundle) => void;
   setSpecialtyRxBundle: (n: Bundle) => void;
   setFormElement: (n: HTMLElement) => void;
   tabIndex: number;
@@ -1639,7 +1638,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
         console.log('specialtyRx', specialtyRxBundle);
 
-        props.setPriorAuthClaim(priorAuthBundle);
         const options = {
           headers: {
             Accept: 'application/json',

@@ -104,7 +104,6 @@ export function SmartApp(props: SmartAppProps) {
   const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
-  const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
   const [filterChecked, setFilterChecked] = useState<boolean>(true);
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
@@ -122,9 +121,6 @@ export function SmartApp(props: SmartAppProps) {
   useEffect(() => {
     if (!props.standalone) {
       ehrLaunch(false);
-    }
-    if (priorAuthClaim) {
-      console.log(priorAuthClaim); // TODO: I don't think we need this, it could be removed.
     }
   }, []);
   useEffect(() => {
@@ -700,7 +696,6 @@ export function SmartApp(props: SmartAppProps) {
             standalone={props.standalone}
             response={response}
             attested={attested}
-            setPriorAuthClaim={setPriorAuthClaim}
             setSpecialtyRxBundle={setSpecialtyRxBundle}
             fhirVersion={FHIR_VERSION}
             smartClient={smart}
