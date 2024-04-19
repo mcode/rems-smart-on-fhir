@@ -197,7 +197,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     if (props.reloadQuestionnaire) {
       repopulateAndReload();
     }
-  });
+  }, []);
+
   const loadAndMergeForms = (newResponse: QuestionnaireResponse | null) => {
     let lform = LForms.Util.convertFHIRQuestionnaireToLForms(
       props.questionnaireForm,
