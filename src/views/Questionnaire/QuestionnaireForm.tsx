@@ -961,36 +961,30 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         second: 'numeric'
       };
 
-      let count = 0;
+      const questionnaireResponses = partialResponses.entry
+        .map(bundleEntry => bundleEntry.resource)
+        .filter(resource => resource !== undefined);
 
-      partialResponses.entry.forEach(bundleEntry => {
-        let idMatch = false;
-        if (bundleEntry.resource?.contained) {
-          const questionnaireId = bundleEntry.resource?.contained[0].id;
-          idMatch = props.questionnaireForm.id === questionnaireId;
-        }
-        const questionnaireIdUrl = bundleEntry.resource?.questionnaire;
-
-        if (
+      const count = questionnaireResponses.reduce((sum, resource) => {
+        const idMatch = resource?.contained?.[0]?.id === props.questionnaireForm.id;
+        const questionnaireIdUrl = resource?.questionnaire;
+        const found =
           idMatch ||
           (questionnaireIdUrl &&
             props.questionnaireForm.id &&
-            questionnaireIdUrl.includes(props.questionnaireForm.id))
-        ) {
-          count = count + 1;
-          // add the option to the popupOptions
-          const date = new Date(bundleEntry?.resource?.authored || Date.now());
-          const option =
-            date.toLocaleDateString(undefined, options) +
-            ' (' +
-            bundleEntry?.resource?.status +
-            ')';
-          setPopupOptions([...popupOptions, option]);
-          if (bundleEntry.resource) {
-            partialForms[option] = bundleEntry.resource;
-          }
-        }
+            questionnaireIdUrl.includes(props.questionnaireForm.id));
+        return found ? sum + 1 : sum;
+      }, 0);
+
+      const newPopupOptions = questionnaireResponses.map(resource => {
+        const date = new Date(resource?.authored || Date.now());
+        const option = date.toLocaleDateString(undefined, options) + ' (' + resource?.status + ')';
+        partialForms[option] = resource as QuestionnaireResponse;
+        return option;
       });
+
+      setPopupOptions(newPopupOptions);
+
       console.log(popupOptions);
       console.log(partialForms);
 
