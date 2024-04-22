@@ -1646,7 +1646,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           }
         };
         axios
-          .post('http://localhost:8090/etasu/met', specialtyRxBundle, options)
+          .post(
+            `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`,
+            specialtyRxBundle,
+            options
+          )
           .then(response => {
             const proceedToRems = () => {
               props.setSpecialtyRxBundle(specialtyRxBundle);
