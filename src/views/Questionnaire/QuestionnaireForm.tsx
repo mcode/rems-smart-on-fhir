@@ -302,6 +302,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return firstResponse;
   };
+
   // handleGtable expands the items with contains a table level expression
   // the expression should be a list of objects
   // this function creates the controls based on the size of the expression
@@ -431,6 +432,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
     return newItemResponseList;
   };
+
   const getLibraryPrepopulationResult = (
     item: QuestionnaireItem,
     cqlResults: PrepopulationResults
@@ -477,6 +479,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return prepopulationResult;
   };
+
   const prepopulate = (
     items: QuestionnaireItem[],
     response_items: QuestionnaireResponseItem[],
@@ -595,6 +598,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
     });
   };
+
   const getDisplayCoding = (v: any, item: QuestionnaireItem) => {
     if (typeof v == 'string') {
       const answerValueSetReference = item.answerValueSet;
@@ -654,6 +658,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       display: displayText
     };
   };
+
   const populateMissingDisplay = (qItem: QuestionnaireItem) => {
     const codingList = qItem.answerOption;
     if (codingList) {
@@ -664,6 +669,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       });
     }
   };
+
   // Merge the items for the same linkId to comply with the LHCForm
   const mergeResponseForSameLinkId = (response: QuestionnaireResponse) => {
     const mergedResponse: QuestionnaireResponse = {
@@ -698,6 +704,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return mergedResponse;
   };
+
   const getRetrieveSaveQuestionnaireUrl = () => {
     // read configuration
     const updateDate = new Date();
@@ -706,6 +713,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       updateDate.toISOString().split('T')[0]
     }&status=in-progress`;
   };
+
   const loadPreviousForm = (showError = true) => {
     // search for any QuestionnaireResponses
     let questionnaireResponseUrl = getRetrieveSaveQuestionnaireUrl();
@@ -727,6 +735,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       )
       .catch(console.error);
   };
+
   const popupClear = (title: string, finalOption: string, logTitle: boolean) => {
     setPopupTitle(title);
     setPopupOptions([]);
@@ -735,6 +744,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       console.log(title);
     }
   };
+
   const popupLaunch = () => {
     setOpenPopup(true);
   };
@@ -862,6 +872,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     console.log('getPatient(): ' + requestType + ': ' + p);
     return p;
   };
+
   const getPractitioner = () => {
     let p = 'Unknown';
     let requestType = 'Unknown';
@@ -944,6 +955,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         }
       });
   };
+
   const processSavedQuestionnaireResponses = (
     partialResponses: Bundle<QuestionnaireResponse>,
     displayErrorOnNoneFound: boolean
@@ -1003,6 +1015,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       popupLaunch();
     }
   };
+
   const isAdaptiveForm = () => {
     return (
       props.questionnaireForm.meta &&
@@ -1172,6 +1185,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
     }
   };
+
   const addAuthorToResponse = (qr: QuestionnaireResponse, practitionerRef: string) => {
     function traverseToItemsLeafNode(item: QuestionnaireResponseItem, practitionerRef: string) {
       if (!item.item) {
@@ -1279,6 +1293,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return qr;
   };
+
   const isPriorAuthBundleValid = (bundle: Bundle) => {
     const resourceTypeList = ['Patient', 'Practitioner'];
 
@@ -1672,6 +1687,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
     }
   };
+
   const makeReference = (bundle: Bundle, resourceType: string) => {
     const entry = bundle.entry?.find(function (entry) {
       return entry.resource?.resourceType == resourceType;
@@ -1683,6 +1699,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       return resourceType + '/' + entry.resource?.id;
     }
   };
+
   const isAdaptive = isAdaptiveForm();
   const showPopup = !isAdaptive || isAdaptiveFormWithoutItem();
   return (
