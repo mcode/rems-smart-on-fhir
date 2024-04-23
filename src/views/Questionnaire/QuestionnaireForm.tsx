@@ -18,7 +18,7 @@ import {
   Signature,
   ValueSet
 } from 'fhir/r4';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import {
   AppContext,
   buildNextQuestionRequest,
@@ -105,12 +105,82 @@ interface RxAlert {
   callback?: () => void;
 }
 
+const DATE_TIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric'
+};
+
+type PopupState = { title: string; options: string[]; finalOption: string };
+
+enum PopupActionType {
+  LOAD,
+  ERROR_LOADING,
+  NONE_FOUND,
+  SAVED_TO_EHR,
+  FAILED_SAVE_TO_EHR
+}
+type PopupAction = { type: PopupActionType };
+
+const reducer = (state: PopupState, action: PopupAction): PopupState => {
+  switch (action.type) {
+    case PopupActionType.LOAD:
+      return {
+        ...state,
+        title: 'Would you like to load a previously in-progress form?',
+        finalOption: 'Cancel'
+      };
+    case PopupActionType.ERROR_LOADING:
+      return {
+        ...state,
+        title: 'Error: failed to load previous in-progress forms',
+        finalOption: 'OK'
+      };
+    case PopupActionType.NONE_FOUND:
+      return {
+        ...state,
+        title: 'No saved forms available to load.',
+        finalOption: 'OK'
+      };
+    case PopupActionType.SAVED_TO_EHR:
+      return {
+        ...state,
+        title: 'Partially completed form (QuestionnaireResponse) saved to EHR',
+        finalOption: 'OK'
+      };
+    case PopupActionType.FAILED_SAVE_TO_EHR:
+      return {
+        ...state,
+        title: 'Partially completed form (QuestionnaireResponse) failed to save to EHR',
+        finalOption: 'OK'
+      };
+    default:
+      return initialPopupState;
+  }
+};
+
+const initialPopupState = Object.freeze({
+  title: 'Unknown operation',
+  options: [],
+  finalOption: 'OK'
+});
+
 export function QuestionnaireForm(props: QuestionnaireProps) {
   const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
+
+  // TODO: replace this with below state manager
   const [popupTitle, setPopupTitle] = useState<string>('');
   const [popupOptions, setPopupOptions] = useState<string[]>([]);
   const [popupFinalOption, setPopupFinalOption] = useState<string>('');
+
+  const [popupState, popupDispatch] = useReducer(reducer, initialPopupState);
+
   const [openPopup, setOpenPopup] = useState<boolean>(false);
+
   const [formLoaded, setFormLoaded] = useState<string>('');
   const [showRxAlert, setShowRxAlert] = useState<RxAlert>({ open: false });
   const [formValidationErrors, setFormValidationErrors] = useState<any[]>([]);
@@ -724,16 +794,21 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       .request(questionnaireResponseUrl)
       .then(
         result => {
-          popupClear('Would you like to load a previously in-progress form?', 'Cancel', false);
+          const questionnaireResponses = getQuestionnaireResponses(result);
+          const newPopupOptions = getNewPopupOptions(questionnaireResponses);
+          const count = getCount(questionnaireResponses);
+
+          popupDispatch({ type: PopupActionType.LOAD });
           processSavedQuestionnaireResponses(result, showError);
         },
         result => {
-          console.log(result);
-          popupClear('Error: failed to load previous in-progress forms', 'OK', true);
+          popupDispatch({ type: PopupActionType.ERROR_LOADING });
           popupLaunch();
         }
       )
-      .catch(console.error);
+      .catch(reason => {
+        console.error(reason);
+      });
   };
 
   const popupClear = (title: string, finalOption: string, logTitle: boolean) => {
@@ -956,57 +1031,61 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       });
   };
 
+  const getNewPopupOptions = (questionnaireResponses: QuestionnaireResponse[]) => {
+    return questionnaireResponses.map(resource => {
+      const date = new Date(resource?.authored || Date.now());
+      const option =
+        date.toLocaleDateString(undefined, DATE_TIME_FORMAT_OPTIONS) +
+        ' (' +
+        resource?.status +
+        ')';
+      partialForms[option] = resource as QuestionnaireResponse;
+      return option;
+    });
+  };
+
+  const getCount = (questionnaireResponses: QuestionnaireResponse[]) => {
+    return questionnaireResponses.reduce((sum, resource) => {
+      const idMatch = resource?.contained?.[0]?.id === props.questionnaireForm.id;
+      const questionnaireIdUrl = resource?.questionnaire;
+      const found =
+        idMatch ||
+        (questionnaireIdUrl &&
+          props.questionnaireForm.id &&
+          questionnaireIdUrl.includes(props.questionnaireForm.id));
+      return found ? sum + 1 : sum;
+    }, 0);
+  };
+
+  const getQuestionnaireResponses = (partialResponses: Bundle<QuestionnaireResponse>) => {
+    if (partialResponses.total && partialResponses.total > 0 && partialResponses.entry) {
+      return partialResponses.entry
+        .map(bundleEntry => bundleEntry.resource)
+        .filter(resource => resource !== undefined) as QuestionnaireResponse[];
+    }
+    return [];
+  };
+
   const processSavedQuestionnaireResponses = (
     partialResponses: Bundle<QuestionnaireResponse>,
     displayErrorOnNoneFound: boolean
   ) => {
     let noneFound = true;
 
-    if (partialResponses.total && partialResponses.total > 0 && partialResponses.entry) {
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
-      };
+    const questionnaireResponses = getQuestionnaireResponses(partialResponses);
 
-      const questionnaireResponses = partialResponses.entry
-        .map(bundleEntry => bundleEntry.resource)
-        .filter(resource => resource !== undefined);
+    const newPopupOptions = getNewPopupOptions(questionnaireResponses);
 
-      const count = questionnaireResponses.reduce((sum, resource) => {
-        const idMatch = resource?.contained?.[0]?.id === props.questionnaireForm.id;
-        const questionnaireIdUrl = resource?.questionnaire;
-        const found =
-          idMatch ||
-          (questionnaireIdUrl &&
-            props.questionnaireForm.id &&
-            questionnaireIdUrl.includes(props.questionnaireForm.id));
-        return found ? sum + 1 : sum;
-      }, 0);
+    const count = getCount(questionnaireResponses);
 
-      const newPopupOptions = questionnaireResponses.map(resource => {
-        const date = new Date(resource?.authored || Date.now());
-        const option = date.toLocaleDateString(undefined, options) + ' (' + resource?.status + ')';
-        partialForms[option] = resource as QuestionnaireResponse;
-        return option;
-      });
+    popupDispatch({ type: PopupActionType.LOAD /*value: newPopupOptions*/ });
 
-      setPopupOptions(newPopupOptions);
-
-      console.log(popupOptions);
-      console.log(partialForms);
-
-      //check if show popup
-      const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
-      // only show the popupOptions if there is one to show
-      if (count > 0 && showPopup) {
-        noneFound = false;
-        popupLaunch();
-      }
+    //check if show popup
+    const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
+    // only show the popupOptions if there is one to show
+    if (count > 0 && showPopup) {
+      noneFound = false;
+      popupLaunch();
     }
 
     // display a message that none were found if necessary
@@ -1715,9 +1794,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       )}
       {showPopup && (
         <SelectPopup
-          title={popupTitle}
-          options={popupOptions}
-          finalOption={popupFinalOption}
+          title={popupState.title}
+          options={popupState.options}
+          finalOption={popupState.finalOption}
           selectedCallback={popupCallback}
           open={openPopup}
         />
