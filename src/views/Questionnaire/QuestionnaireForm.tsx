@@ -1656,13 +1656,25 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         axios
           .post('http://localhost:8090/etasu/met', specialtyRxBundle, options)
           .then((response: RemsAdminResponse) => {
+            const remsCaseUrl = 'http://hl7.org/fhir/sid/rems-case'; // placeholder
             const proceedToRems = () => {
               const caseNumber = response.data?.case_number;
               if (caseNumber && patient) {
+                patient.identifier = patient.identifier?.filter((iden) => {
+                  if(iden.system === remsCaseUrl && iden.period ) {
+                    if(iden.period?.end) {
+                      const endDate = new Date(iden.period.end);
+                      if(endDate.getMilliseconds() < Date.now()) {
+                        return false; // filter out old identifiers
+                      }
+                    }
+                  }
+                  return true;
+                });
                 const endDate = new Date(Date.now() + 86400000); // 86400000 is 1 day in milliseconds
                 patient.identifier?.push({
                   value: caseNumber,
-                  system: 'http://hl7.org/fhir/sid/rems-case',
+                  system: remsCaseUrl,
                   period: {
                     start: new Date(Date.now()).toISOString(),
                     end: endDate.toISOString()
