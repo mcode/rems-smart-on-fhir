@@ -124,7 +124,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
   useEffect(() => {
     const patientId = getPatient();
-    props.smartClient.request(patientId).then((res) => {
+    props.smartClient.request(patientId).then(res => {
       setPatient(res);
     });
     // search for any partially completed QuestionnaireResponses
@@ -1658,18 +1658,16 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           .then((response: RemsAdminResponse) => {
             const proceedToRems = () => {
               const caseNumber = response.data?.case_number;
-              if(caseNumber && patient) {
+              if (caseNumber && patient) {
                 const endDate = new Date(Date.now() + 86400000); // 86400000 is 1 day in milliseconds
-                patient.identifier?.push(
-                  {
-                    value: caseNumber,
-                    system: 'http://hl7.org/fhir/sid/rems-case',
-                    period: {
-                      start: new Date(Date.now()).toISOString(),
-                      end: endDate.toISOString()
-                    }
+                patient.identifier?.push({
+                  value: caseNumber,
+                  system: 'http://hl7.org/fhir/sid/rems-case',
+                  period: {
+                    start: new Date(Date.now()).toISOString(),
+                    end: endDate.toISOString()
                   }
-                );
+                });
                 // update patient
                 props.smartClient.request({
                   url: patient.resourceType + '/' + patient.id,
