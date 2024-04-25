@@ -131,9 +131,7 @@ describe('Test the EtasuStatus Component', () => {
           remsAdminResponse={etasu.parameter[0].resource}
         />
       );
-      expect(
-        await screen.findByText('Status: Pending')
-      ).toBeInTheDocument();
+      expect(await screen.findByText('Status: Pending')).toBeInTheDocument();
       expect(await screen.findAllByTestId('etasu-item')).toHaveLength(3);
     }
   });

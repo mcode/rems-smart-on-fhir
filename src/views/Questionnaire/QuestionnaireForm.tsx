@@ -1660,11 +1660,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             const proceedToRems = () => {
               const caseNumber = response.data?.case_number;
               if (caseNumber && patient) {
-                patient.identifier = patient.identifier?.filter((iden) => {
-                  if(iden.system === remsCaseUrl && iden.period ) {
-                    if(iden.period?.end) {
+                patient.identifier = patient.identifier?.filter(iden => {
+                  if (iden.system === remsCaseUrl && iden.period) {
+                    if (iden.period?.end) {
                       const endDate = new Date(iden.period.end);
-                      if(endDate.getMilliseconds() < Date.now()) {
+                      if (endDate.getMilliseconds() < Date.now()) {
                         return false; // filter out old identifiers
                       }
                     }
