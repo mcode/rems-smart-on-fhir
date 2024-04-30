@@ -120,7 +120,7 @@ type PopupState = {
   partialForms: Record<string, QuestionnaireResponse>;
   open: boolean;
   savedResponse: QuestionnaireResponse | null;
-  loadedForm: string;
+  formLoaded: string;
 };
 
 enum PopupActionType {
@@ -132,19 +132,17 @@ enum PopupActionType {
   CLOSE_POPUP,
   OPEN_POPUP,
   SAVE_RESPONSE,
-  SAVE_CURRENT_LOADED_FORM
+  SET_FORM_LOADED
 }
 
 type PopupAction =
   | { type: PopupActionType.LOAD; value: QuestionnaireResponse[] }
   | { type: PopupActionType.SAVE_RESPONSE; value: QuestionnaireResponse }
-  | { type: PopupActionType.SAVE_CURRENT_LOADED_FORM; value: string }
+  | { type: PopupActionType.SET_FORM_LOADED; value: string }
   | {
       type: Exclude<
         PopupActionType,
-        | PopupActionType.LOAD
-        | PopupActionType.SAVE_RESPONSE
-        | PopupActionType.SAVE_CURRENT_LOADED_FORM
+        PopupActionType.LOAD | PopupActionType.SAVE_RESPONSE | PopupActionType.SET_FORM_LOADED
       >;
     };
 
@@ -197,14 +195,15 @@ const reducer = (state: PopupState, action: PopupAction): PopupState => {
         finalOption: 'OK',
         options: []
       };
+    // these don't depend on the other pieces of state
     case PopupActionType.CLOSE_POPUP:
       return { ...state, open: false };
     case PopupActionType.OPEN_POPUP:
       return { ...state, open: true };
     case PopupActionType.SAVE_RESPONSE:
       return { ...state, savedResponse: action.value };
-    case PopupActionType.SAVE_CURRENT_LOADED_FORM:
-      return { ...state, loadedForm: action.value };
+    case PopupActionType.SET_FORM_LOADED:
+      return { ...state, formLoaded: action.value };
     default:
       return initialPopupState;
   }
@@ -217,7 +216,7 @@ const initialPopupState: PopupState = Object.freeze({
   partialForms: {},
   open: false,
   savedResponse: null,
-  loadedForm: 'New'
+  formLoaded: 'New'
 });
 
 export function QuestionnaireForm(props: QuestionnaireProps) {
@@ -846,7 +845,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
   const popupCallback = (returnValue: string) => {
     // display the form loaded
-    popupDispatch({ type: PopupActionType.SAVE_CURRENT_LOADED_FORM, value: returnValue });
+    popupDispatch({ type: PopupActionType.SET_FORM_LOADED, value: returnValue });
 
     if (popupState.partialForms[returnValue]) {
       // load the selected form
@@ -1794,7 +1793,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           options={popupState.options}
           finalOption={popupState.finalOption}
           selectedCallback={popupCallback}
-          selectedValue={popupState.loadedForm}
+          selectedValue={popupState.formLoaded}
           open={popupState.open}
           close={() => popupDispatch({ type: PopupActionType.CLOSE_POPUP })}
         />
@@ -1822,7 +1821,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         </div>
       )}
       <Stack flexDirection="column" spacing={1} p={1}>
-        {!isAdaptive && <Typography>Form Loaded: {popupState.loadedForm}</Typography>}
+        {!isAdaptive && <Typography>Form Loaded: {popupState.formLoaded}</Typography>}
         {getDisplayButtons()}
       </Stack>
     </div>
