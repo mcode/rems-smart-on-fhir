@@ -31,7 +31,7 @@ function SimpleDialog(props: SimpleDialogProps) {
           </ListItemButton>
         ))}
 
-        <ListItemButton autoFocus onClick={() => handleListItemClick('New')}>
+        <ListItemButton autoFocus onClick={handleClose}>
           <ListItemText primary={finalOption} />
         </ListItemButton>
       </List>
@@ -40,34 +40,27 @@ function SimpleDialog(props: SimpleDialogProps) {
 }
 
 interface SelectPopupProps {
+  selectedValue: string;
   selectedCallback: (n: string) => void;
   open: boolean;
+  close: () => void;
   title: string;
   options: string[];
   finalOption: string;
 }
 
 function SelectPopup(props: SelectPopupProps) {
-  const propOpen = props.open;
-  const selectedCallback = props.selectedCallback;
-  const { title, options, finalOption } = props;
-  const [open, setOpen] = useState<boolean>(false);
-  const [selectedValue, setSelectedValue] = useState<string>('');
-
-  useEffect(() => {
-    setOpen(propOpen);
-  }, [propOpen]);
+  const { title, options, finalOption, selectedCallback, selectedValue } = props;
 
   const handleClose = (value: string) => {
-    setOpen(false);
-    setSelectedValue(value);
+    props.close();
     selectedCallback(value);
   };
   return (
     <div>
       <SimpleDialog
         selectedValue={selectedValue}
-        open={open}
+        open={props.open}
         onClose={handleClose}
         title={title}
         options={options}

@@ -94,9 +94,7 @@ interface MetaSmart extends Meta {
 interface QuestionnaireResponseSmart extends QuestionnaireResponse {
   meta?: MetaSmart;
 }
-interface PartialForms {
-  [key: string]: QuestionnaireResponse;
-}
+
 interface RxAlert {
   response?: AxiosResponse;
   rxBundle?: Bundle;
@@ -115,76 +113,117 @@ const DATE_TIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   second: 'numeric'
 };
 
-type PopupState = { title: string; options: string[]; finalOption: string };
+type PopupState = {
+  title: string;
+  options: string[];
+  finalOption: string;
+  partialForms: Record<string, QuestionnaireResponse>;
+  open: boolean;
+  savedResponse: QuestionnaireResponse | null;
+  loadedForm: string;
+};
 
 enum PopupActionType {
   LOAD,
   ERROR_LOADING,
   NONE_FOUND,
   SAVED_TO_EHR,
-  FAILED_SAVE_TO_EHR
+  FAILED_SAVE_TO_EHR,
+  CLOSE_POPUP,
+  OPEN_POPUP,
+  SAVE_RESPONSE,
+  SAVE_CURRENT_LOADED_FORM
 }
-type PopupAction = { type: PopupActionType };
+
+type PopupAction =
+  | { type: PopupActionType.LOAD; value: QuestionnaireResponse[] }
+  | { type: PopupActionType.SAVE_RESPONSE; value: QuestionnaireResponse }
+  | { type: PopupActionType.SAVE_CURRENT_LOADED_FORM; value: string }
+  | {
+      type: Exclude<
+        PopupActionType,
+        | PopupActionType.LOAD
+        | PopupActionType.SAVE_RESPONSE
+        | PopupActionType.SAVE_CURRENT_LOADED_FORM
+      >;
+    };
+
+const getNewPopupOptions = (questionnaireResponses: QuestionnaireResponse[]) => {
+  return questionnaireResponses.map(resource => {
+    const date = new Date(resource?.authored || Date.now());
+    const option =
+      date.toLocaleDateString(undefined, DATE_TIME_FORMAT_OPTIONS) + ' (' + resource?.status + ')';
+    return option;
+  });
+};
 
 const reducer = (state: PopupState, action: PopupAction): PopupState => {
   switch (action.type) {
-    case PopupActionType.LOAD:
+    case PopupActionType.LOAD: {
+      const options = getNewPopupOptions(action.value);
       return {
         ...state,
         title: 'Would you like to load a previously in-progress form?',
-        finalOption: 'Cancel'
+        finalOption: 'Cancel',
+        options,
+        partialForms: Object.fromEntries(action.value.map((item, index) => [options[index], item]))
       };
+    }
     case PopupActionType.ERROR_LOADING:
       return {
         ...state,
         title: 'Error: failed to load previous in-progress forms',
-        finalOption: 'OK'
+        finalOption: 'OK',
+        options: []
       };
     case PopupActionType.NONE_FOUND:
       return {
         ...state,
         title: 'No saved forms available to load.',
-        finalOption: 'OK'
+        finalOption: 'OK',
+        options: []
       };
     case PopupActionType.SAVED_TO_EHR:
       return {
         ...state,
         title: 'Partially completed form (QuestionnaireResponse) saved to EHR',
-        finalOption: 'OK'
+        finalOption: 'OK',
+        options: []
       };
     case PopupActionType.FAILED_SAVE_TO_EHR:
       return {
         ...state,
         title: 'Partially completed form (QuestionnaireResponse) failed to save to EHR',
-        finalOption: 'OK'
+        finalOption: 'OK',
+        options: []
       };
+    case PopupActionType.CLOSE_POPUP:
+      return { ...state, open: false };
+    case PopupActionType.OPEN_POPUP:
+      return { ...state, open: true };
+    case PopupActionType.SAVE_RESPONSE:
+      return { ...state, savedResponse: action.value };
+    case PopupActionType.SAVE_CURRENT_LOADED_FORM:
+      return { ...state, loadedForm: action.value };
     default:
       return initialPopupState;
   }
 };
 
-const initialPopupState = Object.freeze({
+const initialPopupState: PopupState = Object.freeze({
   title: 'Unknown operation',
   options: [],
-  finalOption: 'OK'
+  finalOption: 'OK',
+  partialForms: {},
+  open: false,
+  savedResponse: null,
+  loadedForm: 'New'
 });
 
 export function QuestionnaireForm(props: QuestionnaireProps) {
-  const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
-
-  // TODO: replace this with below state manager
-  const [popupTitle, setPopupTitle] = useState<string>('');
-  const [popupOptions, setPopupOptions] = useState<string[]>([]);
-  const [popupFinalOption, setPopupFinalOption] = useState<string>('');
-
   const [popupState, popupDispatch] = useReducer(reducer, initialPopupState);
-
-  const [openPopup, setOpenPopup] = useState<boolean>(false);
-
-  const [formLoaded, setFormLoaded] = useState<string>('');
   const [showRxAlert, setShowRxAlert] = useState<RxAlert>({ open: false });
   const [formValidationErrors, setFormValidationErrors] = useState<any[]>([]);
-  const partialForms: PartialForms = {};
   const LForms = window.LForms;
   const questionnaireFormId = `formContainer-${props.questionnaireForm.id}-${props.tabIndex}`;
 
@@ -200,7 +239,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
 
       const mergedResponse = mergeResponseForSameLinkId(response);
-      setSavedResponse(mergedResponse);
+      popupDispatch({ type: PopupActionType.SAVE_RESPONSE, value: mergedResponse });
     } else {
       loadPreviousForm(false);
 
@@ -215,13 +254,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       handleGtable(items, parentItems, newResponse.item);
       prepopulate(items, newResponse.item, false);
       const mergedResponse = mergeResponseForSameLinkId(newResponse);
-      setSavedResponse(mergedResponse);
+      popupDispatch({ type: PopupActionType.SAVE_RESPONSE, value: mergedResponse });
       localStorage.setItem('lastSavedResponse', JSON.stringify(mergedResponse));
     }
   }, []);
 
   useEffect(() => {
-    loadAndMergeForms(savedResponse);
+    loadAndMergeForms(popupState.savedResponse);
     const formErrors = LForms.Util.checkValidity();
     setFormValidationErrors(formErrors == null ? [] : formErrors);
 
@@ -261,7 +300,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         setFormValidationErrors(newErrors);
       }
     });
-  }, [savedResponse]);
+  }, [popupState.savedResponse]);
 
   useEffect(() => {
     if (props.reloadQuestionnaire) {
@@ -775,35 +814,29 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     return mergedResponse;
   };
 
-  const getRetrieveSaveQuestionnaireUrl = () => {
+  const getRetrieveSaveQuestionnaireUrl = (): string => {
     // read configuration
     const updateDate = new Date();
     updateDate.setDate(updateDate.getDate() - ConfigData.QUESTIONNAIRE_EXPIRATION_DAYS);
     return `QuestionnaireResponse?_lastUpdated=gt${
       updateDate.toISOString().split('T')[0]
-    }&status=in-progress`;
+    }&status=in-progress&subject=${getPatient()}`;
   };
 
   const loadPreviousForm = (showError = true) => {
     // search for any QuestionnaireResponses
-    let questionnaireResponseUrl = getRetrieveSaveQuestionnaireUrl();
-    questionnaireResponseUrl = questionnaireResponseUrl + '&subject=' + getPatient();
+    const questionnaireResponseUrl = getRetrieveSaveQuestionnaireUrl();
     console.log('Using URL ' + questionnaireResponseUrl);
 
     props.smartClient
       .request(questionnaireResponseUrl)
       .then(
         result => {
-          const questionnaireResponses = getQuestionnaireResponses(result);
-          const newPopupOptions = getNewPopupOptions(questionnaireResponses);
-          const count = getCount(questionnaireResponses);
-
-          popupDispatch({ type: PopupActionType.LOAD });
           processSavedQuestionnaireResponses(result, showError);
         },
-        result => {
+        _result => {
           popupDispatch({ type: PopupActionType.ERROR_LOADING });
-          popupLaunch();
+          popupDispatch({ type: PopupActionType.OPEN_POPUP });
         }
       )
       .catch(reason => {
@@ -811,26 +844,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       });
   };
 
-  const popupClear = (title: string, finalOption: string, logTitle: boolean) => {
-    setPopupTitle(title);
-    setPopupOptions([]);
-    setPopupFinalOption(finalOption);
-    if (logTitle) {
-      console.log(title);
-    }
-  };
-
-  const popupLaunch = () => {
-    setOpenPopup(true);
-  };
-
   const popupCallback = (returnValue: string) => {
     // display the form loaded
-    setFormLoaded(returnValue);
+    popupDispatch({ type: PopupActionType.SAVE_CURRENT_LOADED_FORM, value: returnValue });
 
-    if (partialForms[returnValue]) {
+    if (popupState.partialForms[returnValue]) {
       // load the selected form
-      const partialResponse = partialForms[returnValue];
+      const partialResponse = popupState.partialForms[returnValue];
       const saved_response = false;
 
       console.log(partialResponse);
@@ -1031,19 +1051,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       });
   };
 
-  const getNewPopupOptions = (questionnaireResponses: QuestionnaireResponse[]) => {
-    return questionnaireResponses.map(resource => {
-      const date = new Date(resource?.authored || Date.now());
-      const option =
-        date.toLocaleDateString(undefined, DATE_TIME_FORMAT_OPTIONS) +
-        ' (' +
-        resource?.status +
-        ')';
-      partialForms[option] = resource as QuestionnaireResponse;
-      return option;
-    });
-  };
-
   const getCount = (questionnaireResponses: QuestionnaireResponse[]) => {
     return questionnaireResponses.reduce((sum, resource) => {
       const idMatch = resource?.contained?.[0]?.id === props.questionnaireForm.id;
@@ -1070,28 +1077,21 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     partialResponses: Bundle<QuestionnaireResponse>,
     displayErrorOnNoneFound: boolean
   ) => {
+    const questionnaireResponses = getQuestionnaireResponses(partialResponses);
+    const count = getCount(questionnaireResponses);
+    const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
     let noneFound = true;
 
-    const questionnaireResponses = getQuestionnaireResponses(partialResponses);
-
-    const newPopupOptions = getNewPopupOptions(questionnaireResponses);
-
-    const count = getCount(questionnaireResponses);
-
-    popupDispatch({ type: PopupActionType.LOAD /*value: newPopupOptions*/ });
-
-    //check if show popup
-    const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
-    // only show the popupOptions if there is one to show
     if (count > 0 && showPopup) {
       noneFound = false;
-      popupLaunch();
+      popupDispatch({ type: PopupActionType.LOAD, value: questionnaireResponses });
+      popupDispatch({ type: PopupActionType.OPEN_POPUP });
     }
 
     // display a message that none were found if necessary
     if (noneFound && displayErrorOnNoneFound) {
-      popupClear('No saved forms available to load.', 'OK', true);
-      popupLaunch();
+      popupDispatch({ type: PopupActionType.NONE_FOUND });
+      popupDispatch({ type: PopupActionType.OPEN_POPUP });
     }
   };
 
@@ -1399,18 +1399,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       .then(
         result => {
           if (showPopup) {
-            popupClear('Partially completed form (QuestionnaireResponse) saved to EHR', 'OK', true);
-            popupLaunch();
+            popupDispatch({ type: PopupActionType.SAVED_TO_EHR });
+            popupDispatch({ type: PopupActionType.OPEN_POPUP });
             console.log(result);
           }
         },
         result => {
-          popupClear(
-            'Error: Partially completed form (QuestionnaireResponse) Failed to save to EHR',
-            'OK',
-            true
-          );
-          popupLaunch();
+          popupDispatch({ type: PopupActionType.FAILED_SAVE_TO_EHR });
+          popupDispatch({ type: PopupActionType.OPEN_POPUP });
           console.log(result);
         }
       )
@@ -1429,9 +1425,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     if (status == 'in-progress') {
       const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
       storeQuestionnaireResponseToEhr(qr, showPopup);
-      popupClear('Partially completed form (QuestionnaireResponse) saved to EHR', 'OK', true);
+      popupDispatch({ type: PopupActionType.SAVED_TO_EHR });
       if (showPopup) {
-        popupLaunch();
+        popupDispatch({ type: PopupActionType.OPEN_POPUP });
       } else {
         alert('Partially completed form (QuestionnaireResponse) saved to EHR');
       }
@@ -1798,7 +1794,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           options={popupState.options}
           finalOption={popupState.finalOption}
           selectedCallback={popupCallback}
-          open={openPopup}
+          selectedValue={popupState.loadedForm}
+          open={popupState.open}
+          close={() => popupDispatch({ type: PopupActionType.CLOSE_POPUP })}
         />
       )}
       <AlertDialog
@@ -1824,7 +1822,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         </div>
       )}
       <Stack flexDirection="column" spacing={1} p={1}>
-        {!isAdaptive && <Typography>Form Loaded: {formLoaded}</Typography>}
+        {!isAdaptive && <Typography>Form Loaded: {popupState.loadedForm}</Typography>}
         {getDisplayButtons()}
       </Stack>
     </div>
