@@ -45,8 +45,6 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import axios from 'axios';
-import MetRequirements from './etasuStatus/MetRequirements';
-import RemsMetEtasuResponse from './etasuStatus/RemsMetEtasuResponse';
 
 interface MedReqDropDownProps {
   client: Client;
