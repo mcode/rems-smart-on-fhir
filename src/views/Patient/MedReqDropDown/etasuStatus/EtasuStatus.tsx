@@ -98,22 +98,29 @@ const EtasuStatus = (props: EtasuStatusProps) => {
         <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
           {props.remsAdminResponse ? (
             <List>
-              {getRequirements().map((param: EtasuParamParam) => (
-                <ListItem disablePadding key={param.name} data-testid="etasu-item">
-                  <ListItemIcon>
-                    {param.resource.status === 'success' ? (
-                      <CheckCircle color="success" />
-                    ) : (
-                      <Close color="warning" />
-                    )}
-                  </ListItemIcon>
-                  {param.resource.status === 'success' ? (
-                    <ListItemText primary={param.name} />
-                  ) : (
-                    <ListItemText primary={param.name} secondary={param.resource.note?.[0]?.text} />
-                  )}
-                </ListItem>
-              ))}
+              {getRequirements().map((param: EtasuParamParam) => {
+                if (param.resource) {
+                  return (
+                    <ListItem disablePadding key={param.name} data-testid="etasu-item">
+                      <ListItemIcon>
+                        {param.resource?.status === 'success' ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <Close color="warning" />
+                        )}
+                      </ListItemIcon>
+                      {param.resource?.status === 'success' ? (
+                        <ListItemText primary={param.name} />
+                      ) : (
+                        <ListItemText
+                          primary={param.name}
+                          secondary={param.resource?.note?.[0]?.text}
+                        />
+                      )}
+                    </ListItem>
+                  );
+                }
+              })}
             </List>
           ) : (
             'Not Available'
