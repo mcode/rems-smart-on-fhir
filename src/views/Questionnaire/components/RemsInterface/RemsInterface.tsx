@@ -4,12 +4,13 @@ import './RemsInterface.css';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { Bundle } from 'fhir/r4';
+import { AxiosResponse } from 'axios';
 
 interface RemsInterfaceProps {
   remsAdminResponse: RemsAdminResponse;
   specialtyRxBundle: Bundle;
 }
-interface RemsAdminResponse {
+export interface RemsAdminResponse extends AxiosResponse {
   data: JsonData;
 }
 
