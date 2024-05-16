@@ -1061,7 +1061,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   // Get tooltip for Submit button
   const getMissingFieldsTooltip = () => {
     const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing fields';
-    return <Typography fontSize={16}>{tooltip}</Typography>;
+    return <Typography fontSize={'small'}>{tooltip}</Typography>;
   };
 
   // Get missing fields to display
