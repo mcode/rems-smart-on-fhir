@@ -86,7 +86,7 @@ body {
 .jsonData{
   line-height:16px;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 14px;
+  font-size: 1.3em;
 
   border-left: 2px solid #dddddd;
   border-top:0px;

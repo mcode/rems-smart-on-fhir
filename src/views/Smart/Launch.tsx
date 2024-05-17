@@ -13,6 +13,7 @@ const Launch = () => {
     </div>
   );
   useEffect(() => {
+    document.title = 'REMS SMART on FHIR app launch page';
     smartLaunch();
   }, []);
 

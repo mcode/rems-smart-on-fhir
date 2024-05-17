@@ -10,6 +10,7 @@ const Index = () => {
     FHIR.oauth2.ready().then(client => {
       setClient(client);
     });
+    document.title = 'REMS SMART on FHIR app';
   }, []);
 
   return (

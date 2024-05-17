@@ -1,5 +1,5 @@
 import { Button, FormControl, FormHelperText, IconButton, TextField } from '@mui/material';
-import React, { FormEvent, memo, useState } from 'react';
+import React, { FormEvent, memo, useState, useEffect } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface RegisterProps {
@@ -9,7 +9,9 @@ interface RegisterProps {
 const Register = (props: RegisterProps) => {
   const [clientId, setClientId] = useState<string>('');
   const [fhirUrl, setFhirUrl] = useState<string>(props.fhirUrl || '');
-
+  useEffect(() => {
+    document.title = 'Registration page for SMART on FHIR clients';
+  });
   const [currentClients, setCurrentClients] = useState(
     JSON.parse(localStorage.getItem('clients') || '[]')
   );
