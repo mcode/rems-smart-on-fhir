@@ -22,7 +22,6 @@ import {
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
 
-
 // TODO:
 //  - create a css file for better style
 //      - do not have the card span the entire width of the window
@@ -65,12 +64,12 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     return new Promise<Link>((resolve, reject) => {
       const headers = accessToken
         ? {
-          Accept: 'application/json',
-          Authorization: `Bearer ${accessToken}`
-        }
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`
+          }
         : {
-          Accept: 'application/json'
-        };
+            Accept: 'application/json'
+          };
       const launchParameters = {
         patient: patientId,
         appContext: ''
@@ -254,7 +253,11 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
   const sourceLink = { marginRight: '8px', color: '#4183c4', textDecoration: 'none' };
 
   return (
-    <Card variant="outlined" style={decisionCard} sx={{ margin: '0 auto 0', marginTop: '20px', maxWidth: '560px' }}>
+    <Card
+      variant="outlined"
+      style={decisionCard}
+      sx={{ margin: '0 auto 0', marginTop: '20px', maxWidth: '560px' }}
+    >
       <Box sx={{ margin: '0 auto 0', width: '90%' }}>
         <CardContent>
           <Typography variant="h5" component="div">
@@ -263,24 +266,27 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
         </CardContent>
 
         {/* Forms */}
-        {links.filter(link => link.type === 'smart').length > 0 ?
+        {links.filter(link => link.type === 'smart').length > 0 ? (
           <div>
-            <Typography color="text.secondary" >
-              Required Forms
-            </Typography>
-            <List >
+            <Typography color="text.secondary">Required Forms</Typography>
+            <List>
               {links.map((link: Link) => {
                 if (link.type === 'smart') {
                   return (
                     <ListItem key={link?.label}>
-                      <Button sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        textAlign: 'left',
-                        width: '100%',
-                        marginBottom: '5px'
-                      }} variant="outlined" onClick={() => buttonClickAction(link)} endIcon={<ArrowForwardIosRoundedIcon />}>
+                      <Button
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          textAlign: 'left',
+                          width: '100%',
+                          marginBottom: '5px'
+                        }}
+                        variant="outlined"
+                        onClick={() => buttonClickAction(link)}
+                        endIcon={<ArrowForwardIosRoundedIcon />}
+                      >
                         {link?.label}
                       </Button>
                     </ListItem>
@@ -289,14 +295,14 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
               })}
             </List>
           </div>
-          :
+        ) : (
           <></>
-        }
+        )}
 
         {/* Suggestions */}
-        {suggestions.length > 0 ?
+        {suggestions.length > 0 ? (
           <div>
-            <Typography sx={{ marginTop: '10px' }} color="text.secondary" >
+            <Typography sx={{ marginTop: '10px' }} color="text.secondary">
               Suggestions
             </Typography>
             <List>
@@ -325,13 +331,17 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
               })}
             </List>
           </div>
-          :
+        ) : (
           <></>
-        }
+        )}
 
-        <Accordion sx={{ display: 'block', marginTop: '10px', width: '100%', backgroundColor: '#F3F6F9' }}>
-          <AccordionSummary expandIcon={<KeyboardArrowDownRoundedIcon />} >
-            <Typography sx={{ fontSize: 14 }} color="text.secondary">View documentation and guides</Typography>
+        <Accordion
+          sx={{ display: 'block', marginTop: '10px', width: '100%', backgroundColor: '#F3F6F9' }}
+        >
+          <AccordionSummary expandIcon={<KeyboardArrowDownRoundedIcon />}>
+            <Typography sx={{ fontSize: 14 }} color="text.secondary">
+              View documentation and guides
+            </Typography>
           </AccordionSummary>
           <AccordionDetails>
             {links.map((link: Link) => {
@@ -356,8 +366,7 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
           </Typography>
         </Box>
       </Box>
-    </Card >
-
+    </Card>
   );
 };
 
