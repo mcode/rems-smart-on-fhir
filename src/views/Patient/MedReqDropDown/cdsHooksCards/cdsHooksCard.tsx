@@ -243,74 +243,92 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
       });
     });
   }
+
   const decisionCard = {
     backgroundColor: '#fff',
     border: '1px solid rgba(0, 0, 0, 0.12)',
     borderRadius: '4px'
   };
+
   const cardSource = { fontSize: '.85rem', fontStyle: 'italic', margin: '0 0 5px' };
   const sourceLink = { marginRight: '8px', color: '#4183c4', textDecoration: 'none' };
-  return (
 
-    <Card variant="outlined" style={decisionCard} sx={{margin:'0 auto 0', marginTop:'20px', maxWidth:'560px'}}>
+  return (
+    <Card variant="outlined" style={decisionCard} sx={{ margin: '0 auto 0', marginTop: '20px', maxWidth: '560px' }}>
       <Box sx={{ margin: '0 auto 0', width: '90%' }}>
         <CardContent>
           <Typography variant="h5" component="div">
             {props.card?.summary}
           </Typography>
-
         </CardContent>
-        <Typography color="text.secondary" >
-          Required Forms
-        </Typography>
-        <List >
-          {links.map((link: Link) => {
-            if (link.type === 'smart') {
-              return (
-                <ListItem key={link?.label}>
-                  <Button sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    textAlign: 'left',
-                    width: '100%',
-                    marginBottom: '5px'
-                  }} variant="outlined" onClick={() => buttonClickAction(link)} endIcon={<ArrowForwardIosRoundedIcon />}>
-                    {link?.label}
-                  </Button>
-                </ListItem>
-              );
-            }
-          })}
-        </List>
-        <Typography sx={{ marginTop: '10px' }} color="text.secondary" >
-          Add To Task List
-        </Typography>
-        <List>
-          {suggestions.map((suggestion: Suggestion, ind) => {
-            const buttonId = 'suggestion_button-' + props.cardInd + '-' + ind;
-            return (
-              <ListItem key={suggestion?.label}>
-                <Button
-                  variant="contained"
-                  endIcon={<AddCircleOutlineRoundedIcon />}
-                  onClick={() =>
-                    buttonClickSuggestion(
-                      suggestion,
-                      buttonId,
-                      suggestions.length,
-                      props.cardInd,
-                      props.selectionBehavior
-                    )
-                  }
-                  id={buttonId}
-                >
-                  {suggestion?.label}
-                </Button>
-              </ListItem>
-            );
-          })}
-        </List>
+
+        {/* Forms */}
+        {links.filter(link => link.type === 'smart').length > 0 ?
+          <div>
+            <Typography color="text.secondary" >
+              Required Forms
+            </Typography>
+            <List >
+              {links.map((link: Link) => {
+                if (link.type === 'smart') {
+                  return (
+                    <ListItem key={link?.label}>
+                      <Button sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        textAlign: 'left',
+                        width: '100%',
+                        marginBottom: '5px'
+                      }} variant="outlined" onClick={() => buttonClickAction(link)} endIcon={<ArrowForwardIosRoundedIcon />}>
+                        {link?.label}
+                      </Button>
+                    </ListItem>
+                  );
+                }
+              })}
+            </List>
+          </div>
+          :
+          <></>
+        }
+
+        {/* Suggestions */}
+        {suggestions.length > 0 ?
+          <div>
+            <Typography sx={{ marginTop: '10px' }} color="text.secondary" >
+              Suggestions
+            </Typography>
+            <List>
+              {suggestions.map((suggestion: Suggestion, ind) => {
+                const buttonId = 'suggestion_button-' + props.cardInd + '-' + ind;
+                return (
+                  <ListItem key={suggestion?.label}>
+                    <Button
+                      variant="contained"
+                      endIcon={<AddCircleOutlineRoundedIcon />}
+                      onClick={() =>
+                        buttonClickSuggestion(
+                          suggestion,
+                          buttonId,
+                          suggestions.length,
+                          props.cardInd,
+                          props.selectionBehavior
+                        )
+                      }
+                      id={buttonId}
+                    >
+                      {suggestion?.label}
+                    </Button>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </div>
+          :
+          <></>
+        }
+
         <Accordion sx={{ display: 'block', marginTop: '10px', width: '100%', backgroundColor: '#F3F6F9' }}>
           <AccordionSummary expandIcon={<KeyboardArrowDownRoundedIcon />} >
             <Typography sx={{ fontSize: 14 }} color="text.secondary">View documentation and guides</Typography>
