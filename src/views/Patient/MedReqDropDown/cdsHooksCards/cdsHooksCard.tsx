@@ -64,12 +64,12 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     return new Promise<Link>((resolve, reject) => {
       const headers = accessToken
         ? {
-          Accept: 'application/json',
-          Authorization: `Bearer ${accessToken}`
-        }
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`
+          }
         : {
-          Accept: 'application/json'
-        };
+            Accept: 'application/json'
+          };
       const launchParameters = {
         patient: patientId,
         appContext: ''
@@ -350,7 +350,10 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
                 if (link.type === 'absolute') {
                   return (
                     <Grid item key={link?.label}>
-                      <Button endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
+                      <Button
+                        endIcon={<PictureAsPdfIcon />}
+                        onClick={() => buttonClickAction(link)}
+                      >
                         {link?.label}
                       </Button>
                     </Grid>
@@ -358,10 +361,10 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
                 }
               })}
             </AccordionDetails>
-          </Accordion>)
-          :
+          </Accordion>
+        ) : (
           <></>
-        }
+        )}
 
         <Box sx={{ textAlign: 'right', paddingTop: '10px' }}>
           <Typography style={cardSource}>
