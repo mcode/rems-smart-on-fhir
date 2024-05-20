@@ -34,10 +34,10 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   };
 
   const renderBundle = (bundle: Bundle) => {
-    return bundle.entry?.map(entry => {
+    return bundle.entry?.map((entry, index) => {
       const resource = entry.resource;
       if (resource) {
-        return <ResourceEntry resource={resource} />;
+        return <ResourceEntry resource={resource} key={`resource-${index}`} />;
       }
     });
   };

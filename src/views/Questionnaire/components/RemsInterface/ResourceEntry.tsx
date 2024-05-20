@@ -5,6 +5,7 @@ import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 interface ResourceEntryProps {
   resource: FhirResource;
+  key: string;
 }
 export default function ResourceEntry(props: ResourceEntryProps) {
   const [viewDetails, setViewDetails] = useState<boolean>(false);
@@ -16,7 +17,7 @@ export default function ResourceEntry(props: ResourceEntryProps) {
     setViewDetails(!viewDetails);
   };
   return (
-    <div>
+    <div key={props.key}>
       <div
         className={'resource-entry ' + [viewDetails ? 'active' : '']}
         onClick={toggleOpenDetails}
