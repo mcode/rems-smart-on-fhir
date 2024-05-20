@@ -147,13 +147,18 @@ type PopupAction =
       >;
     };
 
+const getNewPopupOption = (questionnaireResponse: QuestionnaireResponse) => {
+  const date = new Date(questionnaireResponse?.authored || Date.now());
+  const option =
+    date.toLocaleDateString(undefined, DATE_TIME_FORMAT_OPTIONS) +
+    ' (' +
+    questionnaireResponse?.status +
+    ')';
+  return option;
+};
+
 const getNewPopupOptions = (questionnaireResponses: QuestionnaireResponse[]) => {
-  return questionnaireResponses.map(resource => {
-    const date = new Date(resource?.authored || Date.now());
-    const option =
-      date.toLocaleDateString(undefined, DATE_TIME_FORMAT_OPTIONS) + ' (' + resource?.status + ')';
-    return option;
-  });
+  return questionnaireResponses.map(getNewPopupOption);
 };
 
 const reducer = (state: PopupState, action: PopupAction): PopupState => {
@@ -1431,6 +1436,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
       storeQuestionnaireResponseToEhr(qr, showPopup);
       popupDispatch({ type: PopupActionType.SAVED_TO_EHR });
+
+      // After saving the form to the EHR, keep it loaded.
+      const popupOption = getNewPopupOption(qr as QuestionnaireResponse);
+      popupCallback(popupOption);
       if (showPopup) {
         popupDispatch({ type: PopupActionType.OPEN_POPUP });
       } else {
