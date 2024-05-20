@@ -1,18 +1,26 @@
-import { useState, useEffect, ReactElement } from 'react';
-import { Button, Card, CardActions, CardContent, Grid, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Grid, Typography } from '@mui/material';
+import { ReactElement, useEffect, useState } from 'react';
 
 import axios from 'axios';
 import Client from 'fhirclient/lib/Client';
 
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import {
+  Action,
   Card as HooksCard,
   Link,
-  Suggestion,
-  Action
+  Suggestion
 } from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 // TODO:
 //  - create a css file for better style
@@ -234,78 +242,140 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
       });
     });
   }
+
   const decisionCard = {
     backgroundColor: '#fff',
     border: '1px solid rgba(0, 0, 0, 0.12)',
     borderRadius: '4px'
   };
+
   const cardSource = { fontSize: '.85rem', fontStyle: 'italic', margin: '0 0 5px' };
   const sourceLink = { marginRight: '8px', color: '#4183c4', textDecoration: 'none' };
+
   return (
-    <Grid item xs={12}>
-      <Card variant="outlined" style={decisionCard}>
+    <Card
+      variant="outlined"
+      style={decisionCard}
+      sx={{ margin: '0 auto 0', marginTop: '20px', maxWidth: '560px' }}
+    >
+      <Box sx={{ margin: '0 auto 0', width: '90%' }}>
         <CardContent>
           <Typography variant="h5" component="div">
             {props.card?.summary}
           </Typography>
-          <Typography>{props.card?.detail}</Typography>
-          <Typography style={cardSource} gutterBottom>
+        </CardContent>
+
+        {/* Forms */}
+        {links.filter(link => link.type === 'smart').length > 0 ? (
+          <div>
+            <Typography color="text.secondary">Required Forms</Typography>
+            <List>
+              {links.map((link: Link) => {
+                if (link.type === 'smart') {
+                  return (
+                    <ListItem key={link?.label}>
+                      <Button
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          textAlign: 'left',
+                          width: '100%',
+                          marginBottom: '5px'
+                        }}
+                        variant="outlined"
+                        onClick={() => buttonClickAction(link)}
+                        endIcon={<ArrowForwardIosRoundedIcon />}
+                      >
+                        {link?.label}
+                      </Button>
+                    </ListItem>
+                  );
+                }
+              })}
+            </List>
+          </div>
+        ) : (
+          <></>
+        )}
+
+        {/* Suggestions */}
+        {suggestions.length > 0 ? (
+          <div>
+            <Typography sx={{ marginTop: '10px' }} color="text.secondary">
+              Suggestions
+            </Typography>
+            <List>
+              {suggestions.map((suggestion: Suggestion, ind) => {
+                const buttonId = 'suggestion_button-' + props.cardInd + '-' + ind;
+                return (
+                  <ListItem key={suggestion?.label}>
+                    <Button
+                      variant="contained"
+                      endIcon={<AddCircleOutlineRoundedIcon />}
+                      onClick={() =>
+                        buttonClickSuggestion(
+                          suggestion,
+                          buttonId,
+                          suggestions.length,
+                          props.cardInd,
+                          props.selectionBehavior
+                        )
+                      }
+                      id={buttonId}
+                    >
+                      {suggestion?.label}
+                    </Button>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </div>
+        ) : (
+          <></>
+        )}
+
+        {/* Documentation and Guides */}
+        {links.filter(link => link.type === 'absolute').length > 0 ? (
+          <Accordion
+            sx={{ display: 'block', marginTop: '10px', width: '100%', backgroundColor: '#F3F6F9' }}
+          >
+            <AccordionSummary expandIcon={<KeyboardArrowDownRoundedIcon />}>
+              <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                View documentation and guides
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {links.map((link: Link) => {
+                if (link.type === 'absolute') {
+                  return (
+                    <Grid item key={link?.label}>
+                      <Button
+                        endIcon={<PictureAsPdfIcon />}
+                        onClick={() => buttonClickAction(link)}
+                      >
+                        {link?.label}
+                      </Button>
+                    </Grid>
+                  );
+                }
+              })}
+            </AccordionDetails>
+          </Accordion>
+        ) : (
+          <></>
+        )}
+
+        <Box sx={{ textAlign: 'right', paddingTop: '10px' }}>
+          <Typography style={cardSource}>
             {'Source '}
             <a href={props.card?.source?.url} style={sourceLink}>
               {props.card?.source?.label}
             </a>
           </Typography>
-        </CardContent>
-        <CardActions>
-          <Grid container spacing={1}>
-            {links.map((link: Link) => {
-              if (link.type === 'smart') {
-                return (
-                  <Grid item key={link?.label}>
-                    <Button variant="outlined" onClick={() => buttonClickAction(link)}>
-                      {link?.label}
-                    </Button>
-                  </Grid>
-                );
-              }
-              return (
-                <Grid item key={link?.label}>
-                  <Button endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
-                    {link?.label}
-                  </Button>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </CardActions>
-        <CardActions>
-          <Grid container spacing={1}>
-            {suggestions.map((suggestion: Suggestion, ind) => {
-              const buttonId = 'suggestion_button-' + props.cardInd + '-' + ind;
-              return (
-                <Grid item key={suggestion?.label}>
-                  <Button
-                    variant="contained"
-                    onClick={() =>
-                      buttonClickSuggestion(
-                        suggestion,
-                        buttonId,
-                        suggestions.length,
-                        props.cardInd,
-                        props.selectionBehavior
-                      )
-                    }
-                    id={buttonId}
-                  >
-                    {suggestion?.label}
-                  </Button>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </CardActions>
-      </Card>
-    </Grid>
+        </Box>
+      </Box>
+    </Card>
   );
 };
 

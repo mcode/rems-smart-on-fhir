@@ -5,9 +5,25 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { Bundle } from 'fhir/r4';
 import { Box } from '@mui/material';
+import { AxiosResponse } from 'axios';
 
 interface RemsInterfaceProps {
   specialtyRxBundle: Bundle;
+}
+export interface RemsAdminResponse extends AxiosResponse {
+  data: JsonData;
+}
+
+type MetRequirements = {
+  completed: boolean;
+  requirementName: string;
+  requirementDescription: string;
+};
+
+interface JsonData {
+  case_number: string;
+  status: string;
+  metRequirements: MetRequirements[];
 }
 
 export default function RemsInterface(props: RemsInterfaceProps) {

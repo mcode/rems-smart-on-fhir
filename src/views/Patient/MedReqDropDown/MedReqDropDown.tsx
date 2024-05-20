@@ -314,7 +314,7 @@ function MedReqDropDown({
   };
   return (
     <>
-      <Card sx={{ bgcolor: 'white' }}>
+      <Card sx={{ bgcolor: 'white', width: '100%', margin: '0 auto 0' }}>
         <CardContent>
           <Grid item container spacing={2}>
             <Grid item container alignItems="left" direction="column" spacing={2}>

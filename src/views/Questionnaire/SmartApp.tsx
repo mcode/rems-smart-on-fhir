@@ -723,7 +723,7 @@ export function SmartApp(props: SmartAppProps) {
   } else {
     return (
       <div className="App">
-        <p>Loading...</p>
+        <h1>Loading...</h1>
       </div>
     );
   }

@@ -10,6 +10,7 @@ import {
   Meta,
   Organization,
   Parameters,
+  Patient,
   Questionnaire,
   QuestionnaireItem,
   QuestionnaireResponse,
@@ -44,7 +45,7 @@ import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
 import { SelectPopup } from './components/SelectPopup';
 import AlertDialog from './components/AlertDialog';
-
+import { RemsAdminResponse } from './components/RemsInterface/RemsInterface';
 import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
 import axios, { AxiosResponse } from 'axios';
@@ -223,10 +224,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const [popupState, popupDispatch] = useReducer(reducer, initialPopupState);
   const [showRxAlert, setShowRxAlert] = useState<RxAlert>({ open: false });
   const [formValidationErrors, setFormValidationErrors] = useState<any[]>([]);
+  const [patient, setPatient] = useState<Patient | undefined>(undefined);
   const LForms = window.LForms;
   const questionnaireFormId = `formContainer-${props.questionnaireForm.id}-${props.tabIndex}`;
 
   useEffect(() => {
+    const patientId = getPatient();
+    props.smartClient.request(patientId).then(res => {
+      setPatient(res);
+    });
     // search for any partially completed QuestionnaireResponses
     if (props.response) {
       const response = props.response;
@@ -1139,7 +1145,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   // Get tooltip for Submit button
   const getMissingFieldsTooltip = () => {
     const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing fields';
-    return <Typography fontSize={16}>{tooltip}</Typography>;
+    return <Typography fontSize={'small'}>{tooltip}</Typography>;
   };
 
   // Get missing fields to display
@@ -1734,8 +1740,42 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             specialtyRxBundle,
             options
           )
-          .then(response => {
+          .then((response: RemsAdminResponse) => {
+            const remsCaseUrl = 'http://hl7.org/fhir/sid/rems-case'; // placeholder
             const proceedToRems = () => {
+              const caseNumber = response.data?.case_number;
+              if (caseNumber && patient) {
+                patient.identifier = patient.identifier?.filter(iden => {
+                  if (iden.system === remsCaseUrl && iden.period) {
+                    if (iden.period?.end) {
+                      const endDate = new Date(iden.period.end);
+                      if (endDate.getMilliseconds() < Date.now()) {
+                        return false; // filter out old identifiers
+                      }
+                    }
+                  }
+                  return true;
+                });
+                const endDate = new Date(Date.now() + 86400000); // 86400000 is 1 day in milliseconds
+                patient.identifier?.push({
+                  value: caseNumber,
+                  system: remsCaseUrl,
+                  period: {
+                    start: new Date(Date.now()).toISOString(),
+                    end: endDate.toISOString()
+                  }
+                });
+                // update patient
+                props.smartClient.request({
+                  url: patient.resourceType + '/' + patient.id,
+                  method: 'PUT',
+                  headers: {
+                    'content-type': 'application/json'
+                  },
+                  body: JSON.stringify(patient)
+                });
+              }
+
               props.setSpecialtyRxBundle(specialtyRxBundle);
             };
             if (response.status == 201) {
