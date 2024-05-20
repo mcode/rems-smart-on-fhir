@@ -15,7 +15,7 @@ interface CdsHooksCardsProps {
 
 const CdsHooksCards = (props: CdsHooksCardsProps) => {
   return (
-    <Grid item container spacing={2}>
+    <Grid item container spacing={2} maxWidth={'600px'} margin={'0 auto 0'}>
       {props.cards.map((card: HooksCard, cardInd) => (
         <CdsHooksCard
           key={card?.summary}
