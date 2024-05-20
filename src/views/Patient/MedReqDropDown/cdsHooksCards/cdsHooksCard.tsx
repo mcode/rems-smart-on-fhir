@@ -64,12 +64,12 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     return new Promise<Link>((resolve, reject) => {
       const headers = accessToken
         ? {
-            Accept: 'application/json',
-            Authorization: `Bearer ${accessToken}`
-          }
+          Accept: 'application/json',
+          Authorization: `Bearer ${accessToken}`
+        }
         : {
-            Accept: 'application/json'
-          };
+          Accept: 'application/json'
+        };
       const launchParameters = {
         patient: patientId,
         appContext: ''
@@ -335,28 +335,34 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
           <></>
         )}
 
-        <Accordion
-          sx={{ display: 'block', marginTop: '10px', width: '100%', backgroundColor: '#F3F6F9' }}
-        >
-          <AccordionSummary expandIcon={<KeyboardArrowDownRoundedIcon />}>
-            <Typography sx={{ fontSize: 14 }} color="text.secondary">
-              View documentation and guides
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            {links.map((link: Link) => {
-              if (link.type === 'absolute') {
-                return (
-                  <Grid item key={link?.label}>
-                    <Button endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
-                      {link?.label}
-                    </Button>
-                  </Grid>
-                );
-              }
-            })}
-          </AccordionDetails>
-        </Accordion>
+        {/* Documentation and Guides */}
+        {links.filter(link => link.type === 'absolute').length > 0 ? (
+          <Accordion
+            sx={{ display: 'block', marginTop: '10px', width: '100%', backgroundColor: '#F3F6F9' }}
+          >
+            <AccordionSummary expandIcon={<KeyboardArrowDownRoundedIcon />}>
+              <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                View documentation and guides
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {links.map((link: Link) => {
+                if (link.type === 'absolute') {
+                  return (
+                    <Grid item key={link?.label}>
+                      <Button endIcon={<PictureAsPdfIcon />} onClick={() => buttonClickAction(link)}>
+                        {link?.label}
+                      </Button>
+                    </Grid>
+                  );
+                }
+              })}
+            </AccordionDetails>
+          </Accordion>)
+          :
+          <></>
+        }
+
         <Box sx={{ textAlign: 'right', paddingTop: '10px' }}>
           <Typography style={cardSource}>
             {'Source '}
