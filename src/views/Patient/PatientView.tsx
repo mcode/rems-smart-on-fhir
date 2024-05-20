@@ -21,6 +21,7 @@ import axios from 'axios';
 import * as env from 'env-var';
 import PatientViewHook from '../../cds-hooks/resources/PatientView';
 import { hydrate } from '../../cds-hooks/prefetch/PrefetchHydrator';
+import { medicationRequestToRemsAdmins } from '../../util/data';
 
 interface PatientViewProps {
   client: Client;
@@ -118,7 +119,7 @@ function PatientView(props: PatientViewProps) {
   }, [cdsHook]);
 
   // MedicationRequest Prefetching Bundle
-  const [medication, setMedication] = useState<MedicationBundle | null>(null);
+  const [medicationBundle, setMedicationBundle] = useState<MedicationBundle | null>(null);
 
   const getMedicationRequest = () => {
     client
@@ -164,7 +165,7 @@ function PatientView(props: PatientViewProps) {
           }
         });
 
-        setMedication(result);
+        setMedicationBundle(result);
       });
   };
 
@@ -279,7 +280,7 @@ function PatientView(props: PatientViewProps) {
               client={client}
               getFhirResource={getFhirResource}
               hooksCards={hooksCards}
-              medication={medication}
+              medicationBundle={medicationBundle}
               patient={patient}
               setHooksCards={setHooksCards}
               tabCallback={props.tabCallback}

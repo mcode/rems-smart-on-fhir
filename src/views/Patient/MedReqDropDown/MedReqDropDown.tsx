@@ -52,7 +52,7 @@ interface MedReqDropDownProps {
   client: Client;
   getFhirResource: (token: string) => Promise<Resource>;
   hooksCards: HooksCard[];
-  medication: MedicationBundle | null;
+  medicationBundle: MedicationBundle | null;
   patient: Patient | null;
   setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>;
   tabCallback: (n: ReactElement, m: string, o: string) => void;
@@ -79,7 +79,7 @@ function MedReqDropDown({
   client,
   getFhirResource,
   hooksCards,
-  medication,
+  medicationBundle,
   patient,
   setHooksCards,
   tabCallback,
@@ -138,7 +138,7 @@ function MedReqDropDown({
   useEffect(() => {
     if (selectedOption != '') {
       setSelectedMedicationCard(
-        medication?.data.find(medication => medication.id === selectedOption)
+        medicationBundle?.data.find(medication => medication.id === selectedOption)
       );
     }
   }, [selectedOption]);
@@ -330,8 +330,8 @@ function MedReqDropDown({
                     value={selectedOption}
                     onChange={handleOptionSelect}
                   >
-                    {medication ? (
-                      medication.data.map(medications => (
+                    {medicationBundle ? (
+                      medicationBundle.data.map(medications => (
                         <MenuItem key={medications.id} value={medications.id}>
                           {getDrugCodeFromMedicationRequest(medications)?.display}
                         </MenuItem>
