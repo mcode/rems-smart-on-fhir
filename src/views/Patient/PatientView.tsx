@@ -16,9 +16,8 @@ import { MedicationRequest, Patient } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
-import { Hook, Card as HooksCard } from '../../cds-hooks/resources/HookTypes';
+import { Hook, Card as HooksCard, SupportedHooks } from '../../cds-hooks/resources/HookTypes';
 import axios from 'axios';
-import * as env from 'env-var';
 import PatientViewHook from '../../cds-hooks/resources/PatientView';
 import { hydrate } from '../../cds-hooks/prefetch/PrefetchHydrator';
 import { medicationRequestToRemsAdmins } from '../../util/data';
@@ -38,24 +37,37 @@ export interface MedicationBundle {
 }
 
 //CDS-Hook Request to REMS-Admin for cards
-export const submitToREMS = (
+
+const submitPatientViewHookToAllRemsAdmins = (
+  cdsUrls: string[],
   cdsHook: Hook | null,
   setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>
 ) => {
-  const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
-  axios({
-    method: 'post',
-    url:
-      `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
-      `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
-      hookType,
-    data: cdsHook
-  }).then(
-    response => {
-      setHooksCards(response.data.cards);
+  const promise = Promise.all(cdsUrls.map(cdsUrl => axios.post(cdsUrl, cdsHook))).then();
+  promise.then(
+    responses => {
+      setHooksCards(responses.map(response => response.data.cards).flat());
     },
     error => console.log(error)
   );
+};
+
+export const submitToREMS = (
+  cdsUrl: string | null,
+  cdsHook: Hook | null,
+  setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>
+) => {
+  if (cdsUrl) {
+    const promise = axios.post(cdsUrl, cdsHook);
+    promise.then(
+      response => {
+        setHooksCards(response.data.cards);
+      },
+      error => console.log(error)
+    );
+  } else {
+    console.error(`No defined CDS URL for '${cdsHook}'.`);
+  }
 };
 
 function PatientView(props: PatientViewProps) {
@@ -71,6 +83,13 @@ function PatientView(props: PatientViewProps) {
   const [hooksCards, setHooksCards] = useState([] as HooksCard[]);
 
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+
+  const cdsUrls = medicationRequestToRemsAdmins
+    .map(
+      ({ hookEndpoints }) =>
+        hookEndpoints.find(endpoint => endpoint.hook === SupportedHooks.PATIENT_VIEW)?.remsAdmin
+    )
+    .filter(url => !!url) as string[];
 
   //Prefetch
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -114,7 +133,7 @@ function PatientView(props: PatientViewProps) {
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS(cdsHook, setHooksCards);
+      submitPatientViewHookToAllRemsAdmins(cdsUrls, cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
@@ -248,7 +267,9 @@ function PatientView(props: PatientViewProps) {
                   <Grid item xs={2} sm={1} md={2} lg={2}>
                     <IconButton
                       color="primary"
-                      onClick={() => submitToREMS(cdsHook, setHooksCards)}
+                      onClick={() => {
+                        submitPatientViewHookToAllRemsAdmins(cdsUrls, cdsHook, setHooksCards);
+                      }}
                       size="large"
                     >
                       <RefreshIcon fontSize="large" />

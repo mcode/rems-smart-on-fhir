@@ -45,8 +45,7 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import axios from 'axios';
-import MetRequirements from './etasuStatus/MetRequirements';
-import RemsMetEtasuResponse from './etasuStatus/RemsMetEtasuResponse';
+import { getMedicationSpecificRemsAdminUrl } from '../../../util/util';
 
 interface MedReqDropDownProps {
   client: Client;
@@ -94,6 +93,7 @@ function MedReqDropDown({
 
   //CDSHooks
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+  const [cdsUrl, setCDSUrl] = useState<string | null>(null);
 
   //ETASU
   const [showEtasu, setShowEtasu] = useState<boolean>(false);
@@ -108,7 +108,7 @@ function MedReqDropDown({
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS(cdsHook, setHooksCards);
+      submitToREMS(cdsUrl, cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
@@ -128,7 +128,7 @@ function MedReqDropDown({
     setShowPharmacy(false);
   };
 
-  const [selectedMedicationCardBundle, setSelectedMedicationCardBundle] =
+  const [selectedMedicationCardBundleEntry, setSelectedMedicationCardBundleEntry] =
     useState<BundleEntry<MedicationRequest>>();
 
   const [selectedMedicationCard, setSelectedMedicationCard] = useState<MedicationRequest>();
@@ -150,23 +150,28 @@ function MedReqDropDown({
       if (medName) {
         setMedicationName(medName);
       }
-      setSelectedMedicationCardBundle({ resource: selectedMedicationCard });
+      setSelectedMedicationCardBundleEntry({ resource: selectedMedicationCard });
     }
   }, [selectedMedicationCard]);
 
   useEffect(() => {
-    if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+    if (patient && patient.id && user && selectedMedicationCardBundleEntry) {
+      const request = selectedMedicationCardBundleEntry.resource;
+      const resourceId = `${request?.resourceType}/${request?.id}`;
+
       const hook = new OrderSelect(
         patient.id,
         user,
         {
           resourceType: 'Bundle',
           type: 'batch',
-          entry: [selectedMedicationCardBundle]
+          entry: [selectedMedicationCardBundleEntry]
         },
         [resourceId]
       );
+      const cdsUrl = getMedicationSpecificRemsAdminUrl(request, hook.hookType);
+      setCDSUrl(cdsUrl);
+
       let tempHook: OrderSelectHook;
       if (env.get('REACT_APP_SEND_FHIR_AUTH_ENABLED').asBool()) {
         tempHook = hook.generate(client);
@@ -177,7 +182,7 @@ function MedReqDropDown({
         setCDSHook(tempHook);
       });
     }
-  }, [selectedMedicationCardBundle]);
+  }, [selectedMedicationCardBundleEntry]);
 
   useEffect(() => {
     refreshEtasuBundle();
@@ -378,7 +383,7 @@ function MedReqDropDown({
                     >
                       <IconButton
                         color="primary"
-                        onClick={() => submitToREMS(cdsHook, setHooksCards)}
+                        onClick={() => submitToREMS(cdsUrl, cdsHook, setHooksCards)}
                         size="large"
                       >
                         <RefreshIcon fontSize="large" />

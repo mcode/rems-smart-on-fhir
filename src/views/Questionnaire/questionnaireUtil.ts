@@ -158,7 +158,9 @@ export function buildFhirUrl(reference: string, fhirPrefix: string, fhirVersion:
  * Retrieve the CodeableConcept for the medication from the medicationCodeableConcept if available.
  * Read CodeableConcept from contained Medication matching the medicationReference otherwise.
  */
-export function getDrugCodeableConceptFromMedicationRequest(medicationRequest: MedicationRequest) {
+export function getDrugCodeableConceptFromMedicationRequest(
+  medicationRequest: MedicationRequest | undefined
+) {
   if (medicationRequest) {
     if (medicationRequest?.medicationCodeableConcept) {
       console.log('Get Medication code from CodeableConcept');
