@@ -102,10 +102,8 @@ export function SmartApp(props: SmartAppProps) {
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const appContext: AppContext | undefined = props.appContext;
   const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
-  const [remsAdminResponse, setRemsAdminResponse] = useState<any | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
-  const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
   const [filterChecked, setFilterChecked] = useState<boolean>(true);
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
@@ -123,9 +121,6 @@ export function SmartApp(props: SmartAppProps) {
   useEffect(() => {
     if (!props.standalone) {
       ehrLaunch(false);
-    }
-    if (priorAuthClaim) {
-      console.log(priorAuthClaim); // TODO: I don't think we need this, it could be removed.
     }
   }, []);
   useEffect(() => {
@@ -639,38 +634,34 @@ export function SmartApp(props: SmartAppProps) {
   const renderButtons = (ref: Element) => {
     const element = (
       <div>
-        <div>
+        <div className="task-button">
+          <label>Only Show Unfilled Fields</label>{' '}
+          <input
+            type="checkbox"
+            onChange={() => {
+              filter(false);
+            }}
+            id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
+            ref={onFilterCheckboxRefChange}
+          ></input>
+        </div>
+        {showRequiredCheckbox && (
           <div className="task-button">
-            <label>Only Show Unfilled Fields</label>{' '}
+            <label>Ignore required fields</label>{' '}
             <input
               type="checkbox"
               onChange={() => {
-                filter(false);
+                updateRequired(false);
               }}
-              id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
-              ref={onFilterCheckboxRefChange}
+              id={
+                questionnaire
+                  ? `required-fields-checkbox-${questionnaire.id}`
+                  : 'required-fields-checkbox'
+              }
+              ref={onRequiredCheckboxRefChange}
             ></input>
           </div>
-          {showRequiredCheckbox ? (
-            <div className="task-button">
-              <label>Ignore required fields</label>{' '}
-              <input
-                type="checkbox"
-                onChange={() => {
-                  updateRequired(false);
-                }}
-                id={
-                  questionnaire
-                    ? `required-fields-checkbox-${questionnaire.id}`
-                    : 'required-fields-checkbox'
-                }
-                ref={onRequiredCheckboxRefChange}
-              ></input>
-            </div>
-          ) : (
-            <div />
-          )}
-        </div>
+        )}
       </div>
     );
     const root = createRoot(ref);
@@ -685,53 +676,46 @@ export function SmartApp(props: SmartAppProps) {
     return isFetchingArtifacts ? (
       <div> Fetching resources ... </div>
     ) : (
-      <div>
-        <div className="App">
-          <div
-            className={'overlay ' + (showOverlay ? 'on' : 'off')}
-            onClick={() => {
-              console.log(showOverlay);
-              toggleOverlay();
-            }}
-          ></div>
-          {specialtyRxBundle && remsAdminResponse ? (
-            <RemsInterface
-              specialtyRxBundle={specialtyRxBundle}
-              remsAdminResponse={remsAdminResponse}
-            />
-          ) : (
-            <QuestionnaireForm
-              questionnaireForm={questionnaire}
-              appContext={appContext}
-              cqlPrepopulationResults={cqlPrepopulationResults}
-              request={orderResource}
-              bundle={bundle}
-              standalone={props.standalone}
-              response={response}
-              attested={attested}
-              setPriorAuthClaim={setPriorAuthClaim}
-              setSpecialtyRxBundle={setSpecialtyRxBundle}
-              setRemsAdminResponse={setRemsAdminResponse}
-              fhirVersion={FHIR_VERSION}
-              smartClient={smart}
-              renderButtons={renderButtons}
-              filterFieldsFn={filter}
-              filterChecked={filterChecked}
-              ignoreRequiredChecked={ignoreRequiredCheckbox}
-              formFilled={formFilled}
-              updateQuestionnaire={updateQuestionnaire}
-              ehrLaunch={ehrLaunch}
-              reloadQuestionnaire={reloadQuestionnaire}
-              updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
-              adFormCompleted={adFormCompleted}
-              updateAdFormCompleted={completed => setAdFormCompleted(completed)}
-              adFormResponseFromServer={adFormResponseFromServer}
-              updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
-              setFormElement={setFormElement}
-              tabIndex={props.tabIndex}
-            />
-          )}
-        </div>
+      <div className="App">
+        <div
+          className={'overlay ' + (showOverlay ? 'on' : 'off')}
+          onClick={() => {
+            console.log(showOverlay);
+            toggleOverlay();
+          }}
+        />
+        {specialtyRxBundle ? (
+          <RemsInterface specialtyRxBundle={specialtyRxBundle} />
+        ) : (
+          <QuestionnaireForm
+            questionnaireForm={questionnaire}
+            appContext={appContext}
+            cqlPrepopulationResults={cqlPrepopulationResults}
+            request={orderResource}
+            bundle={bundle}
+            standalone={props.standalone}
+            response={response}
+            attested={attested}
+            setSpecialtyRxBundle={setSpecialtyRxBundle}
+            fhirVersion={FHIR_VERSION}
+            smartClient={smart}
+            renderButtons={renderButtons}
+            filterFieldsFn={filter}
+            filterChecked={filterChecked}
+            ignoreRequiredChecked={ignoreRequiredCheckbox}
+            formFilled={formFilled}
+            updateQuestionnaire={updateQuestionnaire}
+            ehrLaunch={ehrLaunch}
+            reloadQuestionnaire={reloadQuestionnaire}
+            updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
+            adFormCompleted={adFormCompleted}
+            updateAdFormCompleted={completed => setAdFormCompleted(completed)}
+            adFormResponseFromServer={adFormResponseFromServer}
+            updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
+            setFormElement={setFormElement}
+            tabIndex={props.tabIndex}
+          />
+        )}
       </div>
     );
   } else if (props.standalone) {
