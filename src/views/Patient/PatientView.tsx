@@ -82,12 +82,14 @@ function PatientView(props: PatientViewProps) {
 
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
-  const cdsUrls = medicationRequestToRemsAdmins
-    .map(
-      ({ hookEndpoints }) =>
-        hookEndpoints.find(endpoint => endpoint.hook === SupportedHooks.PATIENT_VIEW)?.remsAdmin
+  const cdsUrls = Array.from(
+    new Set(
+      medicationRequestToRemsAdmins.map(
+        ({ hookEndpoints }) =>
+          hookEndpoints.find(({ hook }) => hook === SupportedHooks.PATIENT_VIEW)?.remsAdmin
+      )
     )
-    .filter(url => !!url) as string[];
+  ).filter(url => !!url) as string[];
 
   //Prefetch
   const [patient, setPatient] = useState<Patient | null>(null);
