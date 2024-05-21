@@ -12,7 +12,7 @@ import {
   Typography
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { MedicationRequest, Patient } from 'fhir/r4';
+import { Medication, MedicationRequest, Patient, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
@@ -33,7 +33,7 @@ export interface MedicationBundle {
 
   // This is a json object with the key of each element matching the
   // contained FHIR resource
-  references: any;
+  references: { [key: string]: Medication };
 }
 
 //CDS-Hook Request to REMS-Admin for cards
@@ -58,11 +58,9 @@ export const submitToREMS = (
 };
 
 function PatientView(props: PatientViewProps) {
-  function getFhirResource(token: string) {
+  async function getFhirResource(token: string) {
     console.log('getFhirResource: ' + token);
-    return client.request(token).then((e: any) => {
-      return e;
-    });
+    return client.request(token).then((resource: Resource) => resource);
   }
 
   const client = props.client;
@@ -198,7 +196,7 @@ function PatientView(props: PatientViewProps) {
           <TableCell component="th" scope="row" variant="head">
             <span style={{ fontWeight: 'bold' }}>{header}</span>
           </TableCell>
-          <TableCell sx={{ whiteSpace: 'pre' }} variant="body">
+          <TableCell sx={{ whiteSpace: 'pre-wrap' }} variant="body">
             {data}
           </TableCell>
         </TableRow>

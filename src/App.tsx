@@ -166,16 +166,6 @@ function App(props: AppProps) {
           </div>
         </div>
       )}
-      {/* <div className='App'>
-        <Container className='NavContainer' maxWidth='xl'>
-          <div className='containerg'>
-            <div className='logo'>
-              <ContentPasteIcon sx={{ color: 'white', fontSize: 50, paddingTop: .5, paddingRight: 2.5 }} />
-              <h1>REMS SMART on FHIR App</h1>
-            </div>
-          </div>
-        </Container>
-      </div> */}
     </Box>
   );
 }
