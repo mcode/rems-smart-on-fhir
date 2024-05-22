@@ -1,6 +1,6 @@
 import { Tooltip, IconButton, Grid } from '@mui/material';
 
-import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -95,7 +95,7 @@ const EtasuStatus = (props: EtasuStatusProps) => {
       <div>
         <br></br>
         <h3>ETASU</h3>
-        <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+        <Stack sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
           {props.remsAdminResponse ? (
             <List>
               {getRequirements().map((param: EtasuParamParam) => {
@@ -125,7 +125,7 @@ const EtasuStatus = (props: EtasuStatusProps) => {
           ) : (
             'Not Available'
           )}
-        </Box>
+        </Stack>
       </div>
     </div>
   );

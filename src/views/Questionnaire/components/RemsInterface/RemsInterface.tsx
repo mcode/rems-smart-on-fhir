@@ -4,8 +4,8 @@ import './RemsInterface.css';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { Bundle } from 'fhir/r4';
-import { Box } from '@mui/material';
 import { AxiosResponse } from 'axios';
+import Stack from '@mui/material/Stack';
 
 interface RemsInterfaceProps {
   specialtyRxBundle: Bundle;
@@ -43,7 +43,7 @@ export default function RemsInterface(props: RemsInterfaceProps) {
   };
 
   return (
-    <Box sx={{ p: 5 }}>
+    <Stack sx={{ p: 5 }}>
       <h1>Document Status</h1>
       <Paper style={{ paddingBottom: '5px' }}>
         <div className="status-icon" style={{ backgroundColor: '#5cb85c' }}></div>
@@ -61,6 +61,6 @@ export default function RemsInterface(props: RemsInterfaceProps) {
           {renderBundle(props.specialtyRxBundle)}
         </div>
       )}
-    </Box>
+    </Stack>
   );
 }

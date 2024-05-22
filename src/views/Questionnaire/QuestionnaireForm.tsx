@@ -43,8 +43,8 @@ import Tooltip from '@mui/material/Tooltip';
 
 import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
+import { AlertDialog } from './components/AlertDialog';
 import { SelectPopup } from './components/SelectPopup';
-import AlertDialog from './components/AlertDialog';
 import { RemsAdminResponse } from './components/RemsInterface/RemsInterface';
 import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
@@ -96,7 +96,7 @@ interface QuestionnaireResponseSmart extends QuestionnaireResponse {
   meta?: MetaSmart;
 }
 
-interface RxAlert {
+export type RxAlert = {
   response?: AxiosResponse;
   rxBundle?: Bundle;
   description?: string;
@@ -1853,7 +1853,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         setRxAlert={(e: RxAlert) => {
           setShowRxAlert(e);
         }}
-      ></AlertDialog>
+      />
       {isAdaptive && (
         <div className="form-message-panel">
           {isAdaptiveFormWithoutItem() && !props.adFormCompleted && (

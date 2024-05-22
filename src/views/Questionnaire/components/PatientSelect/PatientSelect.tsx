@@ -64,7 +64,7 @@ export default function PatientSelect(props: PatientSelectProps) {
             can be selected from the dropdown below to continue with the DTR process. Patients in
             the list only appear if they have an outstanding in-progress questionnaire. Use the
             dropdown in the patient box to select a questionnaire, and then select the patient to
-            continue the DTR workflow. If no patients appear in the box, there are no outstanding
+            continue the DTR workflow. If no patients appear in the Stack, there are no outstanding
             questionnaires to be continued.
           </div>
         </Dialog>

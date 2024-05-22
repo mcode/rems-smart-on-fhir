@@ -6,9 +6,15 @@ import {
   DialogActions,
   Button
 } from '@mui/material';
+import { RxAlert } from '../QuestionnaireForm';
 
-export default function AlertDialog(props) {
-  const { title, rxAlert, setRxAlert } = props;
+type AlertDialogProps = {
+  title: string,
+  setRxAlert: (e: RxAlert) => void;
+  rxAlert: RxAlert;
+};
+
+function AlertDialog({ title, rxAlert, setRxAlert }: AlertDialogProps) {
 
   const handleClose = () => {
     setRxAlert({ open: false });
@@ -37,3 +43,5 @@ export default function AlertDialog(props) {
     </div>
   );
 }
+
+export { AlertDialog }
