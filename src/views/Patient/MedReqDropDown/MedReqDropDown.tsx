@@ -358,14 +358,14 @@ function MedReqDropDown({
                         bgcolor="text.disabled"
                         variant="h5"
                         textAlign="center"
-                        color="white"
+                        color="black"
                       >
                         {medicationName}
                       </Typography>
                       <Typography
                         variant="h6"
                         bgcolor="text.disabled"
-                        color="white"
+                        color="black"
                         textAlign="center"
                       >
                         {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.display}

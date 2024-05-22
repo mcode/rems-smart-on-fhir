@@ -75,7 +75,7 @@ html {
 }
 
 .patient-info-panel {
-  color: white;
+  color: #000;
 }
 
 .filled {
@@ -98,4 +98,17 @@ html {
   position: fixed;
   background-color: white;
   z-index: 5;
+}
+
+.lf-form .required {
+  color: #8b0000;
+  font-size: medium;
+}
+
+.lf-form-title {
+  color: #000;
+}
+
+.lf-control-button {
+  color: #000;
 }

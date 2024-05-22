@@ -1149,7 +1149,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
   // Get tooltip for Submit button
   const getMissingFieldsTooltip = () => {
-    const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing fields';
+    const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing required fields';
     return <Typography fontSize={'small'}>{tooltip}</Typography>;
   };
 
@@ -1172,7 +1172,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         <Accordion disableGutters>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography className="error-text">
-              You must include a value for the following missing fields (click to expand):
+              &nbsp;*You must include a value for the following missing fields (click to expand):
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
