@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import FHIR from 'fhirclient';
 import App from '../../App';
 import Client from 'fhirclient/lib/Client';

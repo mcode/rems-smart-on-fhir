@@ -131,7 +131,7 @@ export function SmartApp(props: SmartAppProps) {
     });
   }, [errors]);
   // PatientId argument might not be needed
-  const standaloneLaunch = (patientId: string, response: QuestionnaireResponse) => {
+  const standaloneLaunch = (_patientId: string, response: QuestionnaireResponse) => {
     fetchFhirVersion(props.smartClient.state.serverUrl).then(fhirVersion => {
       FHIR_VERSION = fhirVersion;
       const questionnaireUrl = response.questionnaire;

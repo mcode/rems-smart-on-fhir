@@ -206,7 +206,7 @@ function processSuccess(
   };
 }
 
-function processError(smart: Client, callback: (n: FhirResource[] | null, e?: Error) => void) {
+function processError(_smart: Client, callback: (n: FhirResource[] | null, e?: Error) => void) {
   return (error: Error) => {
     callback(null, error);
   };
