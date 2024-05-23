@@ -1,6 +1,7 @@
 {
   "name": "rems-smart-on-fhir",
   "version": "0.1.0",
+  "homepage": ".",
   "type": "module",
   "private": true,
   "dependencies": {
