@@ -13,7 +13,7 @@ import {
   IconButton
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 import ListIcon from '@mui/icons-material/List';
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
 import {
@@ -434,22 +434,22 @@ function MedReqDropDown({
         </CardContent>
       </Card>
       <Modal open={showEtasu} onClose={handleCloseCheckETASU}>
-        <Stack sx={modal_style}>
+        <Box sx={modal_style}>
           <EtasuStatus
             callback={refreshEtasuBundle}
             remsAdminResponse={remsAdminResponse}
             update={showEtasu}
           />
-        </Stack>
+        </Box>
       </Modal>
       <Modal open={showPharmacy} onClose={handleCloseCheckPharmacy}>
-        <Stack sx={modal_style}>
+        <Box sx={modal_style}>
           <PharmacyStatus
             callback={refreshPharmacyBundle}
             testEhrResponse={testEhrResponse}
             update={showPharmacy}
           />
-        </Stack>
+        </Box>
       </Modal>
     </>
   );

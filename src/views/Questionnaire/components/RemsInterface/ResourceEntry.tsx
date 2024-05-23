@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './RemsInterface.css';
 import { FhirResource } from 'fhir/r4';
-import { Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 interface ResourceEntryProps {
   resource: FhirResource;
@@ -25,11 +25,11 @@ export default function ResourceEntry(props: ResourceEntryProps) {
         <div>{props.resource['resourceType']}</div>
       </div>
       {viewDetails && (
-        <Stack sx={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', p: 2 }} className="details">
+        <Box sx={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', p: 2 }} className="details">
           <Typography component="p" fontFamily="Monospace" sx={{ fontSize: { xs: 10, sm: 14 } }}>
             {JSON.stringify(props.resource, null, space)}
           </Typography>
-        </Stack>
+        </Box>
       )}
     </div>
   );

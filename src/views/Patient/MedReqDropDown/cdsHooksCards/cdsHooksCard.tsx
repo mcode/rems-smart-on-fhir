@@ -1,4 +1,4 @@
-import { Stack, Button, Card, CardContent, Grid, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Grid, Typography } from '@mui/material';
 import { ReactElement, useEffect, useState } from 'react';
 
 import axios from 'axios';
@@ -258,7 +258,7 @@ export const CdsHooksCard = (props: CdsHooksCardProps) => {
       style={decisionCard}
       sx={{ margin: '0 auto 0', marginTop: '20px', maxWidth: '560px' }}
     >
-      <Stack sx={{ margin: '0 auto 0', width: '90%' }}>
+      <Box sx={{ margin: '0 auto 0', width: '90%' }}>
         <CardContent>
           <Typography variant="h5" component="div">
             {props.card?.summary}
@@ -366,15 +366,15 @@ export const CdsHooksCard = (props: CdsHooksCardProps) => {
           <></>
         )}
 
-        <Stack sx={{ textAlign: 'right', paddingTop: '10px' }}>
+        <Box sx={{ textAlign: 'right', paddingTop: '10px' }}>
           <Typography style={cardSource}>
             {'Source '}
             <a href={props.card?.source?.url} style={sourceLink}>
               {props.card?.source?.label}
             </a>
           </Typography>
-        </Stack>
-      </Stack>
+        </Box>
+      </Box>
     </Card>
   );
 };

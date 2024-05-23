@@ -1,4 +1,4 @@
-import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 import Client from 'fhirclient/lib/Client';
 import './App.css';
 import Patient from './views/Patient/PatientView';
@@ -93,12 +93,12 @@ function App(props: AppProps) {
   );
 
   return (
-    <Stack className="main">
+    <Box className="main">
       {staticContent ? (
         staticContent
       ) : (
         <div>
-          <Stack
+          <Box
             sx={{
               borderBottom: 1,
               borderColor: 'divider',
@@ -147,7 +147,7 @@ function App(props: AppProps) {
                 );
               })}
             </Tabs>
-          </Stack>
+          </Box>
           <div style={{ paddingTop: '48px' }}>
             {tabs.map((tab, i) => {
               return (
@@ -166,7 +166,7 @@ function App(props: AppProps) {
           </div>
         </div>
       )}
-    </Stack>
+    </Box>
   );
 }
 

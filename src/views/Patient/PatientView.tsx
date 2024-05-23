@@ -1,5 +1,5 @@
 import {
-  Stack,
+  Box,
   Card,
   CardContent,
   Grid,
@@ -252,7 +252,7 @@ function PatientView(props: PatientViewProps) {
   ];
 
   return (
-    <Stack flexGrow={1}>
+    <Box flexGrow={1}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
           {patient ? (
@@ -312,7 +312,7 @@ function PatientView(props: PatientViewProps) {
           )}
         </Grid>
       </Grid>
-    </Stack>
+    </Box>
   );
 }
 
