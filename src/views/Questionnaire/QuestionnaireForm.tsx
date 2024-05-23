@@ -2,6 +2,7 @@ import {
   Bundle,
   Claim,
   CodeableConcept,
+  Coding,
   DeviceRequest,
   Location,
   MedicationDispense,
@@ -11,6 +12,7 @@ import {
   Organization,
   Parameters,
   Patient,
+  Quantity,
   Questionnaire,
   QuestionnaireItem,
   QuestionnaireResponse,
@@ -463,15 +465,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           // need to figure out which value is provided from the prepopulationResult though
 
           // grab the population result
-          let prepopulationResult = null;
+          let prepopulationResult;
           if (props.cqlPrepopulationResults) {
             prepopulationResult = getLibraryPrepopulationResult(
               item,
               props.cqlPrepopulationResults
-            );
+            ) as GTableResult[];
           }
 
-          // console.log("prepopulationResult: ", prepopulationResult);
           if (prepopulationResult && prepopulationResult.length > 0) {
             const newItemList = buildGTableItems(item, prepopulationResult);
             parentItems.pop();
@@ -555,7 +556,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   const getLibraryPrepopulationResult = (
     item: QuestionnaireItem,
     cqlResults: PrepopulationResults
-  ) => {
+  ): boolean | number | string | string[] | Quantity | GTableResult[] | Coding => {
     let prepopulationResult;
     const ext = item.extension?.find(val => {
       return (
@@ -604,7 +605,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     response_items: QuestionnaireResponseItem[],
     saved_response: boolean
   ) => {
-    items.map(item => {
+    for (const item of items) {
       const response_item: QuestionnaireResponseItem = {
         linkId: item.linkId
       };
@@ -637,18 +638,18 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             );
           }
 
-          if (prepopulationResult != null && !saved_response && response_item.answer) {
+          if (!!prepopulationResult && !saved_response && response_item.answer) {
             switch (item.type) {
               case 'boolean':
-                response_item.answer.push({ valueBoolean: prepopulationResult });
+                response_item.answer.push({ valueBoolean: prepopulationResult as boolean });
                 break;
 
               case 'integer':
-                response_item.answer.push({ valueInteger: prepopulationResult });
+                response_item.answer.push({ valueInteger: prepopulationResult as number });
                 break;
 
               case 'decimal':
-                response_item.answer.push({ valueDecimal: prepopulationResult });
+                response_item.answer.push({ valueDecimal: prepopulationResult as number });
                 break;
 
               case 'date':
@@ -659,20 +660,17 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
               case 'choice':
                 response_item.answer.push({
-                  valueCoding: getDisplayCoding(prepopulationResult, item)
+                  valueCoding: getDisplayCoding(prepopulationResult as Coding, item)
                 });
                 break;
 
               case 'open-choice':
                 //This is to populated dynamic options (option items generated from CQL expression)
                 //R4 uses item.answerOption, STU3 uses item.option
-                let populateAnswerOptions = false;
+                const populateAnswerOptions =
+                  item.answerOption != null && item.answerOption.length == 0;
 
-                if (item.answerOption != null && item.answerOption.length == 0) {
-                  populateAnswerOptions = true;
-                }
-
-                prepopulationResult.forEach((v: any) => {
+                (prepopulationResult as string[]).forEach(v => {
                   if (v) {
                     const displayCoding = getDisplayCoding(v, item);
 
@@ -687,11 +685,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 break;
 
               case 'quantity':
-                response_item.answer.push({ valueQuantity: prepopulationResult });
+                response_item.answer.push({ valueQuantity: prepopulationResult as Quantity });
                 break;
 
               default:
-                response_item.answer.push({ valueString: prepopulationResult });
+                response_item.answer.push({ valueString: prepopulationResult as string });
             }
           }
         });
@@ -715,10 +713,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           response_items.push(response_item);
         }
       }
-    });
+    }
   };
 
-  const getDisplayCoding = (v: any, item: QuestionnaireItem) => {
+  const getDisplayCoding = (v: string | Coding, item: QuestionnaireItem) => {
     if (typeof v == 'string') {
       const answerValueSetReference = item.answerValueSet;
       const answerOption = item.answerOption;
