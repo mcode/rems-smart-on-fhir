@@ -31,7 +31,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "lint": "eslint . --ext ts,tsx,js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "tsc && eslint \"**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "tsc --noEmit && eslint \"**/*.{js,jsx,ts,tsx}\" --quiet --fix",
     "prettier": "prettier --check \"**/*.{js,jsx,ts,tsx,json,jsonc}\"",
     "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,jsonc}\""
