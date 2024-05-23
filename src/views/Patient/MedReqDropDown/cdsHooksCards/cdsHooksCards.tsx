@@ -1,8 +1,8 @@
 import Client from 'fhirclient/lib/Client';
 import { Card as HooksCard } from '../../../../cds-hooks/resources/HookTypes';
-import CdsHooksCard from './cdsHooksCard';
 import { ReactElement } from 'react';
 import { Grid } from '@mui/material';
+import { CdsHooksCard } from './CdsHooksCard';
 
 interface CdsHooksCardsProps {
   cards: HooksCard[];
@@ -13,7 +13,7 @@ interface CdsHooksCardsProps {
   tabCallback: (n: ReactElement, m: string, o: string) => void;
 }
 
-const CdsHooksCards = (props: CdsHooksCardsProps) => {
+export const CdsHooksCards = (props: CdsHooksCardsProps) => {
   return (
     <Grid item container spacing={2} maxWidth={'600px'} margin={'0 auto 0'}>
       {props.cards.map((card: HooksCard, cardInd) => (
@@ -32,5 +32,3 @@ const CdsHooksCards = (props: CdsHooksCardsProps) => {
     </Grid>
   );
 };
-
-export default CdsHooksCards;

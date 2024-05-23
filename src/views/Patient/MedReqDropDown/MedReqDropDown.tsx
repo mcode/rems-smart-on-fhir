@@ -37,7 +37,7 @@ import * as env from 'env-var';
 import { MedicationBundle, submitToREMS } from '../PatientView';
 
 // Adding in cards
-import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
+import { CdsHooksCards } from './CdsHooksCards/CdsHooksCards';
 
 // Adding in ETASU
 import EtasuStatus from './etasuStatus/EtasuStatus';
