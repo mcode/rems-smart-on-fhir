@@ -42,7 +42,7 @@ export function getAppContext(appContextString: string) {
 }
 export function findValueByPrefix(object: MyObject, prefix: string) {
   for (const property in object) {
-    if (object.hasOwnProperty(property) && property.toString().startsWith(prefix)) {
+    if (Object.hasOwnProperty.call(object, property) && property.toString().startsWith(prefix)) {
       return object[property];
     }
   }

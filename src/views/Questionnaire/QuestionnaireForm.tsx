@@ -102,7 +102,7 @@ export type RxAlert = {
   description?: string;
   open: boolean;
   callback?: () => void;
-}
+};
 
 const DATE_TIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   weekday: 'long',
@@ -844,7 +844,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         result => {
           processSavedQuestionnaireResponses(result, showError);
         },
-        _result => {
+        () => {
           popupDispatch({ type: PopupActionType.ERROR_LOADING });
           popupDispatch({ type: PopupActionType.OPEN_POPUP });
         }
