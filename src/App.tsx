@@ -73,7 +73,7 @@ function App(props: AppProps) {
       ]);
     }
     setValue(homeName);
-  }, []);
+  }, [client, props.client]);
 
   const handleClose = useCallback(
     (event: MouseEvent, tabToDelete: SmartTab) => {
@@ -89,7 +89,7 @@ function App(props: AppProps) {
       });
       setTabs(newTabs);
     },
-    [tabs]
+    [tabs, value]
   );
 
   return (
