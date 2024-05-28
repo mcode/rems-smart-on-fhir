@@ -1,6 +1,5 @@
 import {
   Bundle,
-  Coding,
   DeviceRequest,
   Extension,
   Library,
@@ -8,8 +7,7 @@ import {
   MedicationRequest,
   Questionnaire,
   QuestionnaireResponse,
-  ServiceRequest,
-  ValueSetExpansionContains
+  ServiceRequest
 } from 'fhir/r4';
 import { useEffect, useState } from 'react';
 import { QuestionnaireForm } from './QuestionnaireForm';
