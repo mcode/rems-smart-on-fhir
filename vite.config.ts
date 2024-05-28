@@ -13,8 +13,7 @@ export default defineConfig({
     'process.env': process.env
   },
   server: {
-    // this sets a default port to 4040
-    port: 4040,
+    port: parseInt(process.env.PORT!),
     open: false,
     host: true
   }
