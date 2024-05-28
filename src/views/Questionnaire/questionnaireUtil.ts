@@ -7,9 +7,6 @@ import {
   QuestionnaireResponseItem,
   ServiceRequest
 } from 'fhir/r4';
-interface MyObject {
-  [key: string]: any;
-}
 
 export interface AppContext {
   questionnaire?: string;
@@ -40,12 +37,14 @@ export function getAppContext(appContextString: string) {
   });
   return appContext;
 }
-export function findValueByPrefix(object: MyObject, prefix: string) {
+
+export function findValueByPrefix<T>(object: T, prefix: string): T[keyof T] | undefined {
   for (const property in object) {
     if (Object.hasOwnProperty.call(object, property) && property.toString().startsWith(prefix)) {
       return object[property];
     }
   }
+  return undefined;
 }
 
 export function searchQuestionnaire(

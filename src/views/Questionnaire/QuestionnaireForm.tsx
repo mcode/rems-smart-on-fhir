@@ -4,6 +4,8 @@ import {
   CodeableConcept,
   Coding,
   DeviceRequest,
+  Expression,
+  Extension,
   Location,
   MedicationDispense,
   MedicationRequest,
@@ -566,8 +568,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       );
     });
     if (ext) {
-      const value = findValueByPrefix(ext, 'value');
-      const valueExpression = value.expression;
+      const value = findValueByPrefix<Extension>(ext, 'value') as Expression;
 
       let libraryName;
       let statementName;
@@ -577,6 +578,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         statementName = 'LinkId.' + item.linkId;
       } else {
         // split library designator from statement
+        const valueExpression = value.expression || '';
         const valueComponents = valueExpression.split('.');
 
         if (valueComponents.length > 1) {
@@ -588,8 +590,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           libraryName = Object.keys(cqlResults)[0];
         }
       }
-
-      if (cqlResults[libraryName] != null) {
+      if (statementName && libraryName && cqlResults[libraryName]) {
         prepopulationResult = cqlResults[libraryName][statementName];
         console.log(`Found library "${libraryName}"`);
       } else {
