@@ -6,19 +6,25 @@ interface RegisterProps {
   callback?: () => void;
   fhirUrl?: string;
 }
+
+type ClientConfig = {
+  name: string;
+  client: string;
+};
+
 const Register = (props: RegisterProps) => {
   const [clientId, setClientId] = useState<string>('');
   const [fhirUrl, setFhirUrl] = useState<string>(props.fhirUrl || '');
   useEffect(() => {
     document.title = 'Registration page for SMART on FHIR clients';
   });
-  const [currentClients, setCurrentClients] = useState(
+  const [currentClients, setCurrentClients] = useState<ClientConfig[]>(
     JSON.parse(localStorage.getItem('clients') || '[]')
   );
 
   function submit(event: FormEvent) {
     console.log('new selection add to LS');
-    const newClients = [...currentClients, { name: fhirUrl, client: clientId }];
+    const newClients: ClientConfig[] = [...currentClients, { name: fhirUrl, client: clientId }];
     setCurrentClients(newClients);
     localStorage.setItem('clients', JSON.stringify(newClients));
     if (props.callback) {
@@ -28,9 +34,9 @@ const Register = (props: RegisterProps) => {
     return false;
   }
 
-  function deleteClient(client: any) {
+  function deleteClient(client: ClientConfig) {
     const newClients = currentClients.filter(
-      (c: { name: any; client: any }) => !(c.name === client.name && c.client === client.client)
+      c => !(c.name === client.name && c.client === client.client)
     );
     localStorage.setItem('clients', JSON.stringify(newClients));
     setCurrentClients(newClients);
@@ -78,7 +84,7 @@ const Register = (props: RegisterProps) => {
         <hr style={{ color: '#000000', width: '80%' }} />
         <div className="current-selection">
           <h4>Existing Client Ids</h4>
-          {currentClients.map((client: any, index: React.Key | null | undefined) => {
+          {currentClients.map((client: ClientConfig, index: React.Key | null | undefined) => {
             return (
               <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: '35px' }}>
