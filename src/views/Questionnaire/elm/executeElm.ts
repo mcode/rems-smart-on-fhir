@@ -7,7 +7,7 @@ import { Bundle, Library } from 'fhir/r4';
 export interface ExecutionOutput {
   libraryName: string;
   bundle: Bundle;
-  elmResults: any; // TODO: Get a real type for this
+  elmResults: PatientResults;
 }
 function executeElm(
   smart: Client,
@@ -79,10 +79,33 @@ function executeElm(
 //   console.log('--- NeededResources Difference: ', temp);
 // }
 
-function executeElmAgainstPatientSource(
+type PatientResults = Record<
+  | 'Patient'
+  | 'Today'
+  | 'Name'
+  | 'LastName'
+  | 'MiddleInitial'
+  | 'FirstName'
+  | 'FullName'
+  | 'Gender'
+  | 'DateOfBirth'
+  | 'RequestCoverage'
+  | 'CoverageResource'
+  | 'MedicareId'
+  | 'HomeAddress'
+  | 'Line'
+  | 'City'
+  | 'State'
+  | 'Zip'
+  | 'Telecom'
+  | 'Phone',
+  unknown
+>;
+
+async function executeElmAgainstPatientSource(
   executionInputs: ExecutionInputs,
   patientSource: PatientSource
-): Promise<any> {
+): Promise<PatientResults> {
   let repository = undefined;
   if (executionInputs.elmDependencies) {
     repository = new cql.Repository(executionInputs.elmDependencies);
@@ -97,9 +120,9 @@ function executeElmAgainstPatientSource(
 
   const codeService = new cql.CodeService(executionInputs.valueSetDB);
   const executor = new cql.Executor(lib, codeService, executionInputs.parameters);
-  return executor.exec(patientSource).then((results: Results) => {
-    return results.patientResults[Object.keys(results.patientResults)[0]];
-  });
+  const results: Results = await executor.exec(patientSource);
+  const patientId = Object.keys(results.patientResults)[0];
+  return results.patientResults[patientId];
 }
 
 function getPatientSource(fhirVersion: string) {
