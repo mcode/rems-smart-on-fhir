@@ -14,6 +14,11 @@ export interface AppContext {
   order?: string;
   coverage?: string;
 }
+
+export type AdaptiveForm =
+  | { error: string }
+  | (QuestionnaireResponse & { contained: Questionnaire[] });
+
 // to get FHIR properties of the form answer{whatever}
 export function getAppContext(appContextString: string) {
   const appContext: AppContext = {};

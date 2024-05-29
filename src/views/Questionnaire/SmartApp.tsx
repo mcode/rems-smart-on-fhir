@@ -11,7 +11,7 @@ import {
 } from 'fhir/r4';
 import { useEffect, useState } from 'react';
 import { QuestionnaireForm } from './QuestionnaireForm';
-import fetchFhirVersion, { AppContext } from './questionnaireUtil';
+import fetchFhirVersion, { AdaptiveForm, AppContext } from './questionnaireUtil';
 import cqlfhir from 'cql-exec-fhir';
 import Client from 'fhirclient/lib/Client';
 import {
@@ -43,7 +43,7 @@ interface LogEntry {
 }
 export interface PrepopulationResults {
   [key: string]: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 interface IncludeStatement {
@@ -52,15 +52,15 @@ interface IncludeStatement {
 }
 // TODO: this should be a more complete ELM type, this is just a husk to satisfy typescript
 export interface Elm {
-  [key: string]: any;
+  [key: string]: unknown;
   library: {
-    [key: string]: any;
+    [key: string]: unknown;
     identifier: {
       id: string;
       version: string;
     };
     includes: {
-      [key: string]: any;
+      [key: string]: unknown;
       def: IncludeStatement[];
     };
     valueSets: {
@@ -108,7 +108,7 @@ export function SmartApp(props: SmartAppProps) {
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
-  const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
+  const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<AdaptiveForm>();
   const [formElement, setFormElement] = useState<HTMLElement>();
   const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
 
