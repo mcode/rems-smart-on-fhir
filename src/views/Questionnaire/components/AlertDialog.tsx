@@ -9,13 +9,12 @@ import {
 import { RxAlert } from '../QuestionnaireForm';
 
 type AlertDialogProps = {
-  title: string,
+  title: string;
   setRxAlert: (e: RxAlert) => void;
   rxAlert: RxAlert;
 };
 
 function AlertDialog({ title, rxAlert, setRxAlert }: AlertDialogProps) {
-
   const handleClose = () => {
     setRxAlert({ open: false });
   };
@@ -44,4 +43,4 @@ function AlertDialog({ title, rxAlert, setRxAlert }: AlertDialogProps) {
   );
 }
 
-export { AlertDialog }
+export { AlertDialog };
