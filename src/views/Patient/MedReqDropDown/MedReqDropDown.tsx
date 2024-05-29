@@ -349,7 +349,7 @@ function MedReqDropDown({
               {selectedMedicationCard && (
                 <>
                   <Grid item container>
-                    <Grid item xs={10} sm={11}>
+                    <Grid item xs={10} sm={11} style={{'backgroundColor': '#D1D1D1'}}>
                       <Typography bgcolor="text.secondary" color="white" textAlign="center">
                         Medication Code:{' '}
                         {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
@@ -358,14 +358,14 @@ function MedReqDropDown({
                         bgcolor="text.disabled"
                         variant="h5"
                         textAlign="center"
-                        color="black"
+                        color="white"
                       >
                         {medicationName}
                       </Typography>
                       <Typography
                         variant="h6"
                         bgcolor="text.disabled"
-                        color="black"
+                        color="white"
                         textAlign="center"
                       >
                         {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.display}
