@@ -10,7 +10,7 @@ import {
 } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 
-type LFormType = {
+type LForm = {
   contained: (ValueSet | Resource)[];
   date: string;
   extension: Extension[];
@@ -47,7 +47,7 @@ export type LForms = {
     _convertLFormsToFHIRData: (
       resourceType: 'DiagnosticReport' | 'Questionnaire' | 'QuestionnaireResponse',
       fhirVersion: 'STU3' | 'R4',
-      formDataSource?: Element | string | LFormType,
+      formDataSource?: Element | string | LForm,
       options?: {
         bundleType: 'transaction' | 'collection';
         noExtensions: boolean;
@@ -56,7 +56,7 @@ export type LForms = {
       }
     ) => DiagnosticReport | Questionnaire | QuestionnaireResponse;
     _fhirVersionToRelease: (versionStr: string) => 'R5' | 'R4B' | 'R4' | 'STU3' | string;
-    _getFormObjectInScope: (element: HTMLElement | string) => LFormType;
+    _getFormObjectInScope: (element: HTMLElement | string) => LForm;
     _pruneObject: (
       keyRegex: RegExp,
       obj: Record<string, unknown>,
@@ -69,7 +69,7 @@ export type LForms = {
       valTest: (value: unknown) => boolean
     ) => boolean;
     addFormToPage: (
-      formDataDef: LFormType,
+      formDataDef: LForm,
       formContainer: string,
       options?: {
         showQuestionCode: boolean;
@@ -92,7 +92,7 @@ export type LForms = {
     convertFHIRQuestionnaireToLForms: (
       fhirData: Questionnaire,
       fhirVersion: '2.0' | '3.0' | '4.0' | string
-    ) => LFormType;
+    ) => LForm;
     createLocalFHIRReference: (fhirRes: Resource) => Reference;
     dateToDTMString: (objDate: Date) => string;
     dateToDTStringISO: (dateObj: Date) => string;
@@ -101,11 +101,7 @@ export type LForms = {
       fhirData: Questionnaire | QuestionnaireResponse
     ) => 'STU3' | 'R4' | 'R5' | null;
     FHIRSupport: Record<'STU3' | 'R4' | 'R4B' | 'R5', 'partial' | 'WIP'>;
-    findItem: (
-      items: LFormType['items'][],
-      key: string,
-      matchingValue: unknown
-    ) => LFormType['items'];
+    findItem: (items: LForm['items'][], key: string, matchingValue: unknown) => LForm['items'];
     findObjectInArray: (
       targetObjects: Record<string, unknown>[],
       key: string,
@@ -134,7 +130,7 @@ export type LForms = {
     guessFHIRVersion: (
       fhirData: Questionnaire | QuestionnaireResponse
     ) => 'R5' | 'R4' | 'STU3' | null;
-    initializeCodes: (formOrItem: LFormType | LFormType['items']) => LFormType | LFormType['items'];
+    initializeCodes: (formOrItem: LForm | LForm['items']) => LForm | LForm['items'];
     isItemValueEmpty: (
       value: null | string | undefined | Record<string, unknown> | Date
     ) => boolean;
@@ -142,9 +138,9 @@ export type LForms = {
     mergeFHIRDataIntoLForms: (
       resourceType: Resource['resourceType'],
       resource: Resource,
-      lform: LFormType,
+      lform: LForm,
       fhirVersion: string
-    ) => LFormType;
+    ) => LForm;
     pruneNulls: (collectionObj: Record<string, unknown>) => Record<string, unknown>;
     removeObjectsFromArray: (
       targetObjects: Record<string, unknown>[],
@@ -154,7 +150,7 @@ export type LForms = {
       all?: boolean
     ) => Record<string, unknown> | Record<string, unknown>[];
     setFHIRContext: (fhirContext: Client) => void;
-    showWarning: (msg: string, item?: LFormType | LFormType['items']) => void;
+    showWarning: (msg: string, item?: LForm | LForm['items']) => void;
     stringToDate: (strDate: string, looseParsing?: boolean) => unknown;
     stringToDTDateISO: (isoDateString: string) => Date;
     validateFHIRVersion: (version: string) => string;
