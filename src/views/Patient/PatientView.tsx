@@ -193,7 +193,7 @@ function PatientView(props: PatientViewProps) {
   }, []);
 
   useEffect(() => {
-    client.patient.read().then((patient: any) => setPatient(patient));
+    client.patient.read().then((patient: Patient) => setPatient(patient));
   }, [client.patient, client]);
 
   function getAge(dateString: string) {

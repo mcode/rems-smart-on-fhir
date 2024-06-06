@@ -32,7 +32,7 @@ function App(props: AppProps) {
   const [value, setValue] = useState('');
   const [tabs, setTabs] = useState<SmartTab[]>([]);
   const [staticContent, setStaticContent] = useState<ReactElement>();
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(tabs[newValue].id);
   };
   const addTab = (element: ReactElement, tabName: string, groupName: string, tabIndex = 0) => {
@@ -73,7 +73,7 @@ function App(props: AppProps) {
       ]);
     }
     setValue(homeName);
-  }, []);
+  }, [client, props.client]);
 
   const handleClose = useCallback(
     (event: MouseEvent, tabToDelete: SmartTab) => {
@@ -84,12 +84,12 @@ function App(props: AppProps) {
       if (tabToDeleteIndex > 0 && value === tabToDelete.id) {
         setValue(tabs[tabToDeleteIndex - 1].id);
       }
-      const newTabs = tabs.filter((tab, index) => {
+      const newTabs = tabs.filter((_tab, index) => {
         return index !== tabToDeleteIndex;
       });
       setTabs(newTabs);
     },
-    [tabs]
+    [tabs, value]
   );
 
   return (

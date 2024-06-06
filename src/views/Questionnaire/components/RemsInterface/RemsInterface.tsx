@@ -4,8 +4,8 @@ import './RemsInterface.css';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { Bundle } from 'fhir/r4';
-import { Box } from '@mui/material';
 import { AxiosResponse } from 'axios';
+import Box from '@mui/material/Box';
 
 interface RemsInterfaceProps {
   specialtyRxBundle: Bundle;
