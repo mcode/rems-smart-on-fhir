@@ -41,7 +41,7 @@ interface CdsHooksCardProps {
   selectionBehavior: string | undefined;
 }
 
-const CdsHooksCard = (props: CdsHooksCardProps) => {
+export const CdsHooksCard = (props: CdsHooksCardProps) => {
   const [links, setLinks] = useState<Link[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   useEffect(() => {
@@ -378,5 +378,3 @@ const CdsHooksCard = (props: CdsHooksCardProps) => {
     </Card>
   );
 };
-
-export default CdsHooksCard;

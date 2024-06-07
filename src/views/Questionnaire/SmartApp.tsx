@@ -1,6 +1,5 @@
 import {
   Bundle,
-  Coding,
   DeviceRequest,
   Extension,
   Library,
@@ -12,7 +11,7 @@ import {
 } from 'fhir/r4';
 import { useEffect, useState } from 'react';
 import { QuestionnaireForm } from './QuestionnaireForm';
-import fetchFhirVersion, { AppContext } from './questionnaireUtil';
+import fetchFhirVersion, { AdaptiveForm, AppContext } from './questionnaireUtil';
 import cqlfhir from 'cql-exec-fhir';
 import Client from 'fhirclient/lib/Client';
 import {
@@ -26,6 +25,7 @@ import PatientSelect from './components/PatientSelect/PatientSelect';
 import RemsInterface from './components/RemsInterface/RemsInterface';
 import { createRoot } from 'react-dom/client';
 import * as env from 'env-var';
+import { ValueSetDictionary } from 'cql-execution';
 
 interface SmartAppProps {
   standalone: boolean;
@@ -43,7 +43,7 @@ interface LogEntry {
 }
 export interface PrepopulationResults {
   [key: string]: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 interface IncludeStatement {
@@ -52,15 +52,15 @@ interface IncludeStatement {
 }
 // TODO: this should be a more complete ELM type, this is just a husk to satisfy typescript
 export interface Elm {
-  [key: string]: any;
+  [key: string]: unknown;
   library: {
-    [key: string]: any;
+    [key: string]: unknown;
     identifier: {
       id: string;
       version: string;
     };
     includes: {
-      [key: string]: any;
+      [key: string]: unknown;
       def: IncludeStatement[];
     };
     valueSets: {
@@ -83,7 +83,7 @@ export interface ExecutionInputs {
   elm: Elm;
   // look at main library elms to determine dependent elms to include
   elmDependencies?: (Elm | undefined)[];
-  valueSetDB: any;
+  valueSetDB: ValueSetDictionary;
   parameters: ParameterObject;
   mainLibraryMaps: Map<string, Library> | null;
 }
@@ -108,7 +108,7 @@ export function SmartApp(props: SmartAppProps) {
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
-  const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
+  const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<AdaptiveForm>();
   const [formElement, setFormElement] = useState<HTMLElement>();
   const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
 
@@ -131,7 +131,7 @@ export function SmartApp(props: SmartAppProps) {
     });
   }, [errors]);
   // PatientId argument might not be needed
-  const standaloneLaunch = (patientId: string, response: QuestionnaireResponse) => {
+  const standaloneLaunch = (_patientId: string, response: QuestionnaireResponse) => {
     fetchFhirVersion(props.smartClient.state.serverUrl).then(fhirVersion => {
       FHIR_VERSION = fhirVersion;
       const questionnaireUrl = response.questionnaire;
@@ -537,15 +537,13 @@ export function SmartApp(props: SmartAppProps) {
             // add all codes to the the value set db. it is a map in a map, where the first layer key
             // is the value set id and second layer key is the value set version. for this purpose we are using un-versioned ValueSets
             executionInputs.valueSetDB[valueSetDef.id] = {};
-            executionInputs.valueSetDB[valueSetDef.id][''] = valueSet.expansion.contains?.map(
-              code => {
-                return {
-                  code: code.code,
-                  system: code.system,
-                  version: code.version
-                };
-              }
-            );
+            executionInputs.valueSetDB[valueSetDef.id][''] = (
+              valueSet.expansion.contains || []
+            ).map(code => ({
+              code: code.code || 'NO_CODE',
+              system: code.system || 'NO_SYSTEM',
+              version: code.version
+            }));
           } else if (valueSet.compose != null) {
             consoleLog(`Valueset ${valueSet.id} has a compose.`, 'infoClass');
 
@@ -555,22 +553,16 @@ export function SmartApp(props: SmartAppProps) {
               }
               const conceptList = code.filter == null ? code.concept : [];
               const system = code.system;
-              const codeList: Coding[] = [];
-              if (conceptList) {
-                conceptList.forEach(concept => {
-                  codeList.push({
-                    code: concept.code,
-                    system: system,
-                    version: code.version
-                  });
-                });
-              }
+              const codeList = (conceptList || []).map(concept => ({
+                code: concept.code,
+                system: system || 'NO_SYSTEM',
+                version: code.version
+              }));
 
               return codeList;
             });
             executionInputs.valueSetDB[valueSetDef.id] = {};
-            executionInputs.valueSetDB[valueSetDef.id][''] =
-              codeList.length > 0 ? codeList[0] : null;
+            executionInputs.valueSetDB[valueSetDef.id][''] = codeList.length > 0 ? codeList[0] : [];
           }
         } else {
           consoleLog(

@@ -42,7 +42,6 @@ Following are a list of modifiable paths:
 | REACT_APP_PHARMACY_SERVER_BASE    | `http://localhost:5051`                                                               |
 | REACT_APP_PHARMACY_STATUS_ENABLED | `true`                                                                                |
 | REACT_APP_REMS_ADMIN_SERVER_BASE  | `http://localhost:8090`                                                               |
-| REACT_APP_REMS_HOOKS_PATH         | `/cds-services/rems-`                                                                 |
 | REACT_APP_SEND_FHIR_AUTH_ENABLED  | `false`                                                                               |
 
 _Note that .env values can only be accessed by the React app starting with `REACT_APP_`\_
