@@ -23,7 +23,8 @@ import {
   Resource,
   MedicationDispense,
   Parameters,
-  GuidanceResponse
+  GuidanceResponse,
+  CodeableConcept
 } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
@@ -235,9 +236,9 @@ function MedReqDropDown({
     interface Medication {
       resourceType: string,
       id: string,
-      code: any
+      code: CodeableConcept | undefined
     }
-    let medication: Medication = { resourceType: 'Medication', id:  medicationRequest?.id + '-med', code: {}};
+    const medication: Medication = { resourceType: 'Medication', id:  medicationRequest?.id + '-med', code: {}};
     if (medicationRequest.medicationCodeableConcept) {
       medication.code = medicationRequest.medicationCodeableConcept;
     }  else if (medicationRequest.medicationReference) {
@@ -259,7 +260,7 @@ function MedReqDropDown({
       const updatedMedication = createMedicationFromMedicationRequest(selectedMedicationCard);
 
       setCheckedEtasuTime(Date.now());
-      const params: any = {
+      const params = {
         resourceType: 'Parameters',
         parameter: [
           {
