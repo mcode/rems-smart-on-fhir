@@ -232,16 +232,20 @@ function MedReqDropDown({
     );
   };
 
-  const  createMedicationFromMedicationRequest = (medicationRequest: MedicationRequest) => {
+  const createMedicationFromMedicationRequest = (medicationRequest: MedicationRequest) => {
     interface Medication {
-      resourceType: string,
-      id: string,
-      code: CodeableConcept | undefined
+      resourceType: string;
+      id: string;
+      code: CodeableConcept | undefined;
     }
-    const medication: Medication = { resourceType: 'Medication', id:  medicationRequest?.id + '-med', code: {}};
+    const medication: Medication = {
+      resourceType: 'Medication',
+      id: medicationRequest?.id + '-med',
+      code: {}
+    };
     if (medicationRequest.medicationCodeableConcept) {
       medication.code = medicationRequest.medicationCodeableConcept;
-    }  else if (medicationRequest.medicationReference) {
+    } else if (medicationRequest.medicationReference) {
       const reference = medicationRequest?.medicationReference;
       medicationRequest?.contained?.every(e => {
         if (e.resourceType + '/' + e.id === reference.reference) {
@@ -253,7 +257,7 @@ function MedReqDropDown({
       });
     }
     return medication;
-  }
+  };
 
   const refreshEtasuBundle = () => {
     if (patient && selectedMedicationCard) {
