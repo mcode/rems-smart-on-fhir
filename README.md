@@ -4,7 +4,7 @@ The [REMS](https://www.fda.gov/drugs/drug-safety-and-availability/risk-evaluatio
 
 # Getting Started with REMS SMART on FHIR
 
-To get started, first clone the repository using a method that is most convenient for you.  If using git, run the following command:
+To get started, first clone the repository using a method that is most convenient for you.  If using HTTPS, run the following command:
 
 `git clone https://github.com/mcode/rems-smart-on-fhir.git`
 
@@ -52,7 +52,7 @@ See the section about [building and deploying](https://vitejs.dev/guide/build) f
 
 ## Usage
 
-The REMS SMART on FHIR app interacts with the [REMS Admin](https://github.com/mcode/rems-admin), an [EHR](https://github.com/mcode/test-ehr), and the [Pharmacy Information Management System](https://github.com/mcode/pims).  These apps are provided as part of the REMS ecosystem, but any individual part may be swapped out for something custom.  The EHR in particular can be easily switched by launching the SMART app from a different EHR.  Launching the app can be easily done through the [Request Generator](https://github.com/mcode/request-generator), a front end app for EHRs that sends and recieves CDS Hooks.  The SMART app must be launched through an EHR or through the Request Generator.
+The REMS SMART on FHIR app interacts with the [REMS Admin](https://github.com/mcode/rems-admin), an [EHR](https://github.com/mcode/test-ehr), and the [Pharmacy Information Management System](https://github.com/mcode/pims).  These apps are provided as part of the REMS ecosystem, but any individual part may be swapped out for something custom.  The EHR in particular can be easily switched by launching the SMART app from a different EHR.  Launching the app can be easily done through the [Request Generator](https://github.com/mcode/request-generator), a front end app for EHRs that sends and receives CDS Hooks.  The SMART app must be launched through an EHR or through the Request Generator.
 
 Typically, a CDS Hook will be sent from the EHR to the REMS Admin, which will respond with cards that contain information about next steps. These cards may contain a link to a SMART app. Clicking on these links will launch the SMART app automatically. 
 
@@ -91,4 +91,4 @@ Following are a list of modifiable paths:
 | REACT_APP_REMS_ADMIN_SERVER_BASE  | `http://localhost:8090`                                                               | The base url of the REMS admin server, which handles the ETASU and questionnaires. Should be changed to match the base url of the REMS admin you wish to submit information to.                   |
 | REACT_APP_SEND_FHIR_AUTH_ENABLED  | `false`                                                                               | When set to 'true', the app will send the access token for the EHR to the REMS admin as part of the CDS Hook.  Should be changed to false only if this functionality is required for the REMS admin to work, and is a trusted party.                                                |
 
-_Note that .env values can only be accessed by the React app starting with `REACT_APP_`\_
+**Note that .env values can only be accessed by the React app starting with `REACT_APP_`\**
