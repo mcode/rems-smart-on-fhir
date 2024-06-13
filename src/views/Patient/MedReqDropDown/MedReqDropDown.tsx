@@ -23,7 +23,8 @@ import {
   Resource,
   MedicationDispense,
   Parameters,
-  GuidanceResponse
+  GuidanceResponse,
+  CodeableConcept
 } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
@@ -231,10 +232,39 @@ function MedReqDropDown({
     );
   };
 
+  const createMedicationFromMedicationRequest = (medicationRequest: MedicationRequest) => {
+    interface Medication {
+      resourceType: string;
+      id: string;
+      code: CodeableConcept | undefined;
+    }
+    const medication: Medication = {
+      resourceType: 'Medication',
+      id: medicationRequest?.id + '-med',
+      code: {}
+    };
+    if (medicationRequest.medicationCodeableConcept) {
+      medication.code = medicationRequest.medicationCodeableConcept;
+    } else if (medicationRequest.medicationReference) {
+      const reference = medicationRequest?.medicationReference;
+      medicationRequest?.contained?.every(e => {
+        if (e.resourceType + '/' + e.id === reference.reference) {
+          if (e.resourceType === 'Medication') {
+            console.log('Get Medication code from contained resource');
+            medication.code = e.code;
+          }
+        }
+      });
+    }
+    return medication;
+  };
+
   const refreshEtasuBundle = () => {
     if (patient && selectedMedicationCard) {
+      const updatedMedication = createMedicationFromMedicationRequest(selectedMedicationCard);
+
       setCheckedEtasuTime(Date.now());
-      const params: Parameters = {
+      const params = {
         resourceType: 'Parameters',
         parameter: [
           {
@@ -243,7 +273,7 @@ function MedReqDropDown({
           },
           {
             name: 'medication',
-            resource: selectedMedicationCard
+            resource: updatedMedication
           }
         ]
       };
