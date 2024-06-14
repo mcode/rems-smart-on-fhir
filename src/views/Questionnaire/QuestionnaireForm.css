@@ -75,7 +75,7 @@ html {
 }
 
 .patient-info-panel {
-  color: white;
+  color: #3b3b3b;
 }
 
 .filled {
@@ -98,4 +98,35 @@ html {
   position: fixed;
   background-color: white;
   z-index: 5;
+}
+
+.lf-form .required {
+  color: #8b0000;
+  font-size: medium;
+}
+
+.lf-form-title {
+  color: #1976d2;
+  background-color: #F3F6F9;
+}
+
+.lf-control-button {
+  color: #000;
+}
+
+.lf-form-title .lf-question {
+  font-size: x-large;
+  vertical-align: middle;
+}
+
+.lf-form .lf-form-title .lf-control-button {
+  color: #3b3b3b;
+}
+
+.lf-form .lf-form-title .lf-control-button:hover {
+  color: #636363;
+}
+
+.task-button {
+  color: #3b3b3b;
 }
