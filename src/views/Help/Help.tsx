@@ -1,16 +1,11 @@
 import {
-  Button,
-  FormControl,
-  FormHelperText,
   Grid,
-  IconButton,
   Paper,
   Stack,
   Box,
   Typography
 } from '@mui/material';
-import React, { FormEvent, memo, useState, useEffect } from 'react';
-import SearchIcon from '@mui/icons-material/Close';
+import { memo, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Help.css';
 interface HelpProps {
@@ -59,9 +54,8 @@ const helpDict = [
       'Transmucosal Immediate-Release Fentanyl (TIRF) is a drug with a REMS program. Transmucosal fentanyl is a strong opioid agonist that is only approved for breakthrough cancer pain for patients receiving around-the-clock opioid therapy for persistent cancer pain.'
   }
 ];
-const Help = (props: HelpProps) => {
+const Help = () => {
   const [selected, setSelected] = useState<string>('');
-  const [dictionary, setDictionary] = useState(helpDict);
   const { id } = useParams();
 
   useEffect(() => {
