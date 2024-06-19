@@ -8,10 +8,6 @@ import {
 import { memo, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Help.css';
-interface HelpProps {
-  callback?: () => void;
-  fhirUrl?: string;
-}
 const helpDict = [
   {
     name: 'REMS',
