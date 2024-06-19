@@ -1,10 +1,4 @@
-import {
-  Grid,
-  Paper,
-  Stack,
-  Box,
-  Typography
-} from '@mui/material';
+import { Grid, Paper, Stack, Box, Typography } from '@mui/material';
 import { memo, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import './Help.css';
