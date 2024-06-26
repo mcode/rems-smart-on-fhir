@@ -52,7 +52,7 @@ See the section about [building and deploying](https://vitejs.dev/guide/build) f
 
 ## Usage
 
-The REMS SMART on FHIR app interacts with the [REMS Admin](https://github.com/mcode/rems-admin), an [EHR](https://github.com/mcode/test-ehr), and the [Pharmacy Information Management System](https://github.com/mcode/pims).  These apps are provided as part of the REMS ecosystem, but any individual part may be swapped out for something custom.  The EHR in particular can be easily switched by launching the SMART app from a different EHR.  Launching the app can be easily done through the [Request Generator](https://github.com/mcode/request-generator), a front end app for EHRs that sends and receives CDS Hooks.  The SMART app must be launched through an EHR or through the Request Generator.
+The REMS SMART on FHIR app interacts with the [REMS Admin](https://github.com/mcode/rems-admin), and an [EHR](https://github.com/mcode/test-ehr).  These apps are provided as part of the REMS ecosystem, but any individual part may be swapped out for something custom.  The EHR in particular can be easily switched by launching the SMART app from a different EHR.  Launching the app can be easily done through the [Request Generator](https://github.com/mcode/request-generator), a front end app for EHRs that sends and recieves CDS Hooks.  The SMART app must be launched through an EHR or through the Request Generator.
 
 Typically, a CDS Hook will be sent from the EHR to the REMS Admin, which will respond with cards that contain information about next steps. These cards may contain a link to a SMART app. Clicking on these links will launch the SMART app automatically. 
 
