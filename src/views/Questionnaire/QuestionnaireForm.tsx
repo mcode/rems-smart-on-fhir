@@ -2,7 +2,10 @@ import {
   Bundle,
   Claim,
   CodeableConcept,
+  Coding,
   DeviceRequest,
+  Expression,
+  Extension,
   Location,
   MedicationDispense,
   MedicationRequest,
@@ -11,6 +14,7 @@ import {
   Organization,
   Parameters,
   Patient,
+  Quantity,
   Questionnaire,
   QuestionnaireItem,
   QuestionnaireResponse,
@@ -19,14 +23,15 @@ import {
   Signature,
   ValueSet
 } from 'fhir/r4';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import {
   AppContext,
   buildNextQuestionRequest,
   findValueByPrefix,
   retrieveQuestions,
   searchQuestionnaire,
-  getDrugCodeableConceptFromMedicationRequest
+  getDrugCodeableConceptFromMedicationRequest,
+  AdaptiveForm
 } from './questionnaireUtil';
 import './QuestionnaireForm.css';
 import {
@@ -43,17 +48,19 @@ import Tooltip from '@mui/material/Tooltip';
 
 import Client from 'fhirclient/lib/Client';
 import ConfigData from '../../config.json';
+import { AlertDialog } from './components/AlertDialog';
 import { SelectPopup } from './components/SelectPopup';
-import AlertDialog from './components/AlertDialog';
 import { RemsAdminResponse } from './components/RemsInterface/RemsInterface';
 import { PrepopulationResults } from './SmartApp';
 import { v4 as uuid } from 'uuid';
 import axios, { AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client';
 import { red } from '@mui/material/colors';
+import { LForms } from './LFormsTypes';
+
 declare global {
   interface Window {
-    LForms: any;
+    LForms: LForms;
   }
 }
 
@@ -73,23 +80,21 @@ interface QuestionnaireProps {
   ignoreRequiredChecked: boolean;
   filterFieldsFn: (n: boolean) => void;
   renderButtons: (n: Element) => void;
-  adFormResponseFromServer?: QuestionnaireResponse;
-  updateAdFormResponseFromServer: (n: any) => void;
-  updateAdFormCompleted: (n: boolean) => void;
+  adFormResponseFromServer?: AdaptiveForm;
+  updateAdFormResponseFromServer: (adaptiveForm: AdaptiveForm) => void;
+  updateAdFormCompleted: (adaptiveForm: boolean) => void;
   ehrLaunch: (n: boolean, m: Questionnaire | null) => void;
   attested: string[];
   updateReloadQuestionnaire: (n: boolean) => void;
   reloadQuestionnaire: boolean;
   bundle?: Bundle;
-  setPriorAuthClaim: (n: Bundle) => void;
   setSpecialtyRxBundle: (n: Bundle) => void;
-  setRemsAdminResponse: (n: any) => void;
   setFormElement: (n: HTMLElement) => void;
   tabIndex: number;
 }
 
 interface GTableResult {
-  [key: string]: any;
+  [key: string]: string;
 }
 interface MetaSmart extends Meta {
   lastUpdated: string;
@@ -97,28 +102,141 @@ interface MetaSmart extends Meta {
 interface QuestionnaireResponseSmart extends QuestionnaireResponse {
   meta?: MetaSmart;
 }
-interface PartialForms {
-  [key: string]: QuestionnaireResponse;
-}
-interface RxAlert {
+
+export type RxAlert = {
   response?: AxiosResponse;
   rxBundle?: Bundle;
   description?: string;
   open: boolean;
   callback?: () => void;
+};
+
+const DATE_TIME_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric'
+};
+
+type PopupState = {
+  title: string;
+  options: string[];
+  finalOption: string;
+  partialForms: Record<string, QuestionnaireResponse>;
+  open: boolean;
+  savedResponse: QuestionnaireResponse | null;
+  formLoaded: string;
+};
+
+enum PopupActionType {
+  LOAD,
+  ERROR_LOADING,
+  NONE_FOUND,
+  SAVED_TO_EHR,
+  FAILED_SAVE_TO_EHR,
+  CLOSE_POPUP,
+  OPEN_POPUP,
+  SAVE_RESPONSE,
+  SET_FORM_LOADED
 }
 
+type PopupAction =
+  | { type: PopupActionType.LOAD; value: QuestionnaireResponse[] }
+  | { type: PopupActionType.SAVE_RESPONSE; value: QuestionnaireResponse }
+  | { type: PopupActionType.SET_FORM_LOADED; value: string }
+  | {
+      type: Exclude<
+        PopupActionType,
+        PopupActionType.LOAD | PopupActionType.SAVE_RESPONSE | PopupActionType.SET_FORM_LOADED
+      >;
+    };
+
+const getNewPopupOption = (questionnaireResponse: QuestionnaireResponse) => {
+  const date = new Date(questionnaireResponse?.authored || Date.now());
+  const option =
+    date.toLocaleDateString(undefined, DATE_TIME_FORMAT_OPTIONS) +
+    ' (' +
+    questionnaireResponse?.status +
+    ')';
+  return option;
+};
+
+const getNewPopupOptions = (questionnaireResponses: QuestionnaireResponse[]) => {
+  return questionnaireResponses.map(getNewPopupOption);
+};
+
+const reducer = (state: PopupState, action: PopupAction): PopupState => {
+  switch (action.type) {
+    case PopupActionType.LOAD: {
+      const options = getNewPopupOptions(action.value);
+      return {
+        ...state,
+        title: 'Would you like to load a previously in-progress form?',
+        finalOption: 'Cancel',
+        options,
+        partialForms: Object.fromEntries(action.value.map((item, index) => [options[index], item]))
+      };
+    }
+    case PopupActionType.ERROR_LOADING:
+      return {
+        ...state,
+        title: 'Error: failed to load previous in-progress forms',
+        finalOption: 'OK',
+        options: []
+      };
+    case PopupActionType.NONE_FOUND:
+      return {
+        ...state,
+        title: 'No saved forms available to load.',
+        finalOption: 'OK',
+        options: []
+      };
+    case PopupActionType.SAVED_TO_EHR:
+      return {
+        ...state,
+        title: 'Partially completed form (QuestionnaireResponse) saved to EHR',
+        finalOption: 'OK',
+        options: []
+      };
+    case PopupActionType.FAILED_SAVE_TO_EHR:
+      return {
+        ...state,
+        title: 'Partially completed form (QuestionnaireResponse) failed to save to EHR',
+        finalOption: 'OK',
+        options: []
+      };
+    // these don't depend on the other pieces of state
+    case PopupActionType.CLOSE_POPUP:
+      return { ...state, open: false };
+    case PopupActionType.OPEN_POPUP:
+      return { ...state, open: true };
+    case PopupActionType.SAVE_RESPONSE:
+      return { ...state, savedResponse: action.value };
+    case PopupActionType.SET_FORM_LOADED:
+      return { ...state, formLoaded: action.value };
+    default:
+      return initialPopupState;
+  }
+};
+
+const initialPopupState: PopupState = Object.freeze({
+  title: 'Unknown operation',
+  options: [],
+  finalOption: 'OK',
+  partialForms: {},
+  open: false,
+  savedResponse: null,
+  formLoaded: 'New'
+});
+
 export function QuestionnaireForm(props: QuestionnaireProps) {
-  const [savedResponse, setSavedResponse] = useState<QuestionnaireResponse | null>(null);
-  const [popupTitle, setPopupTitle] = useState<string>('');
-  const [popupOptions, setPopupOptions] = useState<string[]>([]);
-  const [popupFinalOption, setPopupFinalOption] = useState<string>('');
-  const [openPopup, setOpenPopup] = useState<boolean>(false);
-  const [formLoaded, setFormLoaded] = useState<string>('');
+  const [popupState, popupDispatch] = useReducer(reducer, initialPopupState);
   const [showRxAlert, setShowRxAlert] = useState<RxAlert>({ open: false });
-  const [formValidationErrors, setFormValidationErrors] = useState<any[]>([]);
+  const [formValidationErrors, setFormValidationErrors] = useState<string[]>([]);
   const [patient, setPatient] = useState<Patient | undefined>(undefined);
-  const partialForms: PartialForms = {};
   const LForms = window.LForms;
   const questionnaireFormId = `formContainer-${props.questionnaireForm.id}-${props.tabIndex}`;
 
@@ -130,7 +248,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     // search for any partially completed QuestionnaireResponses
     if (props.response) {
       const response = props.response;
-      const items = props.questionnaireForm.item;
+      const items = props.questionnaireForm.item || [];
       const parentItems: QuestionnaireResponseItem[] = [];
       if (items && response.item) {
         handleGtable(items, parentItems, response.item);
@@ -138,7 +256,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
 
       const mergedResponse = mergeResponseForSameLinkId(response);
-      setSavedResponse(mergedResponse);
+      popupDispatch({ type: PopupActionType.SAVE_RESPONSE, value: mergedResponse });
     } else {
       loadPreviousForm(false);
 
@@ -153,15 +271,15 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       handleGtable(items, parentItems, newResponse.item);
       prepopulate(items, newResponse.item, false);
       const mergedResponse = mergeResponseForSameLinkId(newResponse);
-      setSavedResponse(mergedResponse);
+      popupDispatch({ type: PopupActionType.SAVE_RESPONSE, value: mergedResponse });
       localStorage.setItem('lastSavedResponse', JSON.stringify(mergedResponse));
     }
   }, []);
 
   useEffect(() => {
-    loadAndMergeForms(savedResponse);
-    const formErrors = LForms.Util.checkValidity();
-    setFormValidationErrors(formErrors == null ? [] : formErrors);
+    loadAndMergeForms(popupState.savedResponse);
+    const formErrors = LForms.Util.checkValidity() || [];
+    setFormValidationErrors(formErrors);
 
     document.addEventListener('click', event => {
       if (
@@ -171,23 +289,23 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         event.target.id != 'attestationCheckbox'
       ) {
         const checkIfFilter = (
-          currentErrors: any[],
-          newErrors: any[],
+          currentErrors: string[],
+          newErrors: string[],
           targetElementName: string | null
         ) => {
           if (currentErrors.length < newErrors.length) return false;
 
           const addedErrors = newErrors.filter(error => !currentErrors.includes(error));
-          if (addedErrors.some(error => error.includes(targetElementName))) {
+          if (targetElementName && addedErrors.some(error => error.includes(targetElementName))) {
             return false;
           }
 
           return true;
         };
-        const newErrors = LForms.Util.checkValidity();
+        const newErrors = LForms.Util.checkValidity() || [];
         const ifFilter = checkIfFilter(
           formValidationErrors,
-          newErrors == null ? [] : newErrors,
+          newErrors,
           event.target.getAttribute('name')
         );
 
@@ -199,13 +317,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         setFormValidationErrors(newErrors);
       }
     });
-  }, [savedResponse]);
+  }, [popupState.savedResponse]);
 
   useEffect(() => {
     if (props.reloadQuestionnaire) {
       repopulateAndReload();
     }
-  });
+  }, []);
+
   const loadAndMergeForms = (newResponse: QuestionnaireResponse | null) => {
     let lform = LForms.Util.convertFHIRQuestionnaireToLForms(
       props.questionnaireForm,
@@ -283,7 +402,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     if (props.adFormResponseFromServer) {
       mergedResponse = mergeResponses(
         mergeResponseForSameLinkId(newResponse),
-        mergeResponseForSameLinkId(props.adFormResponseFromServer)
+        mergeResponseForSameLinkId(props.adFormResponseFromServer as QuestionnaireResponse)
       );
     } else {
       const lastResponse = localStorage.getItem('lastSavedResponse');
@@ -309,6 +428,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return firstResponse;
   };
+
   // handleGtable expands the items with contains a table level expression
   // the expression should be a list of objects
   // this function creates the controls based on the size of the expression
@@ -350,15 +470,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           // need to figure out which value is provided from the prepopulationResult though
 
           // grab the population result
-          let prepopulationResult = null;
+          let prepopulationResult;
           if (props.cqlPrepopulationResults) {
             prepopulationResult = getLibraryPrepopulationResult(
               item,
               props.cqlPrepopulationResults
-            );
+            ) as GTableResult[];
           }
 
-          // console.log("prepopulationResult: ", prepopulationResult);
           if (prepopulationResult && prepopulationResult.length > 0) {
             const newItemList = buildGTableItems(item, prepopulationResult);
             parentItems.pop();
@@ -438,10 +557,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
     return newItemResponseList;
   };
+
   const getLibraryPrepopulationResult = (
     item: QuestionnaireItem,
     cqlResults: PrepopulationResults
-  ) => {
+  ): boolean | number | string | string[] | Quantity | GTableResult[] | Coding | unknown => {
     let prepopulationResult;
     const ext = item.extension?.find(val => {
       return (
@@ -451,8 +571,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       );
     });
     if (ext) {
-      const value = findValueByPrefix(ext, 'value');
-      const valueExpression = value.expression;
+      const value = findValueByPrefix<Extension>(ext, 'value') as Expression;
 
       let libraryName;
       let statementName;
@@ -462,6 +581,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         statementName = 'LinkId.' + item.linkId;
       } else {
         // split library designator from statement
+        const valueExpression = value.expression || '';
         const valueComponents = valueExpression.split('.');
 
         if (valueComponents.length > 1) {
@@ -473,8 +593,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           libraryName = Object.keys(cqlResults)[0];
         }
       }
-
-      if (cqlResults[libraryName] != null) {
+      if (statementName && libraryName && cqlResults[libraryName]) {
         prepopulationResult = cqlResults[libraryName][statementName];
         console.log(`Found library "${libraryName}"`);
       } else {
@@ -484,12 +603,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return prepopulationResult;
   };
+
   const prepopulate = (
     items: QuestionnaireItem[],
     response_items: QuestionnaireResponseItem[],
     saved_response: boolean
   ) => {
-    items.map(item => {
+    for (const item of items) {
       const response_item: QuestionnaireResponseItem = {
         linkId: item.linkId
       };
@@ -522,18 +642,18 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             );
           }
 
-          if (prepopulationResult != null && !saved_response && response_item.answer) {
+          if (!!prepopulationResult && !saved_response && response_item.answer) {
             switch (item.type) {
               case 'boolean':
-                response_item.answer.push({ valueBoolean: prepopulationResult });
+                response_item.answer.push({ valueBoolean: prepopulationResult as boolean });
                 break;
 
               case 'integer':
-                response_item.answer.push({ valueInteger: prepopulationResult });
+                response_item.answer.push({ valueInteger: prepopulationResult as number });
                 break;
 
               case 'decimal':
-                response_item.answer.push({ valueDecimal: prepopulationResult });
+                response_item.answer.push({ valueDecimal: prepopulationResult as number });
                 break;
 
               case 'date':
@@ -544,24 +664,19 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
               case 'choice':
                 response_item.answer.push({
-                  valueCoding: getDisplayCoding(prepopulationResult, item)
+                  valueCoding: getDisplayCoding(prepopulationResult as Coding, item)
                 });
                 break;
 
               case 'open-choice':
-                //This is to populated dynamic options (option items generated from CQL expression)
+                //This is to populate dynamic options (option items generated from CQL expression)
                 //R4 uses item.answerOption, STU3 uses item.option
-                let populateAnswerOptions = false;
 
-                if (item.answerOption != null && item.answerOption.length == 0) {
-                  populateAnswerOptions = true;
-                }
-
-                prepopulationResult.forEach((v: any) => {
+                (prepopulationResult as string[]).forEach(v => {
                   if (v) {
                     const displayCoding = getDisplayCoding(v, item);
 
-                    if (populateAnswerOptions && item.answerOption) {
+                    if (item.answerOption && item.answerOption.length === 0) {
                       item.answerOption.push({ valueCoding: displayCoding });
                     }
                     if (response_item.answer) {
@@ -572,11 +687,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 break;
 
               case 'quantity':
-                response_item.answer.push({ valueQuantity: prepopulationResult });
+                response_item.answer.push({ valueQuantity: prepopulationResult as Quantity });
                 break;
 
               default:
-                response_item.answer.push({ valueString: prepopulationResult });
+                response_item.answer.push({ valueString: prepopulationResult as string });
             }
           }
         });
@@ -600,9 +715,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           response_items.push(response_item);
         }
       }
-    });
+    }
   };
-  const getDisplayCoding = (v: any, item: QuestionnaireItem) => {
+
+  const getDisplayCoding = (v: string | Coding, item: QuestionnaireItem) => {
     if (typeof v == 'string') {
       const answerValueSetReference = item.answerValueSet;
       const answerOption = item.answerOption;
@@ -661,6 +777,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       display: displayText
     };
   };
+
   const populateMissingDisplay = (qItem: QuestionnaireItem) => {
     const codingList = qItem.answerOption;
     if (codingList) {
@@ -671,6 +788,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       });
     }
   };
+
   // Merge the items for the same linkId to comply with the LHCForm
   const mergeResponseForSameLinkId = (response: QuestionnaireResponse) => {
     const mergedResponse: QuestionnaireResponse = {
@@ -705,54 +823,44 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return mergedResponse;
   };
-  const getRetrieveSaveQuestionnaireUrl = () => {
+
+  const getRetrieveSaveQuestionnaireUrl = (): string => {
     // read configuration
     const updateDate = new Date();
     updateDate.setDate(updateDate.getDate() - ConfigData.QUESTIONNAIRE_EXPIRATION_DAYS);
     return `QuestionnaireResponse?_lastUpdated=gt${
       updateDate.toISOString().split('T')[0]
-    }&status=in-progress`;
+    }&status=in-progress&subject=${getPatient()}`;
   };
+
   const loadPreviousForm = (showError = true) => {
     // search for any QuestionnaireResponses
-    let questionnaireResponseUrl = getRetrieveSaveQuestionnaireUrl();
-    questionnaireResponseUrl = questionnaireResponseUrl + '&subject=' + getPatient();
+    const questionnaireResponseUrl = getRetrieveSaveQuestionnaireUrl();
     console.log('Using URL ' + questionnaireResponseUrl);
 
     props.smartClient
       .request(questionnaireResponseUrl)
       .then(
         result => {
-          popupClear('Would you like to load a previously in-progress form?', 'Cancel', false);
           processSavedQuestionnaireResponses(result, showError);
         },
-        result => {
-          console.log(result);
-          popupClear('Error: failed to load previous in-progress forms', 'OK', true);
-          popupLaunch();
+        () => {
+          popupDispatch({ type: PopupActionType.ERROR_LOADING });
+          popupDispatch({ type: PopupActionType.OPEN_POPUP });
         }
       )
-      .catch(console.error);
-  };
-  const popupClear = (title: string, finalOption: string, logTitle: boolean) => {
-    setPopupTitle(title);
-    setPopupOptions([]);
-    setPopupFinalOption(finalOption);
-    if (logTitle) {
-      console.log(title);
-    }
-  };
-  const popupLaunch = () => {
-    setOpenPopup(true);
+      .catch(reason => {
+        console.error(reason);
+      });
   };
 
   const popupCallback = (returnValue: string) => {
     // display the form loaded
-    setFormLoaded(returnValue);
+    popupDispatch({ type: PopupActionType.SET_FORM_LOADED, value: returnValue });
 
-    if (partialForms[returnValue]) {
+    if (popupState.partialForms[returnValue]) {
       // load the selected form
-      const partialResponse = partialForms[returnValue];
+      const partialResponse = popupState.partialForms[returnValue];
       const saved_response = false;
 
       console.log(partialResponse);
@@ -869,6 +977,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     console.log('getPatient(): ' + requestType + ': ' + p);
     return p;
   };
+
   const getPractitioner = () => {
     let p = 'Unknown';
     let requestType = 'Unknown';
@@ -924,98 +1033,80 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       'QuestionnaireResponse',
       props.fhirVersion.toUpperCase(),
       `#${questionnaireFormId}`
-    );
+    ) as QuestionnaireResponse;
+
     //const mergedResponse = this.mergeResponseForSameLinkId(currentQuestionnaireResponse);
     retrieveQuestions(
       url,
       buildNextQuestionRequest(props.questionnaireForm, currentQuestionnaireResponse)
     )
-      .then(result => result.json())
+      .then(result => result.json() as Promise<AdaptiveForm>)
       .then(result => {
         console.log(
           '-- loadNextQuestions response returned from payer server questionnaireResponse ',
           result
         );
-        if (result.error === undefined) {
+        if ('error' in result) {
+          alert('Failed to load next questions. Error: ' + result.error);
+        } else {
           const newResponse = {
             resourceType: 'QuestionnaireResponse',
             status: 'draft',
             item: []
           };
-          prepopulate(result.contained[0].item, newResponse.item, true);
+          const items = result.contained[0].item || [];
+          prepopulate(items, newResponse.item, true);
           props.updateAdFormResponseFromServer(result);
           props.updateAdFormCompleted(result.status === 'completed');
           props.ehrLaunch(true, result.contained[0]);
-        } else {
-          alert('Failed to load next questions. Error: ' + result.error);
         }
       });
   };
+
+  const getCount = (questionnaireResponses: QuestionnaireResponse[]) => {
+    return questionnaireResponses.reduce((sum, resource) => {
+      const idMatch = resource?.contained?.[0]?.id === props.questionnaireForm.id;
+      const questionnaireIdUrl = resource?.questionnaire;
+      const found =
+        idMatch ||
+        (questionnaireIdUrl &&
+          props.questionnaireForm.id &&
+          questionnaireIdUrl.includes(props.questionnaireForm.id));
+      return found ? sum + 1 : sum;
+    }, 0);
+  };
+
+  const getQuestionnaireResponses = (partialResponses: Bundle<QuestionnaireResponse>) => {
+    if (partialResponses.total && partialResponses.total > 0 && partialResponses.entry) {
+      return partialResponses.entry
+        .map(bundleEntry => bundleEntry.resource)
+        .filter(resource => resource !== undefined) as QuestionnaireResponse[];
+    }
+    return [];
+  };
+
   const processSavedQuestionnaireResponses = (
     partialResponses: Bundle<QuestionnaireResponse>,
     displayErrorOnNoneFound: boolean
   ) => {
+    const questionnaireResponses = getQuestionnaireResponses(partialResponses);
+    const count = getCount(questionnaireResponses);
+    const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
     let noneFound = true;
 
-    if (partialResponses.total && partialResponses.total > 0 && partialResponses.entry) {
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
-      };
-
-      let count = 0;
-
-      partialResponses.entry.forEach(bundleEntry => {
-        let idMatch = false;
-        if (bundleEntry.resource?.contained) {
-          const questionnaireId = bundleEntry.resource?.contained[0].id;
-          idMatch = props.questionnaireForm.id === questionnaireId;
-        }
-        const questionnaireIdUrl = bundleEntry.resource?.questionnaire;
-
-        if (
-          idMatch ||
-          (questionnaireIdUrl &&
-            props.questionnaireForm.id &&
-            questionnaireIdUrl.includes(props.questionnaireForm.id))
-        ) {
-          count = count + 1;
-          // add the option to the popupOptions
-          const date = new Date(bundleEntry?.resource?.authored || Date.now());
-          const option =
-            date.toLocaleDateString(undefined, options) +
-            ' (' +
-            bundleEntry?.resource?.status +
-            ')';
-          setPopupOptions([...popupOptions, option]);
-          if (bundleEntry.resource) {
-            partialForms[option] = bundleEntry.resource;
-          }
-        }
-      });
-      console.log(popupOptions);
-      console.log(partialForms);
-
-      //check if show popup
-      const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
-      // only show the popupOptions if there is one to show
-      if (count > 0 && showPopup) {
-        noneFound = false;
-        popupLaunch();
-      }
+    if (count > 0 && showPopup) {
+      noneFound = false;
+      popupDispatch({ type: PopupActionType.LOAD, value: questionnaireResponses });
+      popupDispatch({ type: PopupActionType.OPEN_POPUP });
     }
 
     // display a message that none were found if necessary
     if (noneFound && displayErrorOnNoneFound) {
-      popupClear('No saved forms available to load.', 'OK', true);
-      popupLaunch();
+      popupDispatch({ type: PopupActionType.NONE_FOUND });
+      popupDispatch({ type: PopupActionType.OPEN_POPUP });
     }
   };
+
   const isAdaptiveForm = () => {
     return (
       props.questionnaireForm.meta &&
@@ -1060,7 +1151,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
   // Get tooltip for Submit button
   const getMissingFieldsTooltip = () => {
-    const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing fields';
+    const tooltip = isFilledOut() ? 'Submit to REMS admin' : 'Fill out missing required fields';
     return <Typography fontSize={'small'}>{tooltip}</Typography>;
   };
 
@@ -1083,7 +1174,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         <Accordion disableGutters>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography className="error-text">
-              You must include a value for the following missing fields (click to expand):
+              &nbsp;*You must include a value for the following missing fields (click to expand):
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -1185,6 +1276,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
     }
   };
+
   const addAuthorToResponse = (qr: QuestionnaireResponse, practitionerRef: string) => {
     function traverseToItemsLeafNode(item: QuestionnaireResponseItem, practitionerRef: string) {
       if (!item.item) {
@@ -1235,12 +1327,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   };
 
   const getQuestionnaireResponse = (status: QuestionnaireResponse['status']) => {
-    const qr: QuestionnaireResponseSmart = window.LForms.Util.getFormFHIRData(
+    const qr = window.LForms.Util.getFormFHIRData(
       'QuestionnaireResponse',
       props.fhirVersion.toUpperCase(),
       `#${questionnaireFormId}`
-    );
-    //console.log(qr);
+    ) as QuestionnaireResponseSmart;
     qr.status = status;
     qr.author = {
       reference: getPractitioner()
@@ -1292,6 +1383,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     }
     return qr;
   };
+
   const isPriorAuthBundleValid = (bundle: Bundle) => {
     const resourceTypeList = ['Patient', 'Practitioner'];
 
@@ -1318,18 +1410,14 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       .then(
         result => {
           if (showPopup) {
-            popupClear('Partially completed form (QuestionnaireResponse) saved to EHR', 'OK', true);
-            popupLaunch();
+            popupDispatch({ type: PopupActionType.SAVED_TO_EHR });
+            popupDispatch({ type: PopupActionType.OPEN_POPUP });
             console.log(result);
           }
         },
         result => {
-          popupClear(
-            'Error: Partially completed form (QuestionnaireResponse) Failed to save to EHR',
-            'OK',
-            true
-          );
-          popupLaunch();
+          popupDispatch({ type: PopupActionType.FAILED_SAVE_TO_EHR });
+          popupDispatch({ type: PopupActionType.OPEN_POPUP });
           console.log(result);
         }
       )
@@ -1348,9 +1436,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
     if (status == 'in-progress') {
       const showPopup = !isAdaptiveForm() || isAdaptiveFormWithoutItem();
       storeQuestionnaireResponseToEhr(qr, showPopup);
-      popupClear('Partially completed form (QuestionnaireResponse) saved to EHR', 'OK', true);
+      popupDispatch({ type: PopupActionType.SAVED_TO_EHR });
+
+      // After saving the form to the EHR, keep it loaded.
+      const popupOption = getNewPopupOption(qr as QuestionnaireResponse);
+      popupCallback(popupOption);
       if (showPopup) {
-        popupLaunch();
+        popupDispatch({ type: PopupActionType.OPEN_POPUP });
       } else {
         alert('Partially completed form (QuestionnaireResponse) saved to EHR');
       }
@@ -1646,7 +1738,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
         console.log('specialtyRx', specialtyRxBundle);
 
-        props.setPriorAuthClaim(priorAuthBundle);
         const options = {
           headers: {
             Accept: 'application/json',
@@ -1654,7 +1745,11 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           }
         };
         axios
-          .post('http://localhost:8090/etasu/met', specialtyRxBundle, options)
+          .post(
+            `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`,
+            specialtyRxBundle,
+            options
+          )
           .then((response: RemsAdminResponse) => {
             const remsCaseUrl = 'http://hl7.org/fhir/sid/rems-case'; // placeholder
             const proceedToRems = () => {
@@ -1692,7 +1787,6 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               }
 
               props.setSpecialtyRxBundle(specialtyRxBundle);
-              props.setRemsAdminResponse(response);
             };
             if (response.status == 201) {
               proceedToRems();
@@ -1717,6 +1811,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       }
     }
   };
+
   const makeReference = (bundle: Bundle, resourceType: string) => {
     const entry = bundle.entry?.find(function (entry) {
       return entry.resource?.resourceType == resourceType;
@@ -1728,6 +1823,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       return resourceType + '/' + entry.resource?.id;
     }
   };
+
   const isAdaptive = isAdaptiveForm();
   const showPopup = !isAdaptive || isAdaptiveFormWithoutItem();
   return (
@@ -1743,11 +1839,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
       )}
       {showPopup && (
         <SelectPopup
-          title={popupTitle}
-          options={popupOptions}
-          finalOption={popupFinalOption}
+          title={popupState.title}
+          options={popupState.options}
+          finalOption={popupState.finalOption}
           selectedCallback={popupCallback}
-          open={openPopup}
+          selectedValue={popupState.formLoaded}
+          open={popupState.open}
+          close={() => popupDispatch({ type: PopupActionType.CLOSE_POPUP })}
         />
       )}
       <AlertDialog
@@ -1756,7 +1854,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         setRxAlert={(e: RxAlert) => {
           setShowRxAlert(e);
         }}
-      ></AlertDialog>
+      />
       {isAdaptive && (
         <div className="form-message-panel">
           {isAdaptiveFormWithoutItem() && !props.adFormCompleted && (
@@ -1773,7 +1871,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         </div>
       )}
       <Stack flexDirection="column" spacing={1} p={1}>
-        {!isAdaptive && <Typography>Form Loaded: {formLoaded}</Typography>}
+        {!isAdaptive && <Typography>Form Loaded: {popupState.formLoaded}</Typography>}
         {getDisplayButtons()}
       </Stack>
     </div>
