@@ -5,6 +5,7 @@ import Patient from './views/Patient/PatientView';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CloseIcon from '@mui/icons-material/CloseOutlined';
+import HelpIcon from '@mui/icons-material/Help';
 import { ReactElement, useCallback, useEffect, useState, MouseEvent } from 'react';
 import { MemoizedTabPanel } from './TabDisplay';
 import { IconButton } from '@mui/material';
@@ -146,6 +147,20 @@ function App(props: AppProps) {
                   />
                 );
               })}
+              <div
+                style={{
+                  display: 'flex',
+                  marginLeft: 'auto',
+                  alignItems: 'center',
+                  paddingRight: '20px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  window.open('/help', '_blank');
+                }}
+              >
+                <span style={{ paddingRight: '5px' }}>Help</span> <HelpIcon />
+              </div>
             </Tabs>
           </Box>
           <div style={{ paddingTop: '48px' }}>

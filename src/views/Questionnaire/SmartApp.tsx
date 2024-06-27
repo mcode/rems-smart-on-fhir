@@ -626,6 +626,16 @@ export function SmartApp(props: SmartAppProps) {
   const renderButtons = (ref: Element) => {
     const element = (
       <div>
+        <div>
+          <a
+            href="#"
+            onClick={() => {
+              window.open('/help/form-help', 'wind', 'width=900,height=600');
+            }}
+          >
+            Form Help
+          </a>
+        </div>
         <div className="task-button">
           <label>Only Show Unfilled Fields</label>{' '}
           <input
