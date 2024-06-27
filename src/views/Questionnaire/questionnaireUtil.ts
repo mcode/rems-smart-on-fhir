@@ -7,9 +7,6 @@ import {
   QuestionnaireResponseItem,
   ServiceRequest
 } from 'fhir/r4';
-interface MyObject {
-  [key: string]: any;
-}
 
 export interface AppContext {
   questionnaire?: string;
@@ -17,6 +14,11 @@ export interface AppContext {
   order?: string;
   coverage?: string;
 }
+
+export type AdaptiveForm =
+  | { error: string }
+  | (QuestionnaireResponse & { contained: Questionnaire[] });
+
 // to get FHIR properties of the form answer{whatever}
 export function getAppContext(appContextString: string) {
   const appContext: AppContext = {};
@@ -40,12 +42,14 @@ export function getAppContext(appContextString: string) {
   });
   return appContext;
 }
-export function findValueByPrefix(object: MyObject, prefix: string) {
+
+export function findValueByPrefix<T>(object: T, prefix: string): T[keyof T] | undefined {
   for (const property in object) {
-    if (object.hasOwnProperty(property) && property.toString().startsWith(prefix)) {
+    if (Object.hasOwnProperty.call(object, property) && property.toString().startsWith(prefix)) {
       return object[property];
     }
   }
+  return undefined;
 }
 
 export function searchQuestionnaire(
@@ -158,7 +162,9 @@ export function buildFhirUrl(reference: string, fhirPrefix: string, fhirVersion:
  * Retrieve the CodeableConcept for the medication from the medicationCodeableConcept if available.
  * Read CodeableConcept from contained Medication matching the medicationReference otherwise.
  */
-export function getDrugCodeableConceptFromMedicationRequest(medicationRequest: MedicationRequest) {
+export function getDrugCodeableConceptFromMedicationRequest(
+  medicationRequest: MedicationRequest | undefined
+) {
   if (medicationRequest) {
     if (medicationRequest?.medicationCodeableConcept) {
       console.log('Get Medication code from CodeableConcept');

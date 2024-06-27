@@ -5,6 +5,7 @@ import Patient from './views/Patient/PatientView';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CloseIcon from '@mui/icons-material/CloseOutlined';
+import HelpIcon from '@mui/icons-material/Help';
 import { ReactElement, useCallback, useEffect, useState, MouseEvent } from 'react';
 import { MemoizedTabPanel } from './TabDisplay';
 import { IconButton } from '@mui/material';
@@ -32,7 +33,7 @@ function App(props: AppProps) {
   const [value, setValue] = useState('');
   const [tabs, setTabs] = useState<SmartTab[]>([]);
   const [staticContent, setStaticContent] = useState<ReactElement>();
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(tabs[newValue].id);
   };
   const addTab = (element: ReactElement, tabName: string, groupName: string, tabIndex = 0) => {
@@ -73,7 +74,7 @@ function App(props: AppProps) {
       ]);
     }
     setValue(homeName);
-  }, []);
+  }, [client, props.client]);
 
   const handleClose = useCallback(
     (event: MouseEvent, tabToDelete: SmartTab) => {
@@ -84,12 +85,12 @@ function App(props: AppProps) {
       if (tabToDeleteIndex > 0 && value === tabToDelete.id) {
         setValue(tabs[tabToDeleteIndex - 1].id);
       }
-      const newTabs = tabs.filter((tab, index) => {
+      const newTabs = tabs.filter((_tab, index) => {
         return index !== tabToDeleteIndex;
       });
       setTabs(newTabs);
     },
-    [tabs]
+    [tabs, value]
   );
 
   return (
@@ -146,6 +147,20 @@ function App(props: AppProps) {
                   />
                 );
               })}
+              <div
+                style={{
+                  display: 'flex',
+                  marginLeft: 'auto',
+                  alignItems: 'center',
+                  paddingRight: '20px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  window.open('/help', '_blank');
+                }}
+              >
+                <span style={{ paddingRight: '5px' }}>Help</span> <HelpIcon />
+              </div>
             </Tabs>
           </Box>
           <div style={{ paddingTop: '48px' }}>
@@ -166,16 +181,6 @@ function App(props: AppProps) {
           </div>
         </div>
       )}
-      {/* <div className='App'>
-        <Container className='NavContainer' maxWidth='xl'>
-          <div className='containerg'>
-            <div className='logo'>
-              <ContentPasteIcon sx={{ color: 'white', fontSize: 50, paddingTop: .5, paddingRight: 2.5 }} />
-              <h1>REMS SMART on FHIR App</h1>
-            </div>
-          </div>
-        </Container>
-      </div> */}
     </Box>
   );
 }

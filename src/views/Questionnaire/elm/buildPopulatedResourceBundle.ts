@@ -6,6 +6,20 @@ import * as env from 'env-var';
 interface Queries {
   [key: string]: string;
 }
+
+const getPerformer = (request: OrderResource): string | undefined => {
+  if (request.resourceType === 'DeviceRequest') {
+    return request.performer?.reference;
+  } else if (request.resourceType === 'ServiceRequest') {
+    return request.performer?.[0].reference;
+  } else if (request.resourceType === 'MedicationRequest') {
+    return request.requester?.reference;
+  } else if (request.resourceType === 'MedicationDispense') {
+    return request.performer?.[0].actor.reference;
+  }
+  return undefined;
+};
+
 function doSearch(
   smart: Client,
   type: string,
@@ -17,21 +31,11 @@ function doSearch(
   let usePatient = true;
   // setup the query for Practitioner and Coverage
   // TODO - handle other resource not associated with Patient?
+  const performer = getPerformer(request);
   switch (type) {
     case 'PractitionerRole':
     case 'Practitioner':
-      let performer;
-      if (request.resourceType === 'DeviceRequest') {
-        performer = request.performer && request.performer.reference;
-      } else if (request.resourceType === 'ServiceRequest') {
-        performer = request.performer?.[0] && request.performer[0].reference;
-      } else if (request.resourceType === 'MedicationRequest') {
-        performer = request.requester && request.requester.reference;
-      } else if (request.resourceType === 'MedicationDispense') {
-        performer = request.performer?.[0] && request.performer[0].actor.reference;
-      }
-
-      q._id = performer ? performer : '';
+      q._id = performer || '';
       if (type === 'PractitionerRole') {
         smart
           .request(`PractitionerRole?practitioner=${performer}`, {
@@ -206,7 +210,7 @@ function processSuccess(
   };
 }
 
-function processError(smart: Client, callback: (n: FhirResource[] | null, e?: Error) => void) {
+function processError(_smart: Client, callback: (n: FhirResource[] | null, e?: Error) => void) {
   return (error: Error) => {
     callback(null, error);
   };
