@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box';
 import React from 'react';
 
 interface TabPanelProps {
@@ -20,7 +20,7 @@ function TabPanel(props: TabPanelProps) {
       key={name}
       {...other}
     >
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 0, sm: 3 } }}>
         <div>{children}</div>
       </Box>
     </div>
