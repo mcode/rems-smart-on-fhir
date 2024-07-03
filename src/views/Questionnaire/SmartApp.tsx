@@ -627,7 +627,7 @@ export function SmartApp(props: SmartAppProps) {
     const element = (
       <div>
         <div>
-          <a 
+          <a
             className="task-button"
             href="#"
             onClick={() => {
