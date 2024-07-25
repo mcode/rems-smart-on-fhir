@@ -2,6 +2,7 @@ import { MedicationRequest } from 'fhir/r4';
 import { SupportedHooks } from '../cds-hooks/resources/HookTypes';
 import { getDrugCodeableConceptFromMedicationRequest } from '../views/Questionnaire/questionnaireUtil';
 import { medicationRequestToRemsAdmins } from './data';
+import * as env from 'env-var';
 
 export const getMedicationSpecificRemsAdminUrl = (
   request: MedicationRequest | undefined,
@@ -46,4 +47,8 @@ export const getMedicationSpecificRemsAdminUrl = (
   }
 
   return cdsUrl.remsAdmin;
+};
+
+export const getIntermediaryRemsAdminUrl = (hook: SupportedHooks): string => {
+  return `${env.get('INTERMEDIARY_CDS_HOOKS').asString()}/${hook}-crd`;
 };
