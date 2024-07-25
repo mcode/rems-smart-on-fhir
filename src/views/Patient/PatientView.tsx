@@ -84,7 +84,7 @@ function PatientView(props: PatientViewProps) {
 
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
-  const cdsUrls = env.get('USE_INTERMEDIARY').toString()
+  const cdsUrls = env.get('USE_INTERMEDIARY').asBool()
     ? [getIntermediaryRemsAdminUrl(SupportedHooks.PATIENT_VIEW)]
     : (Array.from(
         new Set(
