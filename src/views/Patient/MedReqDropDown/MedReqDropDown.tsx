@@ -282,7 +282,11 @@ function MedReqDropDown({
       };
       axios({
         method: 'post',
-        url: `${env.get('INTERMEDIARY_ETASU_MET').asString()}`,
+        url: env.get('USE_INTERMEDIARY').asBool()
+          ? `${env.get('INTERMEDIARY_ETASU_MET').asString()}`
+          : `${env
+              .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
+              .asString()}/4_0_0/GuidanceResponse/$rems-etasu`,
         data: params
       }).then(res => {
         const resParams = res.data as Parameters;
