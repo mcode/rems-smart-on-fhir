@@ -57,7 +57,6 @@ import axios, { AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client';
 import { red } from '@mui/material/colors';
 import { LForms } from './LFormsTypes';
-import * as env from 'env-var';
 
 declare global {
   interface Window {
