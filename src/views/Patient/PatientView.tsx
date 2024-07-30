@@ -16,13 +16,11 @@ import { Medication, MedicationRequest, Patient, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
-import { Hook, Card as HooksCard, SupportedHooks } from '../../cds-hooks/resources/HookTypes';
+import { Hook, Card as HooksCard } from '../../cds-hooks/resources/HookTypes';
 import axios from 'axios';
 import PatientViewHook from '../../cds-hooks/resources/PatientView';
 import { hydrate } from '../../cds-hooks/prefetch/PrefetchHydrator';
-import { medicationRequestToRemsAdmins } from '../../util/data';
-import * as env from 'env-var';
-import { getIntermediaryRemsAdminUrl } from '../../util/util';
+import { getCdsUrlsForPatientViewHook } from '../../util/util';
 
 interface PatientViewProps {
   client: Client;
@@ -84,16 +82,7 @@ function PatientView(props: PatientViewProps) {
 
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
-  const cdsUrls = env.get('USE_INTERMEDIARY').asBool()
-    ? [getIntermediaryRemsAdminUrl(SupportedHooks.PATIENT_VIEW)]
-    : (Array.from(
-        new Set(
-          medicationRequestToRemsAdmins.map(
-            ({ hookEndpoints }) =>
-              hookEndpoints.find(({ hook }) => hook === SupportedHooks.PATIENT_VIEW)?.remsAdmin
-          )
-        )
-      ).filter(url => !!url) as string[]);
+  const cdsUrls = getCdsUrlsForPatientViewHook();
 
   //Prefetch
   const [patient, setPatient] = useState<Patient | null>(null);

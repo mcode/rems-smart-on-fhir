@@ -46,7 +46,7 @@ import EtasuStatus from './etasuStatus/EtasuStatus';
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
 import axios from 'axios';
-import { getIntermediaryRemsAdminUrl, getMedicationSpecificRemsAdminUrl } from '../../../util/util';
+import { getCdsUrl, getEtasuUrl } from '../../../util/util';
 
 interface MedReqDropDownProps {
   client: Client;
@@ -170,9 +170,7 @@ function MedReqDropDown({
         },
         [resourceId]
       );
-      const cdsUrl = env.get('USE_INTERMEDIARY').asBool()
-        ? getIntermediaryRemsAdminUrl(hook.hookType)
-        : getMedicationSpecificRemsAdminUrl(request, hook.hookType);
+      const cdsUrl = getCdsUrl(request, hook.hookType);
 
       setCDSUrl(cdsUrl);
 
@@ -282,11 +280,7 @@ function MedReqDropDown({
       };
       axios({
         method: 'post',
-        url: env.get('USE_INTERMEDIARY').asBool()
-          ? `${env.get('INTERMEDIARY_ETASU_MET').asString()}`
-          : `${env
-              .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
-              .asString()}/4_0_0/GuidanceResponse/$rems-etasu`,
+        url: getEtasuUrl(),
         data: params
       }).then(res => {
         const resParams = res.data as Parameters;
