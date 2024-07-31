@@ -56,7 +56,7 @@ const getIntermediaryCdsUrl = (hook: SupportedHooks): string => {
       'Forwarding CDS hook to REMS intermediary, but INTERMEDIARY_SERVER_BASE is not defined'
     );
   }
-  return `${intermediaryBaseUrl}/r4/cds-services/${hook}-crd`;
+  return `${intermediaryBaseUrl}/cds-services/rems-${hook}`;
 };
 
 export const getCdsUrlsForPatientViewHook = (): string[] => {
