@@ -628,6 +628,7 @@ export function SmartApp(props: SmartAppProps) {
       <div>
         <div>
           <a
+            className="task-button"
             href="#"
             onClick={() => {
               window.open('/help/form-help', 'wind', 'width=900,height=600');

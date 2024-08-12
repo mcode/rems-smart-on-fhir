@@ -128,5 +128,5 @@ html {
 }
 
 .task-button {
-  color: #3b3b3b;
+  color: #3b3b3b !important;
 }
