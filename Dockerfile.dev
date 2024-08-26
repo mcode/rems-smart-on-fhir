@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:21-alpine
 WORKDIR /home/node/app/rems-smart-on-fhir
 COPY --chown=node:node . .
 RUN npm install

@@ -1,6 +1,5 @@
 import {
   Bundle,
-  Coding,
   DeviceRequest,
   Extension,
   Library,
@@ -12,7 +11,7 @@ import {
 } from 'fhir/r4';
 import { useEffect, useState } from 'react';
 import { QuestionnaireForm } from './QuestionnaireForm';
-import fetchFhirVersion, { AppContext } from './questionnaireUtil';
+import fetchFhirVersion, { AdaptiveForm, AppContext } from './questionnaireUtil';
 import cqlfhir from 'cql-exec-fhir';
 import Client from 'fhirclient/lib/Client';
 import {
@@ -26,6 +25,7 @@ import PatientSelect from './components/PatientSelect/PatientSelect';
 import RemsInterface from './components/RemsInterface/RemsInterface';
 import { createRoot } from 'react-dom/client';
 import * as env from 'env-var';
+import { ValueSetDictionary } from 'cql-execution';
 
 interface SmartAppProps {
   standalone: boolean;
@@ -43,7 +43,7 @@ interface LogEntry {
 }
 export interface PrepopulationResults {
   [key: string]: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 interface IncludeStatement {
@@ -52,15 +52,15 @@ interface IncludeStatement {
 }
 // TODO: this should be a more complete ELM type, this is just a husk to satisfy typescript
 export interface Elm {
-  [key: string]: any;
+  [key: string]: unknown;
   library: {
-    [key: string]: any;
+    [key: string]: unknown;
     identifier: {
       id: string;
       version: string;
     };
     includes: {
-      [key: string]: any;
+      [key: string]: unknown;
       def: IncludeStatement[];
     };
     valueSets: {
@@ -83,7 +83,7 @@ export interface ExecutionInputs {
   elm: Elm;
   // look at main library elms to determine dependent elms to include
   elmDependencies?: (Elm | undefined)[];
-  valueSetDB: any;
+  valueSetDB: ValueSetDictionary;
   parameters: ParameterObject;
   mainLibraryMaps: Map<string, Library> | null;
 }
@@ -102,15 +102,13 @@ export function SmartApp(props: SmartAppProps) {
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const appContext: AppContext | undefined = props.appContext;
   const [specialtyRxBundle, setSpecialtyRxBundle] = useState<Bundle | null>(null);
-  const [remsAdminResponse, setRemsAdminResponse] = useState<any | null>(null);
   const [orderResource, setOrderResource] = useState<OrderResource | undefined>();
   const [bundle, setBundle] = useState<Bundle>();
-  const [priorAuthClaim, setPriorAuthClaim] = useState<Bundle>();
   const [filterChecked, setFilterChecked] = useState<boolean>(true);
   const [formFilled, setFormFilled] = useState<boolean>(false);
   const [reloadQuestionnaire, setReloadQuestionnaire] = useState<boolean>(false);
   const [adFormCompleted, setAdFormCompleted] = useState<boolean>(false);
-  const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<QuestionnaireResponse>();
+  const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<AdaptiveForm>();
   const [formElement, setFormElement] = useState<HTMLElement>();
   const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
 
@@ -124,9 +122,6 @@ export function SmartApp(props: SmartAppProps) {
     if (!props.standalone) {
       ehrLaunch(false);
     }
-    if (priorAuthClaim) {
-      console.log(priorAuthClaim); // TODO: I don't think we need this, it could be removed.
-    }
   }, []);
   useEffect(() => {
     // TODO: this could be redone like in original DTR to have a big fancy display for errors but I don't think it's necessary or useful.
@@ -136,7 +131,7 @@ export function SmartApp(props: SmartAppProps) {
     });
   }, [errors]);
   // PatientId argument might not be needed
-  const standaloneLaunch = (patientId: string, response: QuestionnaireResponse) => {
+  const standaloneLaunch = (_patientId: string, response: QuestionnaireResponse) => {
     fetchFhirVersion(props.smartClient.state.serverUrl).then(fhirVersion => {
       FHIR_VERSION = fhirVersion;
       const questionnaireUrl = response.questionnaire;
@@ -301,9 +296,9 @@ export function SmartApp(props: SmartAppProps) {
           } else {
             // check for multi-choice questions
             // get all empty questions
-            const emptyq = element.querySelectorAll('.ng-empty');
+            const emptyQuestions = element.querySelectorAll('.ng-empty');
             let doFilter = true;
-            emptyq.forEach(e => {
+            emptyQuestions.forEach(e => {
               const ul = e.parentElement?.querySelector('ul');
               if (ul && !ul.querySelector('li')) {
                 // the multi-choice question doesn't have an answer
@@ -346,9 +341,11 @@ export function SmartApp(props: SmartAppProps) {
 
   // update the ignore required checkbox
   const updateRequired = (defaultFilter: boolean) => {
-    let checked: boolean, requiredCheckbox: HTMLInputElement;
+    let checked: boolean;
     if (!defaultFilter) {
-      requiredCheckbox = document.getElementById('required-fields-checkbox') as HTMLInputElement;
+      const requiredCheckbox = document.getElementById(
+        questionnaire ? `required-fields-checkbox-${questionnaire.id}` : 'required-fields-checkbox'
+      ) as HTMLInputElement;
       checked = requiredCheckbox ? requiredCheckbox.checked : false;
     } else {
       checked = true;
@@ -506,7 +503,7 @@ export function SmartApp(props: SmartAppProps) {
         });
     });
   };
-  // fill the valueSetDB in executionInputs with the required valuesets from their artifact source
+  // fill the valueSetDB in executionInputs with the required ValueSets from their artifact source
   const fillValueSetDB = (executionInputs: ExecutionInputs, artifacts: ReturnValue) => {
     if (!executionInputs.elmDependencies) {
       return;
@@ -523,25 +520,30 @@ export function SmartApp(props: SmartAppProps) {
       // iterate over valueSet definitions
       elm.library.valueSets.def.forEach(valueSetDef => {
         // find FHIR value set artifact
-        const valueSetDefId = valueSetDef.id.replace(/https:\/\//, 'http://'); // vsac only returns urls with http in the resource
-        const valueSet = artifacts.valueSets.find(
-          valueSet => valueSet.id == valueSetDefId || valueSet.url == valueSetDefId
-        );
+        const valueSetDefId = valueSetDef.id;
+        const valueSet = artifacts.valueSets.find(valueSet => {
+          if (valueSet.id && valueSetDefId.includes(valueSet.id)) {
+            return true;
+          } else {
+            if (valueSet.url && valueSetDefId.includes(valueSet.url)) {
+              return true;
+            }
+          }
+          return false;
+        });
         if (valueSet != null) {
           // make sure it has an expansion
           if (valueSet.expansion != null) {
             // add all codes to the the value set db. it is a map in a map, where the first layer key
-            // is the value set id and second layer key is the value set version. for this purpose we are using un-versioned valuesets
+            // is the value set id and second layer key is the value set version. for this purpose we are using un-versioned ValueSets
             executionInputs.valueSetDB[valueSetDef.id] = {};
-            executionInputs.valueSetDB[valueSetDef.id][''] = valueSet.expansion.contains?.map(
-              code => {
-                return {
-                  code: code.code,
-                  system: code.system,
-                  version: code.version
-                };
-              }
-            );
+            executionInputs.valueSetDB[valueSetDef.id][''] = (
+              valueSet.expansion.contains || []
+            ).map(code => ({
+              code: code.code || 'NO_CODE',
+              system: code.system || 'NO_SYSTEM',
+              version: code.version
+            }));
           } else if (valueSet.compose != null) {
             consoleLog(`Valueset ${valueSet.id} has a compose.`, 'infoClass');
 
@@ -551,22 +553,16 @@ export function SmartApp(props: SmartAppProps) {
               }
               const conceptList = code.filter == null ? code.concept : [];
               const system = code.system;
-              const codeList: Coding[] = [];
-              if (conceptList) {
-                conceptList.forEach(concept => {
-                  codeList.push({
-                    code: concept.code,
-                    system: system,
-                    version: code.version
-                  });
-                });
-              }
+              const codeList = (conceptList || []).map(concept => ({
+                code: concept.code,
+                system: system || 'NO_SYSTEM',
+                version: code.version
+              }));
 
               return codeList;
             });
             executionInputs.valueSetDB[valueSetDef.id] = {};
-            executionInputs.valueSetDB[valueSetDef.id][''] =
-              codeList.length > 0 ? codeList[0] : null;
+            executionInputs.valueSetDB[valueSetDef.id][''] = codeList.length > 0 ? codeList[0] : [];
           }
         } else {
           consoleLog(
@@ -631,37 +627,44 @@ export function SmartApp(props: SmartAppProps) {
     const element = (
       <div>
         <div>
+          <a
+            className="task-button"
+            href="#"
+            onClick={() => {
+              window.open('/help/form-help', 'wind', 'width=900,height=600');
+            }}
+          >
+            Form Help
+          </a>
+        </div>
+        <div className="task-button">
+          <label>Only Show Unfilled Fields</label>{' '}
+          <input
+            type="checkbox"
+            onChange={() => {
+              filter(false);
+            }}
+            id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
+            ref={onFilterCheckboxRefChange}
+          ></input>
+        </div>
+        {showRequiredCheckbox && (
           <div className="task-button">
-            <label>Only Show Unfilled Fields</label>{' '}
+            <label>Ignore required fields</label>{' '}
             <input
               type="checkbox"
               onChange={() => {
-                filter(false);
+                updateRequired(false);
               }}
-              id={questionnaire ? `filterCheckbox-${questionnaire.id}` : 'filterCheckbox'}
-              ref={onFilterCheckboxRefChange}
+              id={
+                questionnaire
+                  ? `required-fields-checkbox-${questionnaire.id}`
+                  : 'required-fields-checkbox'
+              }
+              ref={onRequiredCheckboxRefChange}
             ></input>
           </div>
-          {showRequiredCheckbox ? (
-            <div className="task-button">
-              <label>Ignore required fields</label>{' '}
-              <input
-                type="checkbox"
-                onChange={() => {
-                  updateRequired(false);
-                }}
-                id={
-                  questionnaire
-                    ? `required-fields-checkbox-${questionnaire.id}`
-                    : 'required-fields-checkbox'
-                }
-                ref={onRequiredCheckboxRefChange}
-              ></input>
-            </div>
-          ) : (
-            <div />
-          )}
-        </div>
+        )}
       </div>
     );
     const root = createRoot(ref);
@@ -676,53 +679,46 @@ export function SmartApp(props: SmartAppProps) {
     return isFetchingArtifacts ? (
       <div> Fetching resources ... </div>
     ) : (
-      <div>
-        <div className="App">
-          <div
-            className={'overlay ' + (showOverlay ? 'on' : 'off')}
-            onClick={() => {
-              console.log(showOverlay);
-              toggleOverlay();
-            }}
-          ></div>
-          {specialtyRxBundle && remsAdminResponse ? (
-            <RemsInterface
-              specialtyRxBundle={specialtyRxBundle}
-              remsAdminResponse={remsAdminResponse}
-            />
-          ) : (
-            <QuestionnaireForm
-              qform={questionnaire}
-              appContext={appContext}
-              cqlPrepopulationResults={cqlPrepopulationResults}
-              request={orderResource}
-              bundle={bundle}
-              standalone={props.standalone}
-              response={response}
-              attested={attested}
-              setPriorAuthClaim={setPriorAuthClaim}
-              setSpecialtyRxBundle={setSpecialtyRxBundle}
-              setRemsAdminResponse={setRemsAdminResponse}
-              fhirVersion={FHIR_VERSION}
-              smartClient={smart}
-              renderButtons={renderButtons}
-              filterFieldsFn={filter}
-              filterChecked={filterChecked}
-              ignoreRequiredChecked={ignoreRequiredCheckbox}
-              formFilled={formFilled}
-              updateQuestionnaire={updateQuestionnaire}
-              ehrLaunch={ehrLaunch}
-              reloadQuestionnaire={reloadQuestionnaire}
-              updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
-              adFormCompleted={adFormCompleted}
-              updateAdFormCompleted={completed => setAdFormCompleted(completed)}
-              adFormResponseFromServer={adFormResponseFromServer}
-              updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
-              setFormElement={setFormElement}
-              tabIndex={props.tabIndex}
-            />
-          )}
-        </div>
+      <div className="App">
+        <div
+          className={'overlay ' + (showOverlay ? 'on' : 'off')}
+          onClick={() => {
+            console.log(showOverlay);
+            toggleOverlay();
+          }}
+        />
+        {specialtyRxBundle ? (
+          <RemsInterface specialtyRxBundle={specialtyRxBundle} />
+        ) : (
+          <QuestionnaireForm
+            questionnaireForm={questionnaire}
+            appContext={appContext}
+            cqlPrepopulationResults={cqlPrepopulationResults}
+            request={orderResource}
+            bundle={bundle}
+            standalone={props.standalone}
+            response={response}
+            attested={attested}
+            setSpecialtyRxBundle={setSpecialtyRxBundle}
+            fhirVersion={FHIR_VERSION}
+            smartClient={smart}
+            renderButtons={renderButtons}
+            filterFieldsFn={filter}
+            filterChecked={filterChecked}
+            ignoreRequiredChecked={ignoreRequiredCheckbox}
+            formFilled={formFilled}
+            updateQuestionnaire={updateQuestionnaire}
+            ehrLaunch={ehrLaunch}
+            reloadQuestionnaire={reloadQuestionnaire}
+            updateReloadQuestionnaire={reload => setReloadQuestionnaire(reload)}
+            adFormCompleted={adFormCompleted}
+            updateAdFormCompleted={completed => setAdFormCompleted(completed)}
+            adFormResponseFromServer={adFormResponseFromServer}
+            updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
+            setFormElement={setFormElement}
+            tabIndex={props.tabIndex}
+          />
+        )}
       </div>
     );
   } else if (props.standalone) {
@@ -730,7 +726,7 @@ export function SmartApp(props: SmartAppProps) {
   } else {
     return (
       <div className="App">
-        <p>Loading...</p>
+        <h1>Loading...</h1>
       </div>
     );
   }

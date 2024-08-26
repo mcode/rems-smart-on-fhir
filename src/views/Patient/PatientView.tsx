@@ -12,57 +12,68 @@ import {
   Typography
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { MedicationRequest, Patient, Practitioner } from 'fhir/r4';
+import { Medication, MedicationRequest, Patient, Resource } from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import MedReqDropDown from './MedReqDropDown/MedReqDropDown';
-import './PatientView.css';
 import { Hook, Card as HooksCard } from '../../cds-hooks/resources/HookTypes';
 import axios from 'axios';
-import * as env from 'env-var';
 import PatientViewHook from '../../cds-hooks/resources/PatientView';
 import { hydrate } from '../../cds-hooks/prefetch/PrefetchHydrator';
+import { getCdsUrlsForPatientViewHook } from '../../util/util';
 
 interface PatientViewProps {
   client: Client;
   tabCallback: (n: ReactElement, m: string, o: string) => void;
 }
+type InfoRow = { header: string; data: string }[];
 
 export interface MedicationBundle {
   data: MedicationRequest[];
 
   // This is a json object with the key of each element matching the
   // contained FHIR resource
-  references: any;
+  references: { [key: string]: Medication };
 }
 
 //CDS-Hook Request to REMS-Admin for cards
-export const submitToREMS = (
+
+const submitPatientViewHookToAllRemsAdmins = (
+  cdsUrls: string[],
   cdsHook: Hook | null,
   setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>
 ) => {
-  const hookType = (cdsHook && cdsHook.hook) || 'NO_SUCH_HOOK';
-  axios({
-    method: 'post',
-    url:
-      `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}` +
-      `${env.get('REACT_APP_REMS_HOOKS_PATH').asString()}` +
-      hookType,
-    data: cdsHook
-  }).then(
-    response => {
-      setHooksCards(response.data.cards);
+  const promise = Promise.all(cdsUrls.map(cdsUrl => axios.post(cdsUrl, cdsHook))).then();
+  promise.then(
+    responses => {
+      setHooksCards(responses.map(response => response.data.cards).flat());
     },
     error => console.log(error)
   );
 };
 
+export const submitToREMS = (
+  cdsUrl: string | null,
+  cdsHook: Hook | null,
+  setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>
+) => {
+  if (cdsUrl) {
+    const promise = axios.post(cdsUrl, cdsHook);
+    promise.then(
+      response => {
+        setHooksCards(response.data.cards);
+      },
+      error => console.log(error)
+    );
+  } else {
+    console.error(`No defined CDS URL for '${cdsHook}'.`);
+  }
+};
+
 function PatientView(props: PatientViewProps) {
-  function getFhirResource(token: string) {
+  async function getFhirResource(token: string) {
     console.log('getFhirResource: ' + token);
-    return client.request(token).then((e: any) => {
-      return e;
-    });
+    return client.request(token).then((resource: Resource) => resource);
   }
 
   const client = props.client;
@@ -71,21 +82,17 @@ function PatientView(props: PatientViewProps) {
 
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
 
+  const cdsUrls = getCdsUrlsForPatientViewHook();
+
   //Prefetch
   const [patient, setPatient] = useState<Patient | null>(null);
 
   const [user, setUser] = useState<string | null>(null);
 
-  const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
-
   useEffect(() => {
     client.patient.read().then((patient: Patient) => setPatient(patient));
     if (client.user.id) {
       setUser(client.user.id);
-      client.user.read().then(response => {
-        const practitioner = response as Practitioner;
-        setPractitioner(practitioner);
-      });
     } else {
       const appContextString = client.state?.tokenResponse?.appContext;
       const appContext: { [key: string]: string } = {};
@@ -119,12 +126,12 @@ function PatientView(props: PatientViewProps) {
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS(cdsHook, setHooksCards);
+      submitPatientViewHookToAllRemsAdmins(cdsUrls, cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
   // MedicationRequest Prefetching Bundle
-  const [medication, setMedication] = useState<MedicationBundle | null>(null);
+  const [medicationBundle, setMedicationBundle] = useState<MedicationBundle | null>(null);
 
   const getMedicationRequest = () => {
     client
@@ -170,7 +177,7 @@ function PatientView(props: PatientViewProps) {
           }
         });
 
-        setMedication(result);
+        setMedicationBundle(result);
       });
   };
 
@@ -179,22 +186,61 @@ function PatientView(props: PatientViewProps) {
   }, []);
 
   useEffect(() => {
-    client.patient.read().then((patient: any) => setPatient(patient));
+    client.patient.read().then((patient: Patient) => setPatient(patient));
   }, [client.patient, client]);
 
-  const rows: { header: string; data: string }[] = [
-    { header: 'ID', data: patient?.['id'] || '' },
+  function getAge(dateString: string) {
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+  const renderRows = (rows: InfoRow) => {
+    return rows.map(({ header, data }, i) => {
+      let backgroundColor = '#fdfdfd';
+      if (i % 2 === 0) {
+        // is even
+        backgroundColor = '#dcdcdc';
+      }
+      return (
+        <TableRow key={header} sx={{ backgroundColor: backgroundColor }}>
+          <TableCell component="th" scope="row" variant="head">
+            <span style={{ fontWeight: 'bold' }}>{header}</span>
+          </TableCell>
+          <TableCell sx={{ whiteSpace: 'pre-wrap' }} variant="body">
+            {data}
+          </TableCell>
+        </TableRow>
+      );
+    });
+  };
+  let birthday = patient?.birthDate;
+  let age;
+  if (birthday) {
+    age = getAge(birthday);
+    birthday = `${birthday} (${age} years old)`;
+  }
+  const patientName = `${patient?.name?.[0]?.given?.[0]} ${patient?.name?.[0]?.family}`;
+  const patientFullName = `${patient?.name?.[0]?.given?.join(' ')} ${patient?.name?.[0]?.family}`;
+  const rows: InfoRow = [
     {
       header: 'Full Name',
-      data: `${patient?.name?.[0]?.given?.[0]} ${patient?.name?.[0]?.family}`
+      data: patientFullName
     },
-    { header: 'Gender', data: patient?.['gender'] || '' },
-    { header: 'Date of Birth', data: patient?.['birthDate'] || '' },
+    {
+      header: 'Gender',
+      data: patient?.['gender']
+        ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)
+        : ''
+    },
+    { header: 'Date of Birth', data: birthday || '' },
     {
       header: 'Address',
-      data: `${(patient?.address?.[0].line, patient?.address?.[0]['city'])}\n${
-        patient?.address?.[0]?.state
-      }, ${patient?.address?.[0]?.postalCode}`
+      data: `${patient?.address?.[0].line?.[0]}\n${patient?.address?.[0].city}\n${patient?.address?.[0]?.state}, ${patient?.address?.[0]?.postalCode}`
     }
   ];
 
@@ -206,33 +252,32 @@ function PatientView(props: PatientViewProps) {
             <Card sx={{ bgcolor: 'white' }}>
               <CardContent>
                 <Grid container>
-                  <Grid item xs={10} sm={11} md={12} lg={10} alignSelf="center">
+                  <Grid item xs={10} sm={11} md={10} lg={10} alignSelf="center">
                     <Typography component="h1" variant="h5">
-                      Patient information loaded from patient context
+                      Patient:
                     </Typography>
                   </Grid>
-                  <Grid item xs={2} sm={1} md={12} lg={2}>
+                  <Grid item xs={2} sm={1} md={2} lg={2}>
                     <IconButton
                       color="primary"
-                      onClick={() => submitToREMS(cdsHook, setHooksCards)}
+                      onClick={() => {
+                        submitPatientViewHookToAllRemsAdmins(cdsUrls, cdsHook, setHooksCards);
+                      }}
                       size="large"
                     >
                       <RefreshIcon fontSize="large" />
                     </IconButton>
                   </Grid>
+                  <Grid item xs={12} sm={12} md={12} lg={12}>
+                    <h5 style={{ paddingLeft: '16px', paddingBottom: '16px' }}>
+                      <span style={{ fontWeight: 'bold' }}>{patientName}</span>{' '}
+                      {`(ID: ${patient.id})`}
+                    </h5>
+                  </Grid>
                 </Grid>
                 <TableContainer>
                   <Table>
-                    <TableBody>
-                      {rows.map(({ header, data }) => (
-                        <TableRow key={header}>
-                          <TableCell component="th" scope="row" variant="head">
-                            {header}
-                          </TableCell>
-                          <TableCell variant="body">{data}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
+                    <TableBody>{renderRows(rows)}</TableBody>
                   </Table>
                 </TableContainer>
               </CardContent>
@@ -249,9 +294,8 @@ function PatientView(props: PatientViewProps) {
               client={client}
               getFhirResource={getFhirResource}
               hooksCards={hooksCards}
-              medication={medication}
+              medicationBundle={medicationBundle}
               patient={patient}
-              practitioner={practitioner}
               setHooksCards={setHooksCards}
               tabCallback={props.tabCallback}
               user={user}

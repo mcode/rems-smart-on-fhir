@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -14,17 +14,6 @@ interface PatientBoxProps {
 
 export default function PatientBox(props: PatientBoxProps) {
   const [responseId, setResponseId] = useState<string>('');
-
-  // const getAge = (dateString: string) => {
-  //   const today = new Date();
-  //   const birthDate = new Date(dateString);
-  //   let age = today.getFullYear() - birthDate.getFullYear();
-  //   const m = today.getMonth() - birthDate.getMonth();
-  //   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-  //     age--;
-  //   }
-  //   return age;
-  // };
 
   const updateValues = (patient: string, responseId: string) => {
     const response = props.responses.find(response => {

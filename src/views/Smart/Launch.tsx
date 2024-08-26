@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import FHIR from 'fhirclient';
 import env from 'env-var';
 import Register from './Register';
@@ -13,6 +13,7 @@ const Launch = () => {
     </div>
   );
   useEffect(() => {
+    document.title = 'REMS SMART on FHIR app launch page';
     smartLaunch();
   }, []);
 

@@ -10,102 +10,78 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Close from '@mui/icons-material/Close';
 
-import { MedicationRequest, Patient } from 'fhir/r4';
+import { GuidanceResponse, Parameters, ParametersParameter } from 'fhir/r4';
 
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-import RemsMetEtasuResponse from './RemsMetEtasuResponse';
-import MetRequirements from './MetRequirements';
-import * as env from 'env-var';
 import './EtasuStatus.css';
-import { getDrugCodeFromMedicationRequest } from '../../../Questionnaire/questionnaireUtil';
+import { getStatus } from '../MedReqDropDown';
 
 interface EtasuStatusProps {
-  patient: Patient | null;
-  medication: MedicationRequest | undefined;
+  callback: () => void;
+  remsAdminResponse: GuidanceResponse | null;
   update: boolean;
+}
+interface EtasuParam extends Parameters {
+  parameter: EtasuParamParam[];
+}
+interface EtasuParamParam extends ParametersParameter {
+  resource: GuidanceResponse;
 }
 
 const EtasuStatus = (props: EtasuStatusProps) => {
   const [spin, setSpin] = useState<boolean>(false);
-  const [remsAdminResponse, setRemsAdminResponse] = useState<RemsMetEtasuResponse | null>(null);
+
+  const updateEtasu = () => {
+    setSpin(true);
+    props.callback();
+  };
 
   useEffect(() => {
     if (props.update) {
-      refreshEtasuBundle();
+      updateEtasu();
     }
   }, [props.update]);
 
-  const refreshEtasuBundle = () => {
-    setSpin(true);
-    const patientFirstName = props.patient?.name?.at(0)?.given?.at(0);
-    const patientLastName = props.patient?.name?.at(0)?.family;
-    const patientDOB = props.patient?.birthDate;
-    let drugCode = undefined;
-    if (props.medication) {
-      drugCode = getDrugCodeFromMedicationRequest(props.medication)?.code;
-    }
-    console.log(
-      'refreshEtasuBundle: ' +
-        patientFirstName +
-        ' ' +
-        patientLastName +
-        ' - ' +
-        patientDOB +
-        ' - ' +
-        drugCode
-    );
-    const etasuUrl = `${env
-      .get('REACT_APP_REMS_ADMIN_SERVER_BASE')
-      .asString()}/etasu/met/patient/${patientFirstName}/${patientLastName}/${patientDOB}/drugCode/${drugCode}`;
-
-    axios({
-      method: 'get',
-      url: etasuUrl
-    }).then(
-      response => {
-        // Sorting an array mutates the data in place.
-        (response.data as RemsMetEtasuResponse).metRequirements.sort(
-          (first: MetRequirements, second: MetRequirements) => {
-            // Keep the other forms unsorted.
-            if (second.requirementName.includes('Patient Status Update')) {
-              // Sort the Patient Status Update forms in descending order of timestamp.
-              return second.requirementName.localeCompare(first.requirementName);
-            }
-            return 0;
+  const getRequirements = () => {
+    const output = props.remsAdminResponse?.outputParameters?.reference;
+    if (output) {
+      if (output.startsWith('#')) {
+        // contained reference
+        const reference = output.slice(1);
+        if (props.remsAdminResponse?.contained) {
+          const outputParams = props.remsAdminResponse.contained.find(containedResource => {
+            return containedResource.id === reference;
+          }) as EtasuParam;
+          if (outputParams.parameter) {
+            return outputParams.parameter;
+          } else {
+            console.log('unsupported etasu - no parameters found');
           }
-        );
-        console.log(response.data);
-        setRemsAdminResponse(response.data);
-      },
-      error => {
-        console.log(error);
+        }
+      } else {
+        console.log('unsupported etasu - no contained reference');
       }
-    );
+    } else {
+      console.log('unsupported etasu - no output parameter reference');
+    }
+    return []; // do not return undefined
   };
 
-  const status = remsAdminResponse?.status;
-  let color = '#f7f7f7'; // off-white
-  if (status === 'Approved') {
-    color = '#5cb85c'; // green
-  } else if (status === 'Pending') {
-    color = '#f0ad4e'; // orange
-  }
+  const status = getStatus(props.remsAdminResponse);
 
   return (
     <div>
       <h1>REMS Status</h1>
-      <div className="status-icon" style={{ backgroundColor: color }}></div>
+      <div className="status-icon" style={{ backgroundColor: status.color }}></div>
       <Grid container columns={12}>
         <Grid item xs={10}>
-          <div className="bundle-entry">Case Number: {remsAdminResponse?.case_number || 'N/A'}</div>
-          <div className="bundle-entry">Status: {remsAdminResponse?.status || 'N/A'}</div>
+          <div className="bundle-entry">Status: {status.display || 'N/A'}</div>
         </Grid>
         <Grid item xs={2}>
           <div className="bundle-entry">
             <Tooltip title="Refresh">
-              <IconButton onClick={refreshEtasuBundle} data-testid="refresh">
+              <IconButton onClick={updateEtasu} data-testid="refresh">
                 <AutorenewIcon
                   data-testid="icon"
                   className={spin === true ? 'refresh' : 'renew-icon'}
@@ -120,31 +96,31 @@ const EtasuStatus = (props: EtasuStatusProps) => {
         <br></br>
         <h3>ETASU</h3>
         <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-          {remsAdminResponse ? (
+          {props.remsAdminResponse ? (
             <List>
-              {remsAdminResponse?.metRequirements.map((metRequirements: MetRequirements) => (
-                <ListItem
-                  disablePadding
-                  key={metRequirements.metRequirementId}
-                  data-testid="etasu-item"
-                >
-                  <ListItemIcon>
-                    {metRequirements.completed ? (
-                      <CheckCircle color="success" />
-                    ) : (
-                      <Close color="warning" />
-                    )}
-                  </ListItemIcon>
-                  {metRequirements.completed ? (
-                    <ListItemText primary={metRequirements.requirementName} />
-                  ) : (
-                    <ListItemText
-                      primary={metRequirements.requirementName}
-                      secondary={metRequirements.requirementDescription}
-                    />
-                  )}
-                </ListItem>
-              ))}
+              {getRequirements().map((param: EtasuParamParam) => {
+                if (param.resource) {
+                  return (
+                    <ListItem disablePadding key={param.name} data-testid="etasu-item">
+                      <ListItemIcon>
+                        {param.resource?.status === 'success' ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <Close color="warning" />
+                        )}
+                      </ListItemIcon>
+                      {param.resource?.status === 'success' ? (
+                        <ListItemText primary={param.name} />
+                      ) : (
+                        <ListItemText
+                          primary={param.name}
+                          secondary={param.resource?.note?.[0]?.text}
+                        />
+                      )}
+                    </ListItem>
+                  );
+                }
+              })}
             </List>
           ) : (
             'Not Available'

@@ -14,7 +14,18 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Box from '@mui/material/Box';
-import { BundleEntry, Patient, MedicationRequest, Practitioner, Resource } from 'fhir/r4';
+import ListIcon from '@mui/icons-material/List';
+import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
+import {
+  BundleEntry,
+  Patient,
+  MedicationRequest,
+  Resource,
+  MedicationDispense,
+  Parameters,
+  GuidanceResponse,
+  CodeableConcept
+} from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
 import { ReactElement, useEffect, useState } from 'react';
 import example from '../../../cds-hooks/prefetch/exampleHookService.json'; // TODO: Replace with request to CDS service
@@ -27,34 +38,49 @@ import * as env from 'env-var';
 import { MedicationBundle, submitToREMS } from '../PatientView';
 
 // Adding in cards
-import CdsHooksCards from './cdsHooksCards/cdsHooksCards';
+import { CdsHooksCards } from './cdsHooksCards/CdsHooksCards';
 
 // Adding in ETASU
 import EtasuStatus from './etasuStatus/EtasuStatus';
 
 // Adding in Pharmacy
 import PharmacyStatus from './pharmacyStatus/PharmacyStatus';
-import sendRx from './rxSend/rxSend';
+import axios from 'axios';
+import { getCdsUrl, getEtasuUrl } from '../../../util/util';
 
 interface MedReqDropDownProps {
   client: Client;
   getFhirResource: (token: string) => Promise<Resource>;
   hooksCards: HooksCard[];
-  medication: MedicationBundle | null;
+  medicationBundle: MedicationBundle | null;
   patient: Patient | null;
-  practitioner: Practitioner | null;
   setHooksCards: React.Dispatch<React.SetStateAction<HooksCard[]>>;
   tabCallback: (n: ReactElement, m: string, o: string) => void;
   user: string | null;
 }
 
+export interface etasuStatus {
+  color: string;
+  display: string | undefined;
+}
+export function getStatus(etasuResource: GuidanceResponse | null | undefined): etasuStatus {
+  let color = '#0c0c0c'; // gray
+  let display;
+  if (etasuResource?.status === 'success') {
+    color = '#5cb85c'; // green
+    display = 'Approved';
+  } else if (etasuResource?.status === 'data-required') {
+    color = '#f0ad4e'; // orange
+    display = 'Pending';
+  }
+  return { color, display };
+}
 function MedReqDropDown({
   client,
   getFhirResource,
   hooksCards,
-  medication,
+  medicationBundle,
   patient,
-  practitioner,
   setHooksCards,
   tabCallback,
   user
@@ -68,18 +94,22 @@ function MedReqDropDown({
 
   //CDSHooks
   const [cdsHook, setCDSHook] = useState<Hook | null>(null);
+  const [cdsUrl, setCDSUrl] = useState<string | null>(null);
 
   //ETASU
   const [showEtasu, setShowEtasu] = useState<boolean>(false);
-
+  const [remsAdminResponse, setRemsAdminResponse] = useState<GuidanceResponse | null>(null);
+  const [checkedEtasuTime, setCheckedEtasuTime] = useState(0);
   // Pharmacy
   const [showPharmacy, setShowPharmacy] = useState<boolean>(false);
-
-  const [sendRxEnabled, setSendRxEnabled] = useState<boolean>(false);
+  const [testEhrResponse, setTestEhrResponse] = useState<BundleEntry<MedicationDispense> | null>(
+    null
+  );
+  const [checkedPharmacyTime, setCheckedPharmacyTime] = useState(0);
 
   useEffect(() => {
     if (cdsHook) {
-      submitToREMS(cdsHook, setHooksCards);
+      submitToREMS(cdsUrl, cdsHook, setHooksCards);
     }
   }, [cdsHook]);
 
@@ -99,14 +129,7 @@ function MedReqDropDown({
     setShowPharmacy(false);
   };
 
-  const handleSendRx = () => {
-    const med = selectedMedicationCardBundle?.resource;
-    if (med && patient && practitioner) {
-      sendRx(patient, practitioner, med);
-    }
-  };
-
-  const [selectedMedicationCardBundle, setSelectedMedicationCardBundle] =
+  const [selectedMedicationCardBundleEntry, setSelectedMedicationCardBundleEntry] =
     useState<BundleEntry<MedicationRequest>>();
 
   const [selectedMedicationCard, setSelectedMedicationCard] = useState<MedicationRequest>();
@@ -116,7 +139,7 @@ function MedReqDropDown({
   useEffect(() => {
     if (selectedOption != '') {
       setSelectedMedicationCard(
-        medication?.data.find(medication => medication.id === selectedOption)
+        medicationBundle?.data.find(medication => medication.id === selectedOption)
       );
     }
   }, [selectedOption]);
@@ -128,23 +151,29 @@ function MedReqDropDown({
       if (medName) {
         setMedicationName(medName);
       }
-      setSelectedMedicationCardBundle({ resource: selectedMedicationCard });
+      setSelectedMedicationCardBundleEntry({ resource: selectedMedicationCard });
     }
   }, [selectedMedicationCard]);
 
   useEffect(() => {
-    if (patient && patient.id && user && selectedMedicationCardBundle) {
-      const resourceId = `${selectedMedicationCardBundle.resource?.resourceType}/${selectedMedicationCardBundle.resource?.id}`;
+    if (patient && patient.id && user && selectedMedicationCardBundleEntry) {
+      const request = selectedMedicationCardBundleEntry.resource;
+      const resourceId = `${request?.resourceType}/${request?.id}`;
+
       const hook = new OrderSelect(
         patient.id,
         user,
         {
           resourceType: 'Bundle',
           type: 'batch',
-          entry: [selectedMedicationCardBundle]
+          entry: [selectedMedicationCardBundleEntry]
         },
         [resourceId]
       );
+      const cdsUrl = getCdsUrl(request, hook.hookType);
+
+      setCDSUrl(cdsUrl);
+
       let tempHook: OrderSelectHook;
       if (env.get('REACT_APP_SEND_FHIR_AUTH_ENABLED').asBool()) {
         tempHook = hook.generate(client);
@@ -155,21 +184,125 @@ function MedReqDropDown({
         setCDSHook(tempHook);
       });
     }
-  }, [selectedMedicationCardBundle]);
+  }, [selectedMedicationCardBundleEntry]);
 
   useEffect(() => {
-    if (
-      patient &&
-      practitioner &&
-      selectedMedicationCardBundle &&
-      env.get('REACT_APP_SEND_RX_ENABLED').asBool() === true
-    ) {
-      setSendRxEnabled(true);
-    } else {
-      setSendRxEnabled(false);
-    }
-  }, [patient, practitioner, selectedMedicationCardBundle]);
+    refreshEtasuBundle();
+    refreshPharmacyBundle();
+  }, [selectedMedicationCard]);
 
+  const convertTimeDifference = (start: number) => {
+    const end = Date.now();
+    const difference = end - start;
+    const diffMin = difference / 60000;
+    let prefix = 'a long time';
+    if (diffMin < 1) {
+      prefix = 'a few seconds';
+    } else if (diffMin > 1 && diffMin < 2) {
+      prefix = 'a minute';
+    } else if (diffMin > 2 && diffMin < 60) {
+      prefix = `${Math.round(diffMin)} minutes`;
+    } else if (diffMin > 60 && diffMin < 120) {
+      prefix = 'an hour';
+    } else if (diffMin > 120 && diffMin < 1440) {
+      prefix = `${Math.round(diffMin / 60)} hours`;
+    } else if (diffMin > 1440 && diffMin < 2880) {
+      prefix = 'a day';
+    } else if (diffMin > 2880) {
+      prefix = `${Math.round(diffMin / 1440)} days`;
+    }
+    return `Last checked ${prefix} ago`;
+  };
+  const refreshPharmacyBundle = () => {
+    setCheckedPharmacyTime(Date.now());
+    const rxId = selectedMedicationCard?.id;
+
+    const url = `${env
+      .get('REACT_APP_DEFAULT_ISS')
+      .asString()}/MedicationDispense?prescription=${rxId}`;
+    axios({
+      method: 'get',
+      url: url
+    }).then(
+      response => {
+        setTestEhrResponse(response?.data?.entry ? response?.data?.entry[0] : null);
+      },
+      error => {
+        console.log(error);
+      }
+    );
+  };
+
+  const createMedicationFromMedicationRequest = (medicationRequest: MedicationRequest) => {
+    interface Medication {
+      resourceType: string;
+      id: string;
+      code: CodeableConcept | undefined;
+    }
+    const medication: Medication = {
+      resourceType: 'Medication',
+      id: medicationRequest?.id + '-med',
+      code: {}
+    };
+    if (medicationRequest.medicationCodeableConcept) {
+      medication.code = medicationRequest.medicationCodeableConcept;
+    } else if (medicationRequest.medicationReference) {
+      const reference = medicationRequest?.medicationReference;
+      medicationRequest?.contained?.every(e => {
+        if (e.resourceType + '/' + e.id === reference.reference) {
+          if (e.resourceType === 'Medication') {
+            console.log('Get Medication code from contained resource');
+            medication.code = e.code;
+          }
+        }
+      });
+    }
+    return medication;
+  };
+
+  const refreshEtasuBundle = () => {
+    if (patient && selectedMedicationCard) {
+      const updatedMedication = createMedicationFromMedicationRequest(selectedMedicationCard);
+
+      setCheckedEtasuTime(Date.now());
+      const params = {
+        resourceType: 'Parameters',
+        parameter: [
+          {
+            name: 'patient',
+            resource: patient
+          },
+          {
+            name: 'medication',
+            resource: updatedMedication
+          }
+        ]
+      };
+      axios({
+        method: 'post',
+        url: getEtasuUrl(),
+        data: params
+      }).then(res => {
+        const resParams = res.data as Parameters;
+        const etasu = resParams.parameter?.find(e => e.name === 'rems-etasu');
+        if (etasu && etasu.resource?.resourceType === 'GuidanceResponse') {
+          setRemsAdminResponse(etasu.resource);
+        }
+      });
+    }
+  };
+  const renderTimestamp = (checkedTime: number) => {
+    return (
+      <div>
+        <div className="etasuButtonTimestamp">
+          <p>{convertTimeDifference(checkedTime)}</p>
+        </div>
+        <div className="etasuButtonTimestamp timestampString">
+          <p>{new Date(checkedTime).toLocaleString()}</p>
+        </div>
+      </div>
+    );
+  };
   const modal_style = {
     position: 'absolute',
     top: '50%',
@@ -190,9 +323,34 @@ function MedReqDropDown({
     : false;
 
   const label = 'Select Medication Request';
+  const eStatus = getStatus(remsAdminResponse);
+
+  const pStatus = testEhrResponse?.resource?.status;
+  const getMedicationStatus = (status: string | undefined) => {
+    if (status === 'completed') {
+      return 'Picked Up';
+    } else if (status === 'unknown') {
+      return 'Not Started';
+    } else {
+      return 'N/A';
+    }
+  };
+  let pColor = '#0c0c0c'; // black
+  if (pStatus === 'completed') {
+    pColor = '#5cb85c'; // green
+  }
+
+  const etasuSx = {
+    backgroundColor: eStatus.color,
+    ':hover': { filter: 'brightness(110%)', backgroundColor: eStatus.color }
+  };
+  const pharmSx = {
+    backgroundColor: pColor,
+    ':hover': { filter: 'brightness(110%)', backgroundColor: pColor }
+  };
   return (
     <>
-      <Card sx={{ bgcolor: 'white' }}>
+      <Card sx={{ bgcolor: 'white', width: '100%', margin: '0 auto 0' }}>
         <CardContent>
           <Grid item container spacing={2}>
             <Grid item container alignItems="left" direction="column" spacing={2}>
@@ -205,9 +363,10 @@ function MedReqDropDown({
                     label={label}
                     value={selectedOption}
                     onChange={handleOptionSelect}
+                    sx={{ '& #dropdown': { textWrap: 'wrap' } }}
                   >
-                    {medication ? (
-                      medication.data.map(medications => (
+                    {medicationBundle ? (
+                      medicationBundle.data.map(medications => (
                         <MenuItem key={medications.id} value={medications.id}>
                           {getDrugCodeFromMedicationRequest(medications)?.display}
                         </MenuItem>
@@ -222,9 +381,10 @@ function MedReqDropDown({
               {selectedMedicationCard && (
                 <>
                   <Grid item container>
-                    <Grid item xs={10} sm={11}>
+                    <Grid item xs={10} sm={11} style={{ backgroundColor: '#D1D1D1' }}>
                       <Typography bgcolor="text.secondary" color="white" textAlign="center">
-                        Code: {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
+                        Medication Code:{' '}
+                        {getDrugCodeFromMedicationRequest(selectedMedicationCard)?.code}
                       </Typography>
                       <Typography
                         bgcolor="text.disabled"
@@ -253,7 +413,7 @@ function MedReqDropDown({
                     >
                       <IconButton
                         color="primary"
-                        onClick={() => submitToREMS(cdsHook, setHooksCards)}
+                        onClick={() => submitToREMS(cdsUrl, cdsHook, setHooksCards)}
                         size="large"
                       >
                         <RefreshIcon fontSize="large" />
@@ -261,26 +421,29 @@ function MedReqDropDown({
                     </Grid>
                   </Grid>
 
-                  <Grid item container justifyContent="center" spacing={2}>
+                  <Grid item container justifyContent="center" textAlign="center" spacing={2}>
                     {etasu_status_enabled && (
-                      <Grid item>
-                        <Button variant="contained" onClick={handleOpenCheckETASU}>
-                          Check ETASU
+                      <Grid item xs={12} sm={6}>
+                        <Button sx={etasuSx} variant="contained" onClick={handleOpenCheckETASU}>
+                          <div>
+                            <ListIcon fontSize="large" />
+                            <p className="etasuButtonText">ETASU: </p>
+                            <p>{eStatus.display || 'Not Started'}</p>
+                          </div>
                         </Button>
+                        {renderTimestamp(checkedEtasuTime)}
                       </Grid>
                     )}
                     {pharmacy_status_enabled && (
-                      <Grid item>
-                        <Button variant="contained" onClick={handleOpenCheckPharmacy}>
-                          Check Pharmacy
+                      <Grid item xs={12} sm={6}>
+                        <Button sx={pharmSx} variant="contained" onClick={handleOpenCheckPharmacy}>
+                          <div>
+                            <LocalPharmacyIcon fontSize="large" />
+                            <p className="etasuButtonText">Medication:</p>
+                            <p>{getMedicationStatus(pStatus)}</p>
+                          </div>
                         </Button>
-                      </Grid>
-                    )}
-                    {sendRxEnabled && (
-                      <Grid item>
-                        <Button variant="contained" onClick={handleSendRx}>
-                          Send RX to PIMS
-                        </Button>
+                        {renderTimestamp(checkedPharmacyTime)}
                       </Grid>
                     )}
                   </Grid>
@@ -301,14 +464,18 @@ function MedReqDropDown({
       </Card>
       <Modal open={showEtasu} onClose={handleCloseCheckETASU}>
         <Box sx={modal_style}>
-          <EtasuStatus patient={patient} medication={selectedMedicationCard} update={showEtasu} />
+          <EtasuStatus
+            callback={refreshEtasuBundle}
+            remsAdminResponse={remsAdminResponse}
+            update={showEtasu}
+          />
         </Box>
       </Modal>
       <Modal open={showPharmacy} onClose={handleCloseCheckPharmacy}>
         <Box sx={modal_style}>
           <PharmacyStatus
-            patient={patient}
-            medication={selectedMedicationCard}
+            callback={refreshPharmacyBundle}
+            testEhrResponse={testEhrResponse}
             update={showPharmacy}
           />
         </Box>

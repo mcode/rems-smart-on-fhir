@@ -1,112 +1,132 @@
-.wrapper{
-    display:block;
-    margin-left:15px;
-  }
-  html {
-    scroll-behavior: smooth;
-  }
-  .sidenav { 
-    height:100%;
-    width:55px;
-    position: fixed;
-    z-index: 1;
-    top:0;
-    left: 0;
-    background-color:#111;
-    padding-top:60px;
-    overflow-wrap: break-word;
-  }
-  .document-header {
-    margin-left:55px;
-  }
-  
-  .sidenav-box {
-    color:#888;
-    width:100%;
-    border-top:1px solid #555;
-    padding-left: 3px;
-    padding-right:3px;
-    font-size:13px;
-    font-family: 'Courier New', Courier, monospace
-  }
-  
-  .sidenav-box:not(.sidenav-manually-disabled):not(.sidenav-disabled):hover {
-    background-color:#333;
-  }
-  
-  .sidenav-active {
-    color:white;
-  }
-  .sidenav-disabled {
-      background-color: #666;
-      color: #444;
-  }
-  .sidenav-manually-disabled {
-      background-color:#336;
-      color:white;
-  }
-  
-  .submit-button-panel {
-    margin-right: 10px;
-    margin-bottom: 10px;
-  }
+.wrapper {
+  display: block;
+  margin-left: 15px;
+}
+html {
+  scroll-behavior: smooth;
+}
+.sidenav {
+  height: 100%;
+  width: 55px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  padding-top: 60px;
+  overflow-wrap: break-word;
+}
+.document-header {
+  margin-left: 55px;
+}
 
-  .btn-row {
-    display: flex;
-  }
+.sidenav-box {
+  color: #888;
+  width: 100%;
+  border-top: 1px solid #555;
+  padding-left: 3px;
+  padding-right: 3px;
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+}
 
-  .error-text {
-    text-align: end;
-    font-style: italic;
-    color: #8b0000;
-  }
-  
-  .submit-button {
-    margin-left: 5px;
-    border-width: 1px;
-    border-style:solid;
-    border-color:#ced5d9;
-  }
-  
-  .submit-button:hover {
-    background-color: #f3f3f3;
-    border-color:#000;
-  }
-  
-  .form-message-panel {
-    margin-left: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .patient-info-panel {
-    color: white;
-  }
-  
-  .status-panel {
-    margin-left: 10px;
-    margin-bottom: 10px;
-  }
-  
-  .filled {
-      color:white;
-  
-  }
-  
-  .filter-filled { 
-      font-family: monospace;
-      margin:0;
-      padding:5px;
-  
-  }
-  
-  .floating-tools {
-      right:10px;
-      top:0;
-      width: 100px;
-      border-width: 0px 1px 1px 1px;
-      border-style: solid;
-      border-color:black;
-      position:fixed;
-      background-color:white;
-      z-index: 5;
-  }
+.sidenav-box:not(.sidenav-manually-disabled):not(.sidenav-disabled):hover {
+  background-color: #333;
+}
+
+.sidenav-active {
+  color: white;
+}
+.sidenav-disabled {
+  background-color: #666;
+  color: #444;
+}
+.sidenav-manually-disabled {
+  background-color: #336;
+  color: white;
+}
+
+.submit-button-panel {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.error-text {
+  text-align: end;
+  font-style: italic;
+  color: #8b0000;
+}
+
+.submit-button {
+  margin-left: 5px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #ced5d9;
+}
+
+.submit-button:hover {
+  background-color: #f3f3f3;
+  border-color: #000;
+}
+
+.form-message-panel {
+  margin-left: 10px;
+  margin-bottom: 20px;
+}
+
+.patient-info-panel {
+  color: #3b3b3b;
+}
+
+.filled {
+  color: white;
+}
+
+.filter-filled {
+  font-family: monospace;
+  margin: 0;
+  padding: 5px;
+}
+
+.floating-tools {
+  right: 10px;
+  top: 0;
+  width: 100px;
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-color: black;
+  position: fixed;
+  background-color: white;
+  z-index: 5;
+}
+
+.lf-form .required {
+  color: #8b0000;
+  font-size: medium;
+}
+
+.lf-form-title {
+  color: #1976d2;
+  background-color: #F3F6F9;
+}
+
+.lf-control-button {
+  color: #000;
+}
+
+.lf-form-title .lf-question {
+  font-size: x-large;
+  vertical-align: middle;
+}
+
+.lf-form .lf-form-title .lf-control-button {
+  color: #3b3b3b;
+}
+
+.lf-form .lf-form-title .lf-control-button:hover {
+  color: #636363;
+}
+
+.task-button {
+  color: #3b3b3b !important;
+}
