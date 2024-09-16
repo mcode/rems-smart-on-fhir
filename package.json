@@ -16,6 +16,7 @@
     "cql-execution": "^3.0.0",
     "dotenv": "^16.4.5",
     "env-var": "^7.3.1",
+    "Express": "^3.0.1",
     "fhir": "^4.11.2",
     "fhir-visualizers": "^0.0.6",
     "fhirclient": "^2.5.2",
