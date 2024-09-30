@@ -1,6 +1,9 @@
 FROM node:21-alpine
 WORKDIR /home/node/app/rems-smart-on-fhir
+
 COPY --chown=node:node . .
 RUN npm install
 EXPOSE 4040
+
+HEALTHCHECK --interval=30s --start-period=15s --timeout=10m --retries=10 CMD wget --no-verbose --tries=1 --spider http://localhost:4040 || exit 1
 CMD npm run start
