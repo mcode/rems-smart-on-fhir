@@ -12,7 +12,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 
 const launch = () => {
   root.render(
-    <Router>
+    <Router basename="/rems-smart-on-fhir">
       <Routes>
         <Route path="/index" element={<Index />} />
         <Route path="/launch?" element={<Launch />} />
