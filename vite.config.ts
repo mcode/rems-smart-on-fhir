@@ -7,6 +7,9 @@ import dotenv from 'dotenv';
 dotenv.config(); // load env vars from .env
 export default defineConfig({
   plugins: [react(), viteTsconfigPaths(), nodePolyfills()],
+  preview: {
+    allowedHosts: ['.mitre.org', '.us-east-1.elb.amazonaws.com']
+  },
   define: {
     'process.env': process.env
   },
