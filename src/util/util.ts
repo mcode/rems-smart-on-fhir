@@ -89,3 +89,21 @@ export const getEtasuUrl = () => {
     useIntermediary ? intermediaryBaseUrl : nonIntermediaryBaseUrl
   }/4_0_0/GuidanceResponse/$rems-etasu`;
 };
+
+export const extractRemsAdminBaseUrl = (questionnaireUrl: string): string | null => {
+  try {
+    const url = new URL(questionnaireUrl);
+    return `${url.protocol}//${url.host}`;
+  } catch (error) {
+    console.error('Failed to extract base URL from questionnaire URL:', questionnaireUrl, error);
+    return null;
+  }
+};
+
+export const getQuestionnaireResponseSubmitUrl = (questionnaireUrl: string): string | null => {
+  const baseUrl = extractRemsAdminBaseUrl(questionnaireUrl);
+  if (!baseUrl) {
+    return null;
+  }
+  return `${baseUrl}/4_0_0/QuestionnaireResponse/$submit`;
+};
