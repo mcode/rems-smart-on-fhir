@@ -1156,7 +1156,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
   };
 
   // Get missing fields to display
-  const getMissingFields = (): JSX.Element => {
+  const getMissingFields = (): React.JSX.Element => {
     const fields: string[] = [];
     const requiredFieldErrors = formValidationErrors
       ? formValidationErrors.filter(error => {
