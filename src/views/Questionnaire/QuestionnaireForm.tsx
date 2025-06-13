@@ -1748,8 +1748,9 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           remsAdminBaseUrl = extractRemsAdminBaseUrl(props.questionnaireUrl);
           
           if (dynamicSubmitUrl) {
+            submitUrl = dynamicSubmitUrl;
             console.log(` REMS DTR Submit: Using questionnaire source REMS admin at ${remsAdminBaseUrl}`);
-            console.log(` Submitting to: ${dynamicSubmitUrl}`);
+            console.log(` Submitting to: ${submitUrl}`);
           } else {
             submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
             console.log(' Failed to extract REMS admin URL from questionnaire, falling back to environment variable');
