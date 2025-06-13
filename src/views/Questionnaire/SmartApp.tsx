@@ -361,7 +361,7 @@ export function SmartApp(props: SmartAppProps) {
     containedQuestionnaire?: Questionnaire
   ) => {
     setQuestionnaireUrl(questionnaire);
-    
+
     fetchFhirVersion(smart.state.serverUrl).then(fhirVersion => {
       FHIR_VERSION = fhirVersion;
 

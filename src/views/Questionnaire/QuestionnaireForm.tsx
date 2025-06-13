@@ -1742,18 +1742,22 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
         let submitUrl: string;
         let remsAdminBaseUrl: string | null = null;
-        
+
         if (props.questionnaireUrl) {
           const dynamicSubmitUrl = getQuestionnaireResponseSubmitUrl(props.questionnaireUrl);
           remsAdminBaseUrl = extractRemsAdminBaseUrl(props.questionnaireUrl);
-          
+
           if (dynamicSubmitUrl) {
             submitUrl = dynamicSubmitUrl;
-            console.log(` REMS DTR Submit: Using questionnaire source REMS admin at ${remsAdminBaseUrl}`);
+            console.log(
+              ` REMS DTR Submit: Using questionnaire source REMS admin at ${remsAdminBaseUrl}`
+            );
             console.log(` Submitting to: ${submitUrl}`);
           } else {
             submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
-            console.log(' Failed to extract REMS admin URL from questionnaire, falling back to environment variable');
+            console.log(
+              ' Failed to extract REMS admin URL from questionnaire, falling back to environment variable'
+            );
           }
         } else {
           submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
@@ -1767,11 +1771,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           }
         };
         axios
-          .post(
-            submitUrl,
-            specialtyRxBundle,
-            options
-          )
+          .post(submitUrl, specialtyRxBundle, options)
           .then((response: RemsAdminResponse) => {
             const remsCaseUrl = 'http://hl7.org/fhir/sid/rems-case'; // placeholder
             const proceedToRems = () => {
