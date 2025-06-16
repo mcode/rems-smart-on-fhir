@@ -18,6 +18,7 @@ export default defineConfig({
   server: {
     port: parseInt(process.env.PORT!),
     open: false,
-    host: true
+    host: true,
+    allowedHosts: ['.mitre.org', '.us-east-1.elb.amazonaws.com']
   }
 });
