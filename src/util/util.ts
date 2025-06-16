@@ -91,13 +91,15 @@ export const getEtasuUrl = () => {
 };
 
 export const extractRemsAdminBaseUrl = (questionnaireUrl: string): string | null => {
-  try {
-    const url = new URL(questionnaireUrl);
-    return `${url.protocol}//${url.host}`;
-  } catch (error) {
-    console.error('Failed to extract base URL from questionnaire URL:', questionnaireUrl, error);
+  const questionnairePath = '/Questionnaire';
+  const pathIndex = questionnaireUrl.lastIndexOf(questionnairePath);
+  
+  if (pathIndex === -1) {
+    console.warn('No /Questionnaire path found in questionnaire URL:', questionnaireUrl);
     return null;
   }
+  
+  return questionnaireUrl.substring(0, pathIndex);
 };
 
 export const getQuestionnaireResponseSubmitUrl = (questionnaireUrl: string): string | null => {
@@ -105,5 +107,6 @@ export const getQuestionnaireResponseSubmitUrl = (questionnaireUrl: string): str
   if (!baseUrl) {
     return null;
   }
-  return `${baseUrl}/4_0_0/QuestionnaireResponse/$submit`;
+
+  return `${baseUrl}/QuestionnaireResponse/$submit`;
 };
