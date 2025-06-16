@@ -23,7 +23,7 @@ const testMedicationDispense: BundleEntry<MedicationDispense> = {
         },
         {
           system: 'http://hl7.org/fhir/sid/ndc',
-          code: '65597-402-20'
+          code: '65597-407-20'
         }
       ]
     },

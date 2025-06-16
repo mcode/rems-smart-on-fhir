@@ -194,7 +194,7 @@ function processSuccess(
       if (response.link && response.link.some(l => l.relation === 'next' && l.url != null)) {
         // There is a next page, so recursively process that before we do the callback
         const requestUrl = response.link.find(e => {
-          e.relation === 'next';
+          return e.relation === 'next';
         });
         if (requestUrl) {
           smart

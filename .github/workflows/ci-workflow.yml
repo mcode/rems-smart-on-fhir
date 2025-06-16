@@ -7,13 +7,13 @@ jobs:
     name: Check tsc, lint, and prettier
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '21.x'
-    - run: git submodule update --init
-    - run: npm install
-    - run: npm run lint
-    - run: npm run prettier
-      env:
-        CI: true
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '21.x'
+      - run: git submodule update --init
+      - run: npm install
+      - run: npm run lint
+      - run: npm run prettier
+        env:
+          CI: true

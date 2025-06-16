@@ -1,11 +1,10 @@
 .help-box {
-    padding: 10px;
-
+  padding: 10px;
 }
 
 .help-view {
-    border-radius: 16px;
-    background-color: #ededed;
-    height: 500px;
-    padding:20px;
+  border-radius: 16px;
+  background-color: #ededed;
+  height: 500px;
+  padding: 20px;
 }

@@ -89,3 +89,24 @@ export const getEtasuUrl = () => {
     useIntermediary ? intermediaryBaseUrl : nonIntermediaryBaseUrl
   }/4_0_0/GuidanceResponse/$rems-etasu`;
 };
+
+export const extractRemsAdminBaseUrl = (questionnaireUrl: string): string | null => {
+  const questionnairePath = '/Questionnaire';
+  const pathIndex = questionnaireUrl.lastIndexOf(questionnairePath);
+
+  if (pathIndex === -1) {
+    console.warn('No /Questionnaire path found in questionnaire URL:', questionnaireUrl);
+    return null;
+  }
+
+  return questionnaireUrl.substring(0, pathIndex);
+};
+
+export const getQuestionnaireResponseSubmitUrl = (questionnaireUrl: string): string | null => {
+  const baseUrl = extractRemsAdminBaseUrl(questionnaireUrl);
+  if (!baseUrl) {
+    return null;
+  }
+
+  return `${baseUrl}/QuestionnaireResponse/$submit`;
+};
