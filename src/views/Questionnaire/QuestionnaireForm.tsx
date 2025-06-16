@@ -57,6 +57,7 @@ import axios, { AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client';
 import { red } from '@mui/material/colors';
 import { LForms } from './LFormsTypes';
+import { getQuestionnaireResponseSubmitUrl, extractRemsAdminBaseUrl } from '../../util/util';
 
 declare global {
   interface Window {
@@ -91,6 +92,7 @@ interface QuestionnaireProps {
   setSpecialtyRxBundle: (n: Bundle) => void;
   setFormElement: (n: HTMLElement) => void;
   tabIndex: number;
+  questionnaireUrl: string | null;
 }
 
 interface GTableResult {
@@ -1738,6 +1740,30 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
 
         console.log('specialtyRx', specialtyRxBundle);
 
+        let submitUrl: string;
+        let remsAdminBaseUrl: string | null = null;
+
+        if (props.questionnaireUrl) {
+          const dynamicSubmitUrl = getQuestionnaireResponseSubmitUrl(props.questionnaireUrl);
+          remsAdminBaseUrl = extractRemsAdminBaseUrl(props.questionnaireUrl);
+
+          if (dynamicSubmitUrl) {
+            submitUrl = dynamicSubmitUrl;
+            console.log(
+              ` REMS DTR Submit: Using questionnaire source REMS admin at ${remsAdminBaseUrl}`
+            );
+            console.log(` Submitting to: ${submitUrl}`);
+          } else {
+            submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
+            console.log(
+              ' Failed to extract REMS admin URL from questionnaire, falling back to environment variable'
+            );
+          }
+        } else {
+          submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
+          console.log(' No questionnaire URL available, falling back to environment variable');
+        }
+
         const options = {
           headers: {
             Accept: 'application/json',
@@ -1745,11 +1771,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
           }
         };
         axios
-          .post(
-            `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`,
-            specialtyRxBundle,
-            options
-          )
+          .post(submitUrl, specialtyRxBundle, options)
           .then((response: RemsAdminResponse) => {
             const remsCaseUrl = 'http://hl7.org/fhir/sid/rems-case'; // placeholder
             const proceedToRems = () => {

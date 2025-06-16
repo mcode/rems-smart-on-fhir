@@ -111,6 +111,7 @@ export function SmartApp(props: SmartAppProps) {
   const [adFormResponseFromServer, setAdFormResponseFromServer] = useState<AdaptiveForm>();
   const [formElement, setFormElement] = useState<HTMLElement>();
   const [ignoreRequiredCheckbox, setIgnoreRequiredCheckbox] = useState<boolean>(false);
+  const [questionnaireUrl, setQuestionnaireUrl] = useState<string | null>(null);
 
   const showRequiredCheckbox: boolean = env.get('REACT_APP_DEVELOPER_MODE').asBool() ? true : false;
   const smart = props.smartClient;
@@ -359,6 +360,8 @@ export function SmartApp(props: SmartAppProps) {
     questionnaire: string,
     containedQuestionnaire?: Questionnaire
   ) => {
+    setQuestionnaireUrl(questionnaire);
+
     fetchFhirVersion(smart.state.serverUrl).then(fhirVersion => {
       FHIR_VERSION = fhirVersion;
 
@@ -717,6 +720,7 @@ export function SmartApp(props: SmartAppProps) {
             updateAdFormResponseFromServer={response => setAdFormResponseFromServer(response)}
             setFormElement={setFormElement}
             tabIndex={props.tabIndex}
+            questionnaireUrl={questionnaireUrl}
           />
         )}
       </div>
