@@ -93,12 +93,12 @@ export const getEtasuUrl = () => {
 export const extractRemsAdminBaseUrl = (questionnaireUrl: string): string | null => {
   const questionnairePath = '/Questionnaire';
   const pathIndex = questionnaireUrl.lastIndexOf(questionnairePath);
-  
+
   if (pathIndex === -1) {
     console.warn('No /Questionnaire path found in questionnaire URL:', questionnaireUrl);
     return null;
   }
-  
+
   return questionnaireUrl.substring(0, pathIndex);
 };
 
