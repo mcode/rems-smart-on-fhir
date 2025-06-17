@@ -8,7 +8,7 @@ dotenv.config(); // load env vars from .env
 export default defineConfig({
   plugins: [react(), viteTsconfigPaths(), nodePolyfills()],
   preview: {
-    allowedHosts: ['.mitre.org', '.us-east-1.elb.amazonaws.com']
+    allowedHosts: ['.mitre.org', '.elb.us-east-1.amazonaws.com']
   },
   define: {
     'process.env': process.env
@@ -19,6 +19,6 @@ export default defineConfig({
     port: parseInt(process.env.PORT!),
     open: false,
     host: true,
-    allowedHosts: ['.mitre.org', '.us-east-1.elb.amazonaws.com']
+    allowedHosts: ['.mitre.org', '.elb.us-east-1.amazonaws.com']
   }
 });
