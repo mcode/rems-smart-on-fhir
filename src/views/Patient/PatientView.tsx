@@ -114,6 +114,7 @@ function PatientView(props: PatientViewProps) {
         {
           patient: 'Patient/{{context.patientId}}',
           practitioner: 'Practitioner/{{context.userId}}',
+          pharmacy: 'Organization/pharm0111',
           medicationRequests:
             'MedicationRequest?subject={{context.patientId}}&_include=MedicationRequest:medication'
         },
