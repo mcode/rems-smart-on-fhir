@@ -6,6 +6,7 @@ import {
   DeviceRequest,
   Expression,
   Extension,
+  HealthcareService,
   Location,
   MedicationDispense,
   MedicationRequest,
@@ -1641,8 +1642,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
         const specialtyRxBundle: Bundle = JSON.parse(JSON.stringify(priorAuthBundle));
         specialtyRxBundle.type = 'message';
         if (makeReference(priorAuthBundle, 'MedicationRequest')) {
-          const pharmacy: Organization = {
-            resourceType: 'Organization',
+          const pharmacy: HealthcareService = {
+            resourceType: 'HealthcareService',
             id: 'pharm0111',
             identifier: [
               {
@@ -1662,15 +1663,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 rank: 1
               }
             ],
-            address: [
-              {
-                use: 'work',
-                state: 'IL',
-                postalCode: '62864',
-                city: 'Mount Vernon',
-                line: ['1500 Main St']
-              }
-            ]
+            name: 'Test Pharmacy',
           };
 
           const specialtyRxSearchResult: Bundle = {
@@ -1701,7 +1694,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
               },
               {
                 name: 'pharmacy',
-                valueReference: { reference: 'Organization/pharm0111' }
+                valueReference: { reference: 'HealthcareService/pharm0111' }
               },
               {
                 name: 'prescriber',
