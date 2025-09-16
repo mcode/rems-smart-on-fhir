@@ -1657,8 +1657,8 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             ],
             location: [
               {
-                reference: "Location/pharm-location-001",
-                display: "123 Main Street, Anytown, CA 12345"
+                reference: 'Location/pharm-location-001',
+                display: '123 Main Street, Anytown, CA 12345'
               }
             ],
             name: 'Test Pharmacy'
