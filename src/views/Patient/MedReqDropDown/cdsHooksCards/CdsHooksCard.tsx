@@ -266,18 +266,20 @@ export const CdsHooksCard = (props: CdsHooksCardProps) => {
           </Typography>
 
           <div>
-            <Typography>{
-              props.card?.detail ? ( <div>
-              <ReactMarkdown >{props.card?.detail}</ReactMarkdown>
-            </div> ) : (<p style={{ color: 'grey' }}>None</p>) 
-              }</Typography>
+            <Typography>
+              {props.card?.detail ? (
+                <div>
+                  <ReactMarkdown>{props.card?.detail}</ReactMarkdown>
+                </div>
+              ) : (
+                <p style={{ color: 'grey' }}>None</p>
+              )}
+            </Typography>
           </div>
         </CardContent>
-      
 
         {/* Forms */}
         {links.filter(link => link.type === 'smart').length > 0 ? (
-
           <div>
             <Typography color="text.secondary">Required Forms</Typography>
             <List>

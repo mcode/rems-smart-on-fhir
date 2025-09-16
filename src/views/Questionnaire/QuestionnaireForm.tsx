@@ -1663,7 +1663,7 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 rank: 1
               }
             ],
-            name: 'Test Pharmacy',
+            name: 'Test Pharmacy'
           };
 
           const specialtyRxSearchResult: Bundle = {
