@@ -44,7 +44,7 @@ const generateEtasuStatus = () => {
       status: 'success',
       moduleUri: 'https://build.fhir.org/ig/HL7/fhir-medication-rems-ig/',
       subject: {
-        reference: 'Organization/pharm0111'
+        reference: 'HealthcareService/pharm0111'
       },
       note: [
         {
