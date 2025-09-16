@@ -21,6 +21,7 @@ import {
 } from '../../../../cds-hooks/resources/HookTypes';
 import { SmartApp } from '../../../Questionnaire/SmartApp';
 import { AppContext, getAppContext } from '../../../Questionnaire/questionnaireUtil';
+import ReactMarkdown from 'react-markdown';
 
 // TODO:
 //  - create a css file for better style
@@ -263,6 +264,18 @@ export const CdsHooksCard = (props: CdsHooksCardProps) => {
           <Typography variant="h5" component="div">
             {props.card?.summary}
           </Typography>
+
+          <div>
+            <Typography>
+              {props.card?.detail ? (
+                <div>
+                  <ReactMarkdown>{props.card?.detail}</ReactMarkdown>
+                </div>
+              ) : (
+                <p style={{ color: 'grey' }}>None</p>
+              )}
+            </Typography>
+          </div>
         </CardContent>
 
         {/* Forms */}
