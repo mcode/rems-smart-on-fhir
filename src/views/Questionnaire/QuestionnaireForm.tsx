@@ -1655,12 +1655,10 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
                 value: '838283882'
               }
             ],
-            telecom: [
+            location: [
               {
-                system: 'phone',
-                value: '919-234-5174',
-                use: 'work',
-                rank: 1
+                reference: "Location/pharm-location-001",
+                display: "123 Main Street, Anytown, CA 12345"
               }
             ],
             name: 'Test Pharmacy'
