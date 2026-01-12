@@ -174,6 +174,10 @@ function doSearch(
     smart
       .request(`${type}?${query}`)
       .then(processSuccess(smart, [], callback), processError(smart, callback));
+  } else {
+    // No valid ID to search with (e.g., missing coverage) - call callback with empty results
+    console.log(`No valid identifier for ${type}, skipping fetch`);
+    callback([]);
   }
 }
 
