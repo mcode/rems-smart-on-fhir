@@ -74,7 +74,7 @@ function fetchArtifactsOperation(
       parameters.parameter = [];
       retVal.order = checkOrderType(orderResource);
       parameters.parameter.push({ name: 'order', resource: orderResource });
-      
+
       const fetchQuestionnairePackage = () => {
         const requestOptions = {
           method: 'POST',
@@ -116,7 +116,8 @@ function fetchArtifactsOperation(
 
       // Try to fetch coverage
       if (coverage) {
-        smart.request(coverage)
+        smart
+          .request(coverage)
           .then(coverageResource => {
             console.log('Successfully fetched coverage');
             parameters.parameter?.push({ name: 'coverage', resource: coverageResource });
