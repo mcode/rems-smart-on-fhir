@@ -74,8 +74,8 @@ function fetchArtifactsOperation(
       parameters.parameter = [];
       retVal.order = checkOrderType(orderResource);
       parameters.parameter.push({ name: 'order', resource: orderResource });
-      smart.request(coverage).then(coverage => {
-        parameters.parameter?.push({ name: 'coverage', resource: coverage });
+
+      const fetchQuestionnairePackage = () => {
         const requestOptions = {
           method: 'POST',
           headers: { 'Content-Type': 'application/fhir+json' },
@@ -112,7 +112,26 @@ function fetchArtifactsOperation(
               resolve(retVal);
             }
           });
-      });
+      };
+
+      // Try to fetch coverage
+      if (coverage) {
+        smart
+          .request(coverage)
+          .then(coverageResource => {
+            console.log('Successfully fetched coverage');
+            parameters.parameter?.push({ name: 'coverage', resource: coverageResource });
+            fetchQuestionnairePackage();
+          })
+          .catch(err => {
+            console.log('Could not fetch coverage, continuing without it:', err.message);
+            // Continue without coverage
+            fetchQuestionnairePackage();
+          });
+      } else {
+        console.log('No coverage provided');
+        fetchQuestionnairePackage();
+      }
     }
 
     function searchBundle(questionnaire: Questionnaire, bundle: BundleEntry<FhirResource>[]) {
