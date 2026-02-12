@@ -29,7 +29,7 @@ const testMedicationDispense: BundleEntry<MedicationDispense> = {
     },
     subject: {
       reference: 'Patient/pat017',
-      display: 'Jon Snow'
+      display: 'John Snow'
     },
     authorizingPrescription: [
       {
