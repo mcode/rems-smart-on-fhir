@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
-import FHIR from 'fhirclient';
-import env from 'env-var';
+import FHIR from 'fhirclient/browser';
+import env from '#env';
 import Register from './Register';
 interface Client {
   name: string;
