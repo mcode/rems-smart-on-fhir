@@ -2,7 +2,7 @@ import { MedicationRequest } from 'fhir/r4';
 import { SupportedHooks } from '../cds-hooks/resources/HookTypes';
 import { getDrugCodeableConceptFromMedicationRequest } from '../views/Questionnaire/questionnaireUtil';
 import { medicationRequestToRemsAdmins } from './data';
-import * as env from 'env-var';
+import env from '#env';
 
 const getMedicationSpecificRemsAdminUrl = (
   request: MedicationRequest | undefined,

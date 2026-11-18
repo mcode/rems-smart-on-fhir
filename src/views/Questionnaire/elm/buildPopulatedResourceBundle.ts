@@ -1,7 +1,7 @@
 import Client from 'fhirclient/lib/Client';
 import { LogType, OrderResource } from '../SmartApp';
 import { Bundle, FhirResource } from 'fhir/r4';
-import * as env from 'env-var';
+import env from '#env';
 
 interface Queries {
   [key: string]: string;

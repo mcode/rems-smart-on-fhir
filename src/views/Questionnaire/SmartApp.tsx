@@ -24,7 +24,7 @@ import executeElm from './elm/executeElm';
 import PatientSelect from './components/PatientSelect/PatientSelect';
 import RemsInterface from './components/RemsInterface/RemsInterface';
 import { createRoot } from 'react-dom/client';
-import * as env from 'env-var';
+import env from '#env';
 import { ValueSetDictionary } from 'cql-execution';
 
 interface SmartAppProps {

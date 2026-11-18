@@ -34,7 +34,7 @@ import { Hook, Card as HooksCard, OrderSelectHook } from '../../../cds-hooks/res
 import OrderSelect from '../../../cds-hooks/resources/OrderSelect';
 import { getDrugCodeFromMedicationRequest } from '../../Questionnaire/questionnaireUtil';
 import './MedReqDropDown.css';
-import * as env from 'env-var';
+import env from '#env';
 import { MedicationBundle, submitToREMS } from '../PatientView';
 
 // Adding in cards

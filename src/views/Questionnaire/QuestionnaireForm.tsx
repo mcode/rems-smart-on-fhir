@@ -1,3 +1,4 @@
+import env from '#env';
 import {
   Bundle,
   Claim,
@@ -1745,13 +1746,13 @@ export function QuestionnaireForm(props: QuestionnaireProps) {
             );
             console.log(` Submitting to: ${submitUrl}`);
           } else {
-            submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
+            submitUrl = `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}/etasu/met`;
             console.log(
               ' Failed to extract REMS admin URL from questionnaire, falling back to environment variable'
             );
           }
         } else {
-          submitUrl = `${process.env.REACT_APP_REMS_ADMIN_SERVER_BASE}/etasu/met`;
+          submitUrl = `${env.get('REACT_APP_REMS_ADMIN_SERVER_BASE').asString()}/etasu/met`;
           console.log(' No questionnaire URL available, falling back to environment variable');
         }
 
