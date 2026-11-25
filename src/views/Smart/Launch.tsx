@@ -27,13 +27,39 @@ const Launch = () => {
         localStorage.setItem('clients', JSON.stringify(clients));
       }
     }
+    const clientIdMap = env.get('REACT_APP_CLIENT_ID_MAP').asString();
+    let configuredClients: Client[] = [];
+    if (clientIdMap) {
+      try {
+        const parsed = JSON.parse(clientIdMap);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          throw new Error('Expected an object mapping EHR URLs to client IDs');
+        }
+        configuredClients = Object.entries(parsed).map(([name, client]) => {
+          if (typeof client !== 'string') {
+            throw new Error('Expected client IDs to be strings');
+          }
+          return { name: name.replace(/\/+$/, ''), client };
+        });
+      } catch (e) {
+        console.log('Invalid REACT_APP_CLIENT_ID_MAP:', e);
+      }
+    }
     const urlSearchString = window.location.search;
     const params = new URLSearchParams(urlSearchString);
     const iss = params.get('iss');
     if (iss) {
-      const storedClient = clients.find(e => {
-        return e.name == iss;
-      });
+      const normalizedIss = iss.replace(/\/+$/, '');
+      const configuredClient = configuredClients.find(e => e.name === normalizedIss);
+      if (configuredClients.length > 0 && !configuredClient) {
+        setContent(<div>This EHR ({iss}) is not registered for this app.</div>);
+        return;
+      }
+      const storedClient =
+        configuredClient ||
+        clients.find(e => {
+          return e.name == iss;
+        });
 
       if (storedClient) {
         // found matching iss
@@ -42,7 +68,7 @@ const Launch = () => {
           .authorize({
             clientId: clientId,
             scope: env.get('REACT_APP_CLIENT_SCOPES').asString(),
-            redirectUri: '/index'
+            redirectUri: env.get('REACT_APP_REDIRECT_URI').asString() || '/index'
           })
           .catch(e => {
             console.log(e);
